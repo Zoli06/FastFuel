@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="final-project" database="MySql" id="42ab8223-2ba5-45c1-a110-1cdaf79b02a0" >
+	<schema name="fastfood" >
+		<table name="allergy" prior="allergies" >
+			<column name="allergy_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="message" type="VARCHAR" length="600" />
+			<index name="pk_allergies" unique="PRIMARY_KEY" >
+				<column name="allergy_id" />
+			</index>
+			<index name="unq_allergy" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="assigned_station" prior="assigned_stat" >
+			<column name="assigned_station_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="order_food_item_id" type="INT" mandatory="y" />
+			<column name="station_id" type="INT" mandatory="y" />
+			<index name="pk_assigned_station" unique="PRIMARY_KEY" >
+				<column name="assigned_station_id" />
+			</index>
+			<index name="idx_assigned_station" unique="NORMAL" >
+				<column name="station_id" />
+				<column name="order_food_item_id" />
+			</index>
+			<fk name="fk_assigned_station" to_schema="fastfood" to_table="order_food" >
+				<fk_column name="order_food_item_id" pk="order_food_id" />
+			</fk>
+			<fk name="fk_assigned_station_station" to_schema="fastfood" to_table="station" >
+				<fk_column name="station_id" pk="station_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="food" prior="f" >
+			<column name="food_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="price" prior="base_price" type="INT" mandatory="y" unsigned="y" />
+			<column name="description" type="TEXT" />
+			<index name="pk_food" unique="PRIMARY_KEY" >
+				<column name="food_id" />
+			</index>
+			<index name="unq_food" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="food_ingredient" prior="food_ingredients" >
+			<column name="food_ingredient_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="ingredient_id" type="INT" mandatory="y" />
+			<column name="food_id" type="INT" mandatory="y" />
+			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
+			<index name="pk_food_ingredient" unique="PRIMARY_KEY" >
+				<column name="food_ingredient_id" />
+			</index>
+			<index name="unq_food_ingredient" unique="UNIQUE_KEY" >
+				<column name="food_id" />
+				<column name="ingredient_id" />
+			</index>
+			<fk name="fk_food_ingredient_ingredient" to_schema="fastfood" to_table="ingredient" >
+				<fk_column name="ingredient_id" pk="ingredient_id" />
+			</fk>
+			<fk name="fk_food_ingredient_food" to_schema="fastfood" to_table="food" >
+				<fk_column name="food_id" pk="food_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="ingredient" prior="ingredients" >
+			<column name="ingredient_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="station_type_id" prior="station_id" type="INT" mandatory="y" />
+			<index name="pk_ingredients" unique="PRIMARY_KEY" >
+				<column name="ingredient_id" />
+			</index>
+			<index name="idx_ingredient" unique="NORMAL" >
+				<column name="station_type_id" />
+			</index>
+			<index name="unq_ingredient" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+			<fk name="fk_ingredient_station_type" to_schema="fastfood" to_table="station_type" >
+				<fk_column name="station_type_id" pk="station_type_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="ingredient_allergy" prior="ingredient_aller" >
+			<column name="ingredient_allergy_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="ingredient_id" type="INT" mandatory="y" />
+			<column name="allergy_id" type="INT" mandatory="y" />
+			<index name="unq_ingredient_allergy" unique="UNIQUE_KEY" >
+				<column name="ingredient_id" />
+				<column name="allergy_id" />
+			</index>
+			<index name="pk_ingredient_allergy" unique="PRIMARY_KEY" >
+				<column name="ingredient_allergy_id" />
+			</index>
+			<fk name="fk_ingredient_allergy_ingredient" to_schema="fastfood" to_table="ingredient" >
+				<fk_column name="ingredient_id" pk="ingredient_id" />
+			</fk>
+			<fk name="fk_ingredient_allergy_allergy" to_schema="fastfood" to_table="allergy" >
+				<fk_column name="allergy_id" pk="allergy_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="menu" prior="meni" >
+			<column name="menu_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="price" prior="base_price" type="INT" mandatory="y" unsigned="y" />
+			<column name="is_special_deal" type="BOOLEAN" mandatory="y" />
+			<column name="description" type="TEXT" />
+			<index name="pk_menu" unique="PRIMARY_KEY" >
+				<column name="menu_id" />
+			</index>
+			<index name="unq_menu_name" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="menu_food" prior="menu_f" >
+			<column name="menu_food_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="menu_id" type="INT" mandatory="y" />
+			<column name="food_id" type="INT" mandatory="y" />
+			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
+			<index name="unq_menu_food" unique="UNIQUE_KEY" >
+				<column name="menu_id" />
+				<column name="food_id" />
+			</index>
+			<index name="pk_menu_food" unique="PRIMARY_KEY" >
+				<column name="menu_food_id" />
+			</index>
+			<fk name="fk_menu_food_food" to_schema="fastfood" to_table="food" >
+				<fk_column name="food_id" pk="food_id" />
+			</fk>
+			<fk name="fk_menu_food_menu" to_schema="fastfood" to_table="menu" >
+				<fk_column name="menu_id" pk="menu_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="opening_hours" prior="opening_hour" >
+			<column name="opening_hours_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="restaurant_id" type="INT" mandatory="y" />
+			<column name="day" type="DECIMAL" length="1" decimal="0" mandatory="y" />
+			<column name="start" type="TIME" mandatory="y" />
+			<column name="end" type="TIME" mandatory="y" />
+			<index name="pk_opening_hours" unique="PRIMARY_KEY" >
+				<column name="opening_hours_id" />
+			</index>
+			<index name="unq_opening_hours" unique="UNIQUE_KEY" >
+				<comment><![CDATA[This assumes that a restaurant opens and closes maximum one a day. If the requirement changes eg. we need a lunch break (who does that in a restaurant..?) remove this key.]]></comment>
+				<column name="restaurant_id" />
+				<column name="day" />
+			</index>
+			<constraint name="cns_opening_hours_start_end" >
+				<string><![CDATA[start < end]]></string>
+			</constraint>
+			<constraint name="cns_opening_hours_day" >
+				<string><![CDATA[0 <= day and day <= 6]]></string>
+			</constraint>
+			<fk name="fk_opening_hours_restaurant" to_schema="fastfood" to_table="restaurant" >
+				<fk_column name="restaurant_id" pk="restaurant_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="order" prior="orde" >
+			<column name="order_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="restaurant_id" type="INT" mandatory="y" />
+			<column name="number" type="SMALLINT" mandatory="y" unsigned="y" />
+			<column name="state" type="ENUM" mandatory="y" >
+				<defo><![CDATA['Preparation']]></defo>
+				<enumeration><![CDATA['Preparation', 'Packing', 'Ready', 'Served']]></enumeration>
+			</column>
+			<column name="placed_at" type="TIMESTAMP" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<index name="pk_order" unique="PRIMARY_KEY" >
+				<column name="order_id" />
+			</index>
+			<index name="idx_order" unique="NORMAL" >
+				<column name="restaurant_id" />
+			</index>
+			<fk name="fk_order_restaurant" to_schema="fastfood" to_table="restaurant" >
+				<fk_column name="restaurant_id" pk="restaurant_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="order_food" prior="order_food_item" >
+			<column name="order_food_id" prior="order_food_item_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="order_id" type="INT" mandatory="y" />
+			<column name="food_id" type="INT" mandatory="y" />
+			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
+			<index name="pk_order_food" unique="PRIMARY_KEY" >
+				<column name="order_food_id" />
+			</index>
+			<index name="unq_order_food_order_food_id" unique="UNIQUE_KEY" >
+				<column name="order_food_id" />
+				<column name="order_id" />
+			</index>
+			<index name="unq_order_food_order_food_id_0" unique="UNIQUE_KEY" >
+				<column name="order_food_id" />
+				<column name="order_id" />
+				<column name="food_id" />
+			</index>
+			<index name="unq_order_food_order_food_id_1" unique="UNIQUE_KEY" >
+				<column name="order_food_id" />
+				<column name="order_id" />
+				<column name="food_id" />
+				<column name="quantity" />
+			</index>
+			<fk name="fk_order_food_order" to_schema="fastfood" to_table="order" >
+				<fk_column name="order_id" pk="order_id" />
+			</fk>
+			<fk name="fk_order_food_food" to_schema="fastfood" to_table="food" >
+				<fk_column name="food_id" pk="food_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="order_menu" prior="order_menu_item" >
+			<column name="order_menu_id" prior="order_menu_item_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="order_id" type="INT" mandatory="y" />
+			<column name="menu_id" type="INT" mandatory="y" />
+			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
+			<index name="pk_order_menu" unique="PRIMARY_KEY" >
+				<column name="order_menu_id" />
+			</index>
+			<index name="unq_order_menu_order_menu_id" unique="UNIQUE_KEY" >
+				<column name="order_menu_id" />
+				<column name="order_id" />
+			</index>
+			<index name="unq_order_menu_order_menu_id_0" unique="UNIQUE_KEY" >
+				<column name="order_menu_id" />
+				<column name="order_id" />
+				<column name="menu_id" />
+			</index>
+			<fk name="fk_order_menu_order" to_schema="fastfood" to_table="order" >
+				<fk_column name="order_id" pk="order_id" />
+			</fk>
+			<fk name="fk_order_menu_menu" to_schema="fastfood" to_table="menu" >
+				<fk_column name="menu_id" pk="menu_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="order_menu_order_food" prior="order_menu_item_order_food_item" >
+			<column name="order_menu_order_food_id" prior="order_menu_item_order_food_item_id" type="INT" mandatory="y" />
+			<column name="order_id" type="INT" mandatory="y" />
+			<column name="order_food_id" prior="order_food_item_id" type="INT" mandatory="y" />
+			<column name="order_menu_id" prior="order_menu_item_id" type="INT" mandatory="y" />
+			<index name="pk_order_menu_order_food" unique="PRIMARY_KEY" >
+				<column name="order_menu_order_food_id" />
+			</index>
+			<index name="unq_order_menu_order_food" unique="UNIQUE_KEY" >
+				<column name="order_food_id" />
+			</index>
+			<fk name="fk_order_menu_order_food_order_food" to_schema="fastfood" to_table="order_food" >
+				<fk_column name="order_food_id" pk="order_food_id" />
+				<fk_column name="order_id" pk="order_id" />
+			</fk>
+			<fk name="fk_order_menu_order_food_order_menu" to_schema="fastfood" to_table="order_menu" >
+				<fk_column name="order_menu_id" pk="order_menu_id" />
+				<fk_column name="order_id" pk="order_id" />
+			</fk>
+			<fk name="fk_order_menu_order_food_order" to_schema="fastfood" to_table="order" >
+				<fk_column name="order_id" pk="order_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="order_station" prior="order_statio" >
+			<column name="order_id" type="INT" mandatory="y" />
+			<column name="station_id" type="INT" mandatory="y" />
+		</table>
+		<table name="restaurant" prior="restaur" >
+			<column name="restaurant_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="coordinate_lat" type="DECIMAL" length="10" decimal="8" mandatory="y" />
+			<column name="coordinate_lng" type="DECIMAL" length="11" decimal="8" mandatory="y" />
+			<column name="location_name" type="VARCHAR" length="100" mandatory="y" />
+			<index name="pk_restaurant" unique="PRIMARY_KEY" >
+				<column name="restaurant_id" />
+			</index>
+			<index name="unq_restaurant" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="special_request" prior="special_resquest" >
+			<column name="special_request_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="order_food_item_id" type="INT" mandatory="y" />
+			<column name="note" type="VARCHAR" length="600" mandatory="y" />
+			<index name="pk_special_request" unique="PRIMARY_KEY" >
+				<column name="special_request_id" />
+			</index>
+			<fk name="fk_special_request" to_schema="fastfood" to_table="order_food" >
+				<fk_column name="order_food_item_id" pk="order_food_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="station" prior="restaurant_station" >
+			<column name="station_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="restaurant_id" type="INT" mandatory="y" />
+			<column name="station_type_id" prior="station_id" type="INT" mandatory="y" />
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="in_operation" type="BOOLEAN" mandatory="y" >
+				<defo><![CDATA[False]]></defo>
+			</column>
+			<index name="pk_station" unique="PRIMARY_KEY" >
+				<column name="station_id" />
+			</index>
+			<index name="idx_station" unique="NORMAL" >
+				<column name="restaurant_id" />
+				<column name="station_type_id" />
+			</index>
+			<index name="unq_station" unique="UNIQUE_KEY" >
+				<column name="restaurant_id" />
+				<column name="name" />
+			</index>
+			<fk name="fk_station_restaurant" to_schema="fastfood" to_table="restaurant" >
+				<fk_column name="restaurant_id" pk="restaurant_id" />
+			</fk>
+			<fk name="fk_station_station_type" to_schema="fastfood" to_table="station_type" >
+				<fk_column name="station_type_id" pk="station_type_id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="station_type" prior="station" >
+			<column name="station_type_id" prior="station_id" type="INT" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="name" type="VARCHAR" length="100" mandatory="y" />
+			<index name="pk_station_type" unique="PRIMARY_KEY" >
+				<column name="station_type_id" />
+			</index>
+			<index name="unq_station_type" unique="UNIQUE_KEY" >
+				<column name="name" />
+			</index>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+	</schema>
+	<layout name="Default Diagram" id="e8d1f998-9e60-422a-b41e-1a1e19e211fc" show_relation="columns" >
+		<entity schema="fastfood" name="special_request" color="E5EEC1" x="2717" y="95" />
+		<entity schema="fastfood" name="order" color="E5EEC1" x="2850" y="380" />
+		<entity schema="fastfood" name="ingredient_allergy" color="C1D8EE" x="285" y="703" />
+		<entity schema="fastfood" name="ingredient" color="C1D8EE" x="627" y="703" />
+		<entity schema="fastfood" name="assigned_station" color="E5EEC1" x="2033" y="228" />
+		<entity schema="fastfood" name="opening_hours" color="C1D8EE" x="2793" y="1444" />
+		<entity schema="fastfood" name="station" color="C1D8EE" x="2052" y="1102" />
+		<entity schema="fastfood" name="station_type" color="C1D8EE" x="627" y="1121" />
+		<entity schema="fastfood" name="restaurant" color="C1D8EE" x="2812" y="1121" />
+		<entity schema="fastfood" name="order_menu" color="E5EEC1" x="2432" y="779" />
+		<entity schema="fastfood" name="order_food" color="E5EEC1" x="2394" y="95" />
+		<entity schema="fastfood" name="menu" color="C1D8EE" x="1786" y="703" />
+		<entity schema="fastfood" name="order_menu_order_food" color="E5EEC1" x="2394" y="418" />
+		<entity schema="fastfood" name="food" color="C1D8EE" x="1197" y="703" />
+		<entity schema="fastfood" name="food_ingredient" color="C1D8EE" x="912" y="703" />
+		<entity schema="fastfood" name="menu_food" color="C1D8EE" x="1482" y="703" />
+		<entity schema="fastfood" name="allergy" color="C1D8EE" x="57" y="722" />
+		<group name="Ordering" color="C4E0F9" >
+			<entity schema="fastfood" name="special_request" />
+			<entity schema="fastfood" name="order" />
+			<entity schema="fastfood" name="assigned_station" />
+			<entity schema="fastfood" name="order_menu" />
+			<entity schema="fastfood" name="order_food" />
+			<entity schema="fastfood" name="order_menu_order_food" />
+		</group>
+		<group name="Restaurant" color="C4E0F9" >
+			<entity schema="fastfood" name="opening_hours" />
+			<entity schema="fastfood" name="station" />
+			<entity schema="fastfood" name="station_type" />
+			<entity schema="fastfood" name="restaurant" />
+		</group>
+		<group name="Food" color="C4E0F9" >
+			<entity schema="fastfood" name="ingredient_allergy" />
+			<entity schema="fastfood" name="ingredient" />
+			<entity schema="fastfood" name="menu" />
+			<entity schema="fastfood" name="food" />
+			<entity schema="fastfood" name="food_ingredient" />
+			<entity schema="fastfood" name="menu_food" />
+			<entity schema="fastfood" name="allergy" />
+		</group>
+	</layout>
+</project>
