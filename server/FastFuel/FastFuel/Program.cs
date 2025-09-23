@@ -1,6 +1,5 @@
 using FastFuel.Models;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +10,9 @@ builder.Services.AddOpenApi();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-var serverVersion = new MySqlServerVersion(new Version(12, 0, 2));
 builder.Services.AddDbContext<ApplicationDbContext>(
     dbContextOptions => dbContextOptions
-        .UseMySql(connectionString, serverVersion)
+        .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
         // The following three options help with debugging, but should
         // be changed or removed for production.
         .LogTo(Console.WriteLine, LogLevel.Information)
