@@ -10,6 +10,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Ingredient> Ingredients { get; set; }
     public DbSet<Menu> Menus { get; set; }
     public DbSet<MenuFood> MenuFoods { get; set; }
+    public DbSet<OpeningHour> OpeningHours { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderFood> OrderFoods { get; set; }
+    public DbSet<OrderMenu> OrderMenus { get; set; }
+    public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<SpecialRequest> SpecialRequests { get; set; }
+    public DbSet<Station> Stations { get; set; }
     public DbSet<StationType> StationTypes { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,5 +37,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany(m => m.Foods)
             .WithMany(f => f.Menus)
             .UsingEntity<MenuFood>();
+        
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
