@@ -421,6 +421,3 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 @Zoli06
 Comment
-
-# Custom ignore rules
-*.bak
