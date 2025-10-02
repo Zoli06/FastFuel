@@ -9,6 +9,7 @@ public class OrderFood
     public virtual Food Food { get; set; } = null!;
 
     public uint Quantity { get; set; }
+    public string? SpecialInstructions { get; set; }
     // Maybe don't do this, don't complicate things
     // public uint? OrderMenuId { get; set; }
     // public OrderMenu? OrderMenu { get; set; }

@@ -15,7 +15,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<OrderFood> OrderFoods { get; set; }
     public DbSet<OrderMenu> OrderMenus { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
-    public DbSet<SpecialRequest> SpecialRequests { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<StationCategory> StationCategories { get; set; }
 
