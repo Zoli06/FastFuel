@@ -1,5 +1,5 @@
 ﻿namespace FastFuel.Models;
 
-public class StationCategoryType : ObjectType<StationCategory>
+public class StationCategoryType : BaseType<StationCategory>
 {
 }

@@ -1,6 +1,6 @@
 ﻿namespace FastFuel.Models;
 
-public class FoodIngredient
+public class FoodIngredient : BaseModel
 {
     public uint FoodId { get; set; }
     public virtual Food Food { get; set; } = null!;

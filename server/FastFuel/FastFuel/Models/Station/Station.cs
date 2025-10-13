@@ -1,8 +1,7 @@
 ﻿namespace FastFuel.Models;
 
-public class Station
+public class Station : BaseModel
 {
-    public uint Id { get; set; }
     public required string Name { get; set; }
     public bool InOperation { get; set; }
     public uint RestaurantId { get; set; }

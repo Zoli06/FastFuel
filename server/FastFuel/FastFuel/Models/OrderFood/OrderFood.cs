@@ -1,8 +1,7 @@
 ﻿namespace FastFuel.Models;
 
-public class OrderFood
+public class OrderFood : BaseModel
 {
-    public uint Id { get; set; }
     public uint OrderId { get; set; }
     public virtual Order Order { get; set; } = null!;
     public uint FoodId { get; set; }

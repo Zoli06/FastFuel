@@ -7,6 +7,6 @@ public class OpeningHourConfig : IEntityTypeConfiguration<OpeningHour>
 {
     public void Configure(EntityTypeBuilder<OpeningHour> builder)
     {
-        builder.HasKey(b => new { b.RestaurantId, b.DayOfWeek });
+        builder.HasIndex(b => new { b.RestaurantId, b.DayOfWeek }).IsUnique();
     }
 }

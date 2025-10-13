@@ -1,8 +1,7 @@
 ﻿namespace FastFuel.Models;
 
-public class Food
+public class Food : BaseModel
 {
-    public uint Id { get; set; }
     public required string Name { get; set; }
     public uint Price { get; set; }
     public string? Description { get; set; }

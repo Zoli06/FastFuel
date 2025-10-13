@@ -1,5 +1,5 @@
 ﻿namespace FastFuel.Models;
 
-public class RestaurantType : ObjectType<Restaurant>
+public class RestaurantType : BaseType<Restaurant>
 {
 }

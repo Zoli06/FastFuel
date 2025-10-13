@@ -1,7 +1,9 @@
 using FastFuel.Models;
+using FastFuel.Models.GraphQL;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel;
+
 
 public static class Program
 {
@@ -29,10 +31,21 @@ public static class Program
                     .EnableDetailedErrors();
         });
 
-        builder.Services.AddGraphQLServer().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
+        builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
 
         var app = builder.Build();
 
+        app.UseCors("AllowAll");
         app.MapGraphQL();
         if (app.Environment.IsDevelopment())
         {

@@ -1,8 +1,7 @@
 ﻿namespace FastFuel.Models;
 
-public class Ingredient
+public class Ingredient : BaseModel
 {
-    public uint Id { get; set; }
     public required string Name { get; set; }
     public uint StationTypeId { get; set; }
     public Uri? ImageUrl { get; set; }

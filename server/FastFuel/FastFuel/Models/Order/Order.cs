@@ -8,9 +8,8 @@ public enum OrderStatus
     Cancelled
 }
 
-public class Order
+public class Order : BaseModel
 {
-    public uint Id { get; set; }
     public uint RestaurantId { get; set; }
     public virtual Restaurant Restaurant { get; set; } = null!;
     public uint OrderNumber { get; set; }

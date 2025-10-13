@@ -1,5 +1,5 @@
 ﻿namespace FastFuel.Models;
 
-public class MenuType : ObjectType<Menu>
+public class MenuType : BaseType<Menu>
 {
 }

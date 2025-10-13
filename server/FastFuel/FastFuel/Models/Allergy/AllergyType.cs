@@ -1,8 +1,5 @@
 ﻿namespace FastFuel.Models;
 
-public class AllergyType : ObjectType<Allergy>
+public class AllergyType : BaseType<Allergy>
 {
-    protected override void Configure(IObjectTypeDescriptor<Allergy> descriptor)
-    {
-    }
 }

@@ -1,5 +1,5 @@
 ﻿namespace FastFuel.Models;
 
-public class FoodType : ObjectType<Food>
+public class FoodType : BaseType<Food>
 {
 }

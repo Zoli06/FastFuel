@@ -1,6 +1,6 @@
 ﻿namespace FastFuel.Models;
 
-public class MenuFood
+public class MenuFood : BaseModel
 {
     public uint MenuId { get; set; }
     public virtual Menu Menu { get; set; } = null!;
