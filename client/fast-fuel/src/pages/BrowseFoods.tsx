@@ -26,6 +26,7 @@ const BrowseFoods = () => {
                 <div key={food.id}>
                     <h2>{food.name}</h2>
                     <p>{food.description}</p>
+                    <img src={food.imageUrl} alt={food.name} />
                 </div>
             ))}
         </div>

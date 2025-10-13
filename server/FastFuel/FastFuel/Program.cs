@@ -110,7 +110,8 @@ public static class Program
             Name = "Big Burger",
             Price = 800,
             Description = "A big beef burger with lettuce, tomato, and cheese.",
-            Ingredients = [beefPatty, bun, lettuce, tomato, cheese]
+            Ingredients = [beefPatty, bun, lettuce, tomato, cheese],
+            ImageUrl = new Uri("https://cdn.pixabay.com/photo/2022/08/29/17/44/burger-7419420_1280.jpg")
         };
         var cheeseBurger = new Food
         {
