@@ -1,409 +1,367 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="final-project" database="MySql" id="42ab8223-2ba5-45c1-a110-1cdaf79b02a0" >
-	<schema name="fastfood" >
-		<table name="allergy" prior="allergies" >
-			<column name="allergy_id" type="INT" mandatory="y" >
+<project name="MariaDb" database="MariaDb" id="65a473ee-2a74-4abe-a099-38eadc80303a" >
+	<schema name="fast_fuel" >
+		<table name="__efmigrationshistory" row_count="0" spec="" >
+			<column name="MigrationId" type="VARCHAR" length="150" mandatory="y" />
+			<column name="ProductVersion" type="VARCHAR" length="32" mandatory="y" />
+			<index name="pk___efmigrationshistory" unique="PRIMARY_KEY" >
+				<column name="MigrationId" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="allergies" row_count="3" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="message" type="VARCHAR" length="600" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="Message" type="VARCHAR" length="600" />
 			<index name="pk_allergies" unique="PRIMARY_KEY" >
-				<column name="allergy_id" />
+				<column name="Id" />
 			</index>
-			<index name="unq_allergy" unique="UNIQUE_KEY" >
-				<column name="name" />
+			<index name="IX_Allergies_Name" unique="UNIQUE_KEY" >
+				<column name="Name" />
 			</index>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="assigned_station" prior="assigned_stat" >
-			<column name="assigned_station_id" type="INT" mandatory="y" >
+		<table name="foodingredients" row_count="11" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="order_food_item_id" type="INT" mandatory="y" />
-			<column name="station_id" type="INT" mandatory="y" />
-			<index name="pk_assigned_station" unique="PRIMARY_KEY" >
-				<column name="assigned_station_id" />
+			<column name="FoodId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="IngredientId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
+			<index name="pk_foodingredients" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="idx_assigned_station" unique="NORMAL" >
-				<column name="station_id" />
-				<column name="order_food_item_id" />
+			<index name="IX_FoodIngredients_FoodId_IngredientId" unique="UNIQUE_KEY" >
+				<column name="FoodId" />
+				<column name="IngredientId" />
 			</index>
-			<fk name="fk_assigned_station" to_schema="fastfood" to_table="order_food" >
-				<fk_column name="order_food_item_id" pk="order_food_id" />
+			<index name="IX_FoodIngredients_IngredientId" unique="NORMAL" >
+				<column name="IngredientId" />
+			</index>
+			<fk name="FK_FoodIngredients_Foods_FoodId" to_schema="fast_fuel" to_table="foods" delete_action="cascade" options="" >
+				<fk_column name="FoodId" pk="Id" />
 			</fk>
-			<fk name="fk_assigned_station_station" to_schema="fastfood" to_table="station" >
-				<fk_column name="station_id" pk="station_id" />
+			<fk name="FK_FoodIngredients_Ingredients_IngredientId" to_schema="fast_fuel" to_table="ingredients" delete_action="cascade" options="" >
+				<fk_column name="IngredientId" pk="Id" />
 			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="food" prior="f" >
-			<column name="food_id" type="INT" mandatory="y" >
+		<table name="foods" row_count="3" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="price" prior="base_price" type="INT" mandatory="y" unsigned="y" />
-			<column name="description" type="TEXT" />
-			<index name="pk_food" unique="PRIMARY_KEY" >
-				<column name="food_id" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="Price" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Description" type="VARCHAR" length="600" />
+			<column name="ImageUrl" type="LONGTEXT" />
+			<index name="pk_foods" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="unq_food" unique="UNIQUE_KEY" >
-				<column name="name" />
+			<index name="IX_Foods_Name" unique="UNIQUE_KEY" >
+				<column name="Name" />
 			</index>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="food_ingredient" prior="food_ingredients" >
-			<column name="food_ingredient_id" type="INT" mandatory="y" >
+		<table name="ingredientallergies" row_count="1" spec="" >
+			<column name="AllergiesId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="IngredientsId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<index name="pk_ingredientallergies" unique="PRIMARY_KEY" >
+				<column name="AllergiesId" />
+				<column name="IngredientsId" />
+			</index>
+			<index name="IX_IngredientAllergies_IngredientsId" unique="NORMAL" >
+				<column name="IngredientsId" />
+			</index>
+			<fk name="FK_IngredientAllergies_Allergies_AllergiesId" to_schema="fast_fuel" to_table="allergies" delete_action="cascade" options="" >
+				<fk_column name="AllergiesId" pk="Id" />
+			</fk>
+			<fk name="FK_IngredientAllergies_Ingredients_IngredientsId" to_schema="fast_fuel" to_table="ingredients" delete_action="cascade" options="" >
+				<fk_column name="IngredientsId" pk="Id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="ingredients" row_count="8" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="ingredient_id" type="INT" mandatory="y" />
-			<column name="food_id" type="INT" mandatory="y" />
-			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
-			<index name="pk_food_ingredient" unique="PRIMARY_KEY" >
-				<column name="food_ingredient_id" />
-			</index>
-			<index name="unq_food_ingredient" unique="UNIQUE_KEY" >
-				<column name="food_id" />
-				<column name="ingredient_id" />
-			</index>
-			<fk name="fk_food_ingredient_ingredient" to_schema="fastfood" to_table="ingredient" >
-				<fk_column name="ingredient_id" pk="ingredient_id" />
-			</fk>
-			<fk name="fk_food_ingredient_food" to_schema="fastfood" to_table="food" >
-				<fk_column name="food_id" pk="food_id" />
-			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
-		</table>
-		<table name="ingredient" prior="ingredients" >
-			<column name="ingredient_id" type="INT" mandatory="y" >
-				<identity><![CDATA[AUTO_INCREMENT]]></identity>
-			</column>
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="station_type_id" prior="station_id" type="INT" mandatory="y" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="StationTypeId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="ImageUrl" type="LONGTEXT" />
+			<column name="StationCategoryId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<index name="pk_ingredients" unique="PRIMARY_KEY" >
-				<column name="ingredient_id" />
+				<column name="Id" />
 			</index>
-			<index name="idx_ingredient" unique="NORMAL" >
-				<column name="station_type_id" />
+			<index name="IX_Ingredients_Name" unique="UNIQUE_KEY" >
+				<column name="Name" />
 			</index>
-			<index name="unq_ingredient" unique="UNIQUE_KEY" >
-				<column name="name" />
+			<index name="IX_Ingredients_StationCategoryId" unique="NORMAL" >
+				<column name="StationCategoryId" />
 			</index>
-			<fk name="fk_ingredient_station_type" to_schema="fastfood" to_table="station_type" >
-				<fk_column name="station_type_id" pk="station_type_id" />
+			<index name="IX_Ingredients_StationTypeId" unique="NORMAL" >
+				<column name="StationTypeId" />
+			</index>
+			<fk name="FK_Ingredients_StationCategories_StationCategoryId" to_schema="fast_fuel" to_table="stationcategories" delete_action="cascade" options="" >
+				<fk_column name="StationCategoryId" pk="Id" />
 			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="ingredient_allergy" prior="ingredient_aller" >
-			<column name="ingredient_allergy_id" type="INT" mandatory="y" >
+		<table name="menufoods" row_count="2" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="ingredient_id" type="INT" mandatory="y" />
-			<column name="allergy_id" type="INT" mandatory="y" />
-			<index name="unq_ingredient_allergy" unique="UNIQUE_KEY" >
-				<column name="ingredient_id" />
-				<column name="allergy_id" />
+			<column name="MenuId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="FoodId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
+			<index name="pk_menufoods" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="pk_ingredient_allergy" unique="PRIMARY_KEY" >
-				<column name="ingredient_allergy_id" />
+			<index name="IX_MenuFoods_MenuId_FoodId" unique="UNIQUE_KEY" >
+				<column name="MenuId" />
+				<column name="FoodId" />
 			</index>
-			<fk name="fk_ingredient_allergy_ingredient" to_schema="fastfood" to_table="ingredient" >
-				<fk_column name="ingredient_id" pk="ingredient_id" />
+			<index name="IX_MenuFoods_FoodId" unique="NORMAL" >
+				<column name="FoodId" />
+			</index>
+			<fk name="FK_MenuFoods_Foods_FoodId" to_schema="fast_fuel" to_table="foods" delete_action="cascade" options="" >
+				<fk_column name="FoodId" pk="Id" />
 			</fk>
-			<fk name="fk_ingredient_allergy_allergy" to_schema="fastfood" to_table="allergy" >
-				<fk_column name="allergy_id" pk="allergy_id" />
+			<fk name="FK_MenuFoods_Menus_MenuId" to_schema="fast_fuel" to_table="menus" delete_action="cascade" options="" >
+				<fk_column name="MenuId" pk="Id" />
 			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="menu" prior="meni" >
-			<column name="menu_id" type="INT" mandatory="y" >
+		<table name="menus" row_count="1" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="price" prior="base_price" type="INT" mandatory="y" unsigned="y" />
-			<column name="is_special_deal" type="BOOLEAN" mandatory="y" />
-			<column name="description" type="TEXT" />
-			<index name="pk_menu" unique="PRIMARY_KEY" >
-				<column name="menu_id" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="Price" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Description" type="VARCHAR" length="600" />
+			<column name="ImageUrl" type="LONGTEXT" />
+			<index name="pk_menus" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="unq_menu_name" unique="UNIQUE_KEY" >
-				<column name="name" />
+			<index name="IX_Menus_Name" unique="UNIQUE_KEY" >
+				<column name="Name" />
 			</index>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="menu_food" prior="menu_f" >
-			<column name="menu_food_id" type="INT" mandatory="y" >
+		<table name="openinghours" row_count="7" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="menu_id" type="INT" mandatory="y" />
-			<column name="food_id" type="INT" mandatory="y" />
-			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
-			<index name="unq_menu_food" unique="UNIQUE_KEY" >
-				<column name="menu_id" />
-				<column name="food_id" />
+			<column name="RestaurantId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="DayOfWeek" type="INT" length="11" mandatory="y" />
+			<column name="OpenTime" type="TIME" length="6" mandatory="y" />
+			<column name="CloseTime" type="TIME" length="6" mandatory="y" />
+			<index name="pk_openinghours" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="pk_menu_food" unique="PRIMARY_KEY" >
-				<column name="menu_food_id" />
+			<index name="IX_OpeningHours_RestaurantId_DayOfWeek" unique="UNIQUE_KEY" >
+				<column name="RestaurantId" />
+				<column name="DayOfWeek" />
 			</index>
-			<fk name="fk_menu_food_food" to_schema="fastfood" to_table="food" >
-				<fk_column name="food_id" pk="food_id" />
+			<fk name="FK_OpeningHours_Restaurants_RestaurantId" to_schema="fast_fuel" to_table="restaurants" delete_action="cascade" options="" >
+				<fk_column name="RestaurantId" pk="Id" />
 			</fk>
-			<fk name="fk_menu_food_menu" to_schema="fastfood" to_table="menu" >
-				<fk_column name="menu_id" pk="menu_id" />
-			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="opening_hours" prior="opening_hour" >
-			<column name="opening_hours_id" type="INT" mandatory="y" >
+		<table name="orderfoods" row_count="1" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="restaurant_id" type="INT" mandatory="y" />
-			<column name="day" type="DECIMAL" length="1" decimal="0" mandatory="y" />
-			<column name="start" type="TIME" mandatory="y" />
-			<column name="end" type="TIME" mandatory="y" />
-			<index name="pk_opening_hours" unique="PRIMARY_KEY" >
-				<column name="opening_hours_id" />
+			<column name="OrderId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="FoodId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="SpecialInstructions" type="VARCHAR" length="300" />
+			<index name="pk_orderfoods" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="unq_opening_hours" unique="UNIQUE_KEY" >
-				<comment><![CDATA[This assumes that a restaurant opens and closes maximum one a day. If the requirement changes eg. we need a lunch break (who does that in a restaurant..?) remove this key.]]></comment>
-				<column name="restaurant_id" />
-				<column name="day" />
+			<index name="IX_OrderFoods_FoodId" unique="NORMAL" >
+				<column name="FoodId" />
 			</index>
-			<constraint name="cns_opening_hours_start_end" >
-				<string><![CDATA[start < end]]></string>
-			</constraint>
-			<constraint name="cns_opening_hours_day" >
-				<string><![CDATA[0 <= day and day <= 6]]></string>
-			</constraint>
-			<fk name="fk_opening_hours_restaurant" to_schema="fastfood" to_table="restaurant" >
-				<fk_column name="restaurant_id" pk="restaurant_id" />
+			<index name="IX_OrderFoods_OrderId" unique="NORMAL" >
+				<column name="OrderId" />
+			</index>
+			<fk name="FK_OrderFoods_Foods_FoodId" to_schema="fast_fuel" to_table="foods" delete_action="cascade" options="" >
+				<fk_column name="FoodId" pk="Id" />
 			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<fk name="FK_OrderFoods_Orders_OrderId" to_schema="fast_fuel" to_table="orders" delete_action="cascade" options="" >
+				<fk_column name="OrderId" pk="Id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="order" prior="orde" >
-			<column name="order_id" type="INT" mandatory="y" >
+		<table name="ordermenus" row_count="1" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="restaurant_id" type="INT" mandatory="y" />
-			<column name="number" type="SMALLINT" mandatory="y" unsigned="y" />
-			<column name="state" type="ENUM" mandatory="y" >
-				<defo><![CDATA['Preparation']]></defo>
-				<enumeration><![CDATA['Preparation', 'Packing', 'Ready', 'Served']]></enumeration>
-			</column>
-			<column name="placed_at" type="TIMESTAMP" mandatory="y" >
-				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
-			</column>
-			<index name="pk_order" unique="PRIMARY_KEY" >
-				<column name="order_id" />
+			<column name="OrderId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="MenuId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="SpecialInstructions" type="VARCHAR" length="300" />
+			<index name="pk_ordermenus" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="idx_order" unique="NORMAL" >
-				<column name="restaurant_id" />
+			<index name="IX_OrderMenus_MenuId" unique="NORMAL" >
+				<column name="MenuId" />
 			</index>
-			<fk name="fk_order_restaurant" to_schema="fastfood" to_table="restaurant" >
-				<fk_column name="restaurant_id" pk="restaurant_id" />
+			<index name="IX_OrderMenus_OrderId" unique="NORMAL" >
+				<column name="OrderId" />
+			</index>
+			<fk name="FK_OrderMenus_Menus_MenuId" to_schema="fast_fuel" to_table="menus" delete_action="cascade" options="" >
+				<fk_column name="MenuId" pk="Id" />
 			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<fk name="FK_OrderMenus_Orders_OrderId" to_schema="fast_fuel" to_table="orders" delete_action="cascade" options="" >
+				<fk_column name="OrderId" pk="Id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="order_food" prior="order_food_item" >
-			<column name="order_food_id" prior="order_food_item_id" type="INT" mandatory="y" >
+		<table name="orders" row_count="1" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="order_id" type="INT" mandatory="y" />
-			<column name="food_id" type="INT" mandatory="y" />
-			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
-			<index name="pk_order_food" unique="PRIMARY_KEY" >
-				<column name="order_food_id" />
+			<column name="RestaurantId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="OrderNumber" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Status" type="INT" length="11" mandatory="y" />
+			<column name="CreatedAt" type="DATETIME" length="6" mandatory="y" />
+			<column name="CompletedAt" type="DATETIME" length="6" />
+			<index name="pk_orders" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="unq_order_food_order_food_id" unique="UNIQUE_KEY" >
-				<column name="order_food_id" />
-				<column name="order_id" />
+			<index name="IX_Orders_RestaurantId" unique="NORMAL" >
+				<column name="RestaurantId" />
 			</index>
-			<index name="unq_order_food_order_food_id_0" unique="UNIQUE_KEY" >
-				<column name="order_food_id" />
-				<column name="order_id" />
-				<column name="food_id" />
-			</index>
-			<index name="unq_order_food_order_food_id_1" unique="UNIQUE_KEY" >
-				<column name="order_food_id" />
-				<column name="order_id" />
-				<column name="food_id" />
-				<column name="quantity" />
-			</index>
-			<fk name="fk_order_food_order" to_schema="fastfood" to_table="order" >
-				<fk_column name="order_id" pk="order_id" />
+			<fk name="FK_Orders_Restaurants_RestaurantId" to_schema="fast_fuel" to_table="restaurants" delete_action="cascade" options="" >
+				<fk_column name="RestaurantId" pk="Id" />
 			</fk>
-			<fk name="fk_order_food_food" to_schema="fastfood" to_table="food" >
-				<fk_column name="food_id" pk="food_id" />
-			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="order_menu" prior="order_menu_item" >
-			<column name="order_menu_id" prior="order_menu_item_id" type="INT" mandatory="y" >
+		<table name="restaurants" row_count="1" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="order_id" type="INT" mandatory="y" />
-			<column name="menu_id" type="INT" mandatory="y" />
-			<column name="quantity" type="SMALLINT" mandatory="y" unsigned="y" />
-			<index name="pk_order_menu" unique="PRIMARY_KEY" >
-				<column name="order_menu_id" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="Description" type="VARCHAR" length="600" />
+			<column name="Latitude" type="DOUBLE" mandatory="y" />
+			<column name="Longitude" type="DOUBLE" mandatory="y" />
+			<column name="Address" type="VARCHAR" length="200" mandatory="y" />
+			<column name="Phone" type="VARCHAR" length="15" />
+			<index name="pk_restaurants" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="unq_order_menu_order_menu_id" unique="UNIQUE_KEY" >
-				<column name="order_menu_id" />
-				<column name="order_id" />
+			<index name="IX_Restaurants_Name" unique="UNIQUE_KEY" >
+				<column name="Name" />
 			</index>
-			<index name="unq_order_menu_order_menu_id_0" unique="UNIQUE_KEY" >
-				<column name="order_menu_id" />
-				<column name="order_id" />
-				<column name="menu_id" />
-			</index>
-			<fk name="fk_order_menu_order" to_schema="fastfood" to_table="order" >
-				<fk_column name="order_id" pk="order_id" />
-			</fk>
-			<fk name="fk_order_menu_menu" to_schema="fastfood" to_table="menu" >
-				<fk_column name="menu_id" pk="menu_id" />
-			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="order_menu_order_food" prior="order_menu_item_order_food_item" >
-			<column name="order_menu_order_food_id" prior="order_menu_item_order_food_item_id" type="INT" mandatory="y" />
-			<column name="order_id" type="INT" mandatory="y" />
-			<column name="order_food_id" prior="order_food_item_id" type="INT" mandatory="y" />
-			<column name="order_menu_id" prior="order_menu_item_id" type="INT" mandatory="y" />
-			<index name="pk_order_menu_order_food" unique="PRIMARY_KEY" >
-				<column name="order_menu_order_food_id" />
-			</index>
-			<index name="unq_order_menu_order_food" unique="UNIQUE_KEY" >
-				<column name="order_food_id" />
-			</index>
-			<fk name="fk_order_menu_order_food_order_food" to_schema="fastfood" to_table="order_food" >
-				<fk_column name="order_food_id" pk="order_food_id" />
-				<fk_column name="order_id" pk="order_id" />
-			</fk>
-			<fk name="fk_order_menu_order_food_order_menu" to_schema="fastfood" to_table="order_menu" >
-				<fk_column name="order_menu_id" pk="order_menu_id" />
-				<fk_column name="order_id" pk="order_id" />
-			</fk>
-			<fk name="fk_order_menu_order_food_order" to_schema="fastfood" to_table="order" >
-				<fk_column name="order_id" pk="order_id" />
-			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
-		</table>
-		<table name="order_station" prior="order_statio" >
-			<column name="order_id" type="INT" mandatory="y" />
-			<column name="station_id" type="INT" mandatory="y" />
-		</table>
-		<table name="restaurant" prior="restaur" >
-			<column name="restaurant_id" type="INT" mandatory="y" >
+		<table name="stationcategories" row_count="2" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="coordinate_lat" type="DECIMAL" length="10" decimal="8" mandatory="y" />
-			<column name="coordinate_lng" type="DECIMAL" length="11" decimal="8" mandatory="y" />
-			<column name="location_name" type="VARCHAR" length="100" mandatory="y" />
-			<index name="pk_restaurant" unique="PRIMARY_KEY" >
-				<column name="restaurant_id" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<index name="pk_stationcategories" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<index name="unq_restaurant" unique="UNIQUE_KEY" >
-				<column name="name" />
+			<index name="IX_StationCategories_Name" unique="UNIQUE_KEY" >
+				<column name="Name" />
 			</index>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
-		<table name="special_request" prior="special_resquest" >
-			<column name="special_request_id" type="INT" mandatory="y" >
+		<table name="stations" row_count="2" spec="" >
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
-			<column name="order_food_item_id" type="INT" mandatory="y" />
-			<column name="note" type="VARCHAR" length="600" mandatory="y" />
-			<index name="pk_special_request" unique="PRIMARY_KEY" >
-				<column name="special_request_id" />
+			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
+			<column name="InOperation" type="BOOLEAN" mandatory="y" />
+			<column name="RestaurantId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="StationCategoryId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<index name="pk_stations" unique="PRIMARY_KEY" >
+				<column name="Id" />
 			</index>
-			<fk name="fk_special_request" to_schema="fastfood" to_table="order_food" >
-				<fk_column name="order_food_item_id" pk="order_food_id" />
+			<index name="IX_Stations_RestaurantId_Name" unique="UNIQUE_KEY" >
+				<column name="RestaurantId" />
+				<column name="Name" />
+			</index>
+			<index name="IX_Stations_RestaurantId_StationCategoryId" unique="NORMAL" >
+				<column name="RestaurantId" />
+				<column name="StationCategoryId" />
+			</index>
+			<index name="IX_Stations_StationCategoryId" unique="NORMAL" >
+				<column name="StationCategoryId" />
+			</index>
+			<fk name="FK_Stations_Restaurants_RestaurantId" to_schema="fast_fuel" to_table="restaurants" delete_action="cascade" options="" >
+				<fk_column name="RestaurantId" pk="Id" />
 			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
-		</table>
-		<table name="station" prior="restaurant_station" >
-			<column name="station_id" type="INT" mandatory="y" >
-				<identity><![CDATA[AUTO_INCREMENT]]></identity>
-			</column>
-			<column name="restaurant_id" type="INT" mandatory="y" />
-			<column name="station_type_id" prior="station_id" type="INT" mandatory="y" />
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="in_operation" type="BOOLEAN" mandatory="y" >
-				<defo><![CDATA[False]]></defo>
-			</column>
-			<index name="pk_station" unique="PRIMARY_KEY" >
-				<column name="station_id" />
-			</index>
-			<index name="idx_station" unique="NORMAL" >
-				<column name="restaurant_id" />
-				<column name="station_type_id" />
-			</index>
-			<index name="unq_station" unique="UNIQUE_KEY" >
-				<column name="restaurant_id" />
-				<column name="name" />
-			</index>
-			<fk name="fk_station_restaurant" to_schema="fastfood" to_table="restaurant" >
-				<fk_column name="restaurant_id" pk="restaurant_id" />
+			<fk name="FK_Stations_StationCategories_StationCategoryId" to_schema="fast_fuel" to_table="stationcategories" delete_action="cascade" options="" >
+				<fk_column name="StationCategoryId" pk="Id" />
 			</fk>
-			<fk name="fk_station_station_type" to_schema="fastfood" to_table="station_type" >
-				<fk_column name="station_type_id" pk="station_type_id" />
-			</fk>
-			<options><![CDATA[engine=InnoDB]]></options>
-		</table>
-		<table name="station_type" prior="station" >
-			<column name="station_type_id" prior="station_id" type="INT" mandatory="y" >
-				<identity><![CDATA[AUTO_INCREMENT]]></identity>
-			</column>
-			<column name="name" type="VARCHAR" length="100" mandatory="y" />
-			<index name="pk_station_type" unique="PRIMARY_KEY" >
-				<column name="station_type_id" />
-			</index>
-			<index name="unq_station_type" unique="UNIQUE_KEY" >
-				<column name="name" />
-			</index>
-			<options><![CDATA[engine=InnoDB]]></options>
+			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
 	</schema>
-	<layout name="Default Diagram" id="e8d1f998-9e60-422a-b41e-1a1e19e211fc" show_relation="columns" >
-		<entity schema="fastfood" name="special_request" color="E5EEC1" x="2717" y="95" />
-		<entity schema="fastfood" name="order" color="E5EEC1" x="2850" y="380" />
-		<entity schema="fastfood" name="ingredient_allergy" color="C1D8EE" x="285" y="703" />
-		<entity schema="fastfood" name="ingredient" color="C1D8EE" x="627" y="703" />
-		<entity schema="fastfood" name="assigned_station" color="E5EEC1" x="2033" y="228" />
-		<entity schema="fastfood" name="opening_hours" color="C1D8EE" x="2793" y="1444" />
-		<entity schema="fastfood" name="station" color="C1D8EE" x="2052" y="1102" />
-		<entity schema="fastfood" name="station_type" color="C1D8EE" x="627" y="1121" />
-		<entity schema="fastfood" name="restaurant" color="C1D8EE" x="2812" y="1121" />
-		<entity schema="fastfood" name="order_menu" color="E5EEC1" x="2432" y="779" />
-		<entity schema="fastfood" name="order_food" color="E5EEC1" x="2394" y="95" />
-		<entity schema="fastfood" name="menu" color="C1D8EE" x="1786" y="703" />
-		<entity schema="fastfood" name="order_menu_order_food" color="E5EEC1" x="2394" y="418" />
-		<entity schema="fastfood" name="food" color="C1D8EE" x="1197" y="703" />
-		<entity schema="fastfood" name="food_ingredient" color="C1D8EE" x="912" y="703" />
-		<entity schema="fastfood" name="menu_food" color="C1D8EE" x="1482" y="703" />
-		<entity schema="fastfood" name="allergy" color="C1D8EE" x="57" y="722" />
-		<group name="Ordering" color="C4E0F9" >
-			<entity schema="fastfood" name="special_request" />
-			<entity schema="fastfood" name="order" />
-			<entity schema="fastfood" name="assigned_station" />
-			<entity schema="fastfood" name="order_menu" />
-			<entity schema="fastfood" name="order_food" />
-			<entity schema="fastfood" name="order_menu_order_food" />
+	<layout name="Main Diagram" id="c4cf9389-9b9f-4485-ae57-8a2b66d394b5" show_relation="columns" >
+		<entity schema="fast_fuel" name="allergies" color="3986C1" x="57" y="95" />
+		<entity schema="fast_fuel" name="ingredients" color="3986C1" x="608" y="95" />
+		<entity schema="fast_fuel" name="ingredientallergies" color="3986C1" x="304" y="95" />
+		<entity schema="fast_fuel" name="foods" color="3986C1" x="1292" y="95" />
+		<entity schema="fast_fuel" name="menufoods" color="3986C1" x="1596" y="95" />
+		<entity schema="fast_fuel" name="menus" color="3986C1" x="1862" y="95" />
+		<entity schema="fast_fuel" name="ordermenus" color="00FF00" x="1824" y="437" />
+		<entity schema="fast_fuel" name="restaurants" color="3986C1" x="1596" y="741" />
+		<entity schema="fast_fuel" name="openinghours" color="3986C1" x="1862" y="741" />
+		<entity schema="fast_fuel" name="stations" color="3986C1" x="969" y="760" />
+		<entity schema="fast_fuel" name="orders" color="00FF00" x="1539" y="418" />
+		<entity schema="fast_fuel" name="orderfoods" color="00FF00" x="1235" y="437" />
+		<entity schema="fast_fuel" name="foodingredients" color="3986C1" x="950" y="95" />
+		<entity schema="fast_fuel" name="stationcategories" color="3986C1" x="589" y="760" />
+		<group name="Ordering" color="00FF00" >
+			<entity schema="fast_fuel" name="ordermenus" />
+			<entity schema="fast_fuel" name="orderfoods" />
+			<entity schema="fast_fuel" name="orders" />
 		</group>
-		<group name="Restaurant" color="C4E0F9" >
-			<entity schema="fastfood" name="opening_hours" />
-			<entity schema="fastfood" name="station" />
-			<entity schema="fastfood" name="station_type" />
-			<entity schema="fastfood" name="restaurant" />
+		<group name="Restaurants" color="FFFF00" >
+			<entity schema="fast_fuel" name="openinghours" />
+			<entity schema="fast_fuel" name="restaurants" />
+			<entity schema="fast_fuel" name="stations" />
+			<entity schema="fast_fuel" name="stationcategories" />
 		</group>
-		<group name="Food" color="C4E0F9" >
-			<entity schema="fastfood" name="ingredient_allergy" />
-			<entity schema="fastfood" name="ingredient" />
-			<entity schema="fastfood" name="menu" />
-			<entity schema="fastfood" name="food" />
-			<entity schema="fastfood" name="food_ingredient" />
-			<entity schema="fastfood" name="menu_food" />
-			<entity schema="fastfood" name="allergy" />
+		<group name="Foods" color="0000FF" >
+			<entity schema="fast_fuel" name="allergies" />
+			<entity schema="fast_fuel" name="ingredients" />
+			<entity schema="fast_fuel" name="ingredientallergies" />
+			<entity schema="fast_fuel" name="foodingredients" />
+			<entity schema="fast_fuel" name="foods" />
+			<entity schema="fast_fuel" name="menufoods" />
+			<entity schema="fast_fuel" name="menus" />
 		</group>
+	</layout>
+	<layout name="~Diagram with Sample Tools" id="309fa9d1-1504-43ed-9572-109fc3c8faee" show_column_type="y" show_relation="columns" >
+		<entity schema="fast_fuel" name="__efmigrationshistory" color="3986C1" x="1178" y="57" />
+		<entity schema="fast_fuel" name="allergies" color="BED3F4" x="361" y="608" />
+		<entity schema="fast_fuel" name="foodingredients" color="C7F4BE" x="1843" y="57" />
+		<entity schema="fast_fuel" name="foods" color="C7F4BE" x="1539" y="323" />
+		<entity schema="fast_fuel" name="ingredientallergies" color="BED3F4" x="912" y="608" />
+		<entity schema="fast_fuel" name="ingredients" color="BED3F4" x="665" y="342" />
+		<entity schema="fast_fuel" name="menufoods" color="C7F4BE" x="2090" y="57" />
+		<entity schema="fast_fuel" name="menus" color="C7F4BE" x="1539" y="57" />
+		<entity schema="fast_fuel" name="openinghours" color="BED3F4" x="665" y="608" />
+		<entity schema="fast_fuel" name="orderfoods" color="BED3F4" x="323" y="342" />
+		<entity schema="fast_fuel" name="ordermenus" color="C7F4BE" x="2090" y="304" />
+		<entity schema="fast_fuel" name="orders" color="BED3F4" x="1197" y="874" />
+		<entity schema="fast_fuel" name="restaurants" color="BED3F4" x="57" y="836" />
+		<entity schema="fast_fuel" name="stationcategories" color="BED3F4" x="361" y="836" />
+		<entity schema="fast_fuel" name="stations" color="BED3F4" x="912" y="874" />
+		<script name="SQL Editor" id="be6c5828-7d0c-43b3-aab0-3dc81c695ee6" language="SQL" >
+			<string><![CDATA[SELECT
+	`Id`, `Name`, `Price`, `Description`, `ImageUrl`
+FROM
+	fast_fuel.foods s;]]></string>
+		</script>
+		<browser id="03249d7a-e04a-4ab5-a232-87f197999251" name="Relational Data Editor" confirm_updates="y" >
+			<browse_table schema="fast_fuel" entity="foods" fk_out="n" x="20" y="20" width="270" height="-60" >
+				<browse_table schema="fast_fuel" entity="foodingredients" fk="FK_FoodIngredients_Foods_FoodId" fk_out="y" x="310" y="20" width="500" height="350" />
+			</browse_table>
+		</browser>
 	</layout>
 </project>
