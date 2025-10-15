@@ -1,9 +1,8 @@
 ﻿namespace FastFuel.Models;
 
-public class Allergy
+public class Allergy : BaseModel
 {
-    public uint Id { get; set; }
     public required string Name { get; set; }
     public string? Message { get; set; }
-    public List<Ingredient> Ingredients { get; set; } = [];
+    public virtual List<Ingredient> Ingredients { get; set; } = [];
 }

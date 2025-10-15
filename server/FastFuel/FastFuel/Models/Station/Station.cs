@@ -1,12 +1,11 @@
 ﻿namespace FastFuel.Models;
 
-public class Station
+public class Station : BaseModel
 {
-    public uint Id { get; set; }
     public required string Name { get; set; }
     public bool InOperation { get; set; }
     public uint RestaurantId { get; set; }
-    public Restaurant Restaurant { get; set; } = null!;
-    public uint StationTypeId { get; set; }
-    public StationType StationType { get; set; } = null!;
+    public virtual Restaurant Restaurant { get; set; } = null!;
+    public uint StationCategoryId { get; set; }
+    public virtual StationCategory StationCategory { get; set; } = null!;
 }

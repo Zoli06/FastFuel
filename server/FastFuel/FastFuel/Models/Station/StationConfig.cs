@@ -9,6 +9,6 @@ public class StationConfig : IEntityTypeConfiguration<Station>
     {
         builder.Property(s => s.Name).HasMaxLength(100);
         builder.HasIndex(s => new { s.RestaurantId, s.Name }).IsUnique();
-        builder.HasIndex(s => new { s.RestaurantId, s.StationTypeId });
+        builder.HasIndex(s => new { s.RestaurantId, s.StationCategoryId });
     }
 }
