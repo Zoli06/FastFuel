@@ -1,6 +1,7 @@
 ﻿import {gql, type TypedDocumentNode} from "@apollo/client";
 import {useQuery} from "@apollo/client/react";
 import type {FoodsQuery} from "../types/__generated__/graphql.ts";
+import {Badge, Button, Card, Group, Image, Text} from "@mantine/core";
 
 const BROWSE_FOODS_QUERY: TypedDocumentNode<FoodsQuery> = gql`
     query Foods {
@@ -23,11 +24,29 @@ const BrowseFoods = () => {
     return (
         <div>
             {data!.foods.map(food => (
-                <div key={food.id}>
-                    <h2>{food.name}</h2>
-                    <p>{food.description}</p>
-                    <img src={food.imageUrl} alt={food.name} />
-                </div>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Card.Section>
+                        <Image
+                            src={food.imageUrl}
+                            height={160}
+                            alt={food.name}
+                        />
+                    </Card.Section>
+
+                    <Group justify="space-between" mt="md" mb="xs">
+                        <Text fw={500}>Norway Fjord Adventures</Text>
+                        <Badge color="pink">On Sale</Badge>
+                    </Group>
+
+                    <Text size="sm" c="dimmed">
+                        With Fjord Tours you can explore more of the magical fjord landscapes with tours and
+                        activities on and around the fjords of Norway
+                    </Text>
+
+                    <Button color="blue" fullWidth mt="md" radius="md">
+                        Book classic tour now
+                    </Button>
+                </Card>
             ))}
         </div>
     );
