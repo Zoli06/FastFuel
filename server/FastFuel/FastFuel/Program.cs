@@ -134,7 +134,6 @@ public static class Program
         var lunchMenu = new Menu
         {
             Name = "Lunch Menu",
-            IsSpecialDeal = true,
             Price = 1000,
             Description = "A special lunch menu with a Big Burger and Fries.",
             Foods = [bigBurger, fries]
