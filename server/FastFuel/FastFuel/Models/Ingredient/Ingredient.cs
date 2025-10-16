@@ -5,7 +5,7 @@ public class Ingredient : BaseModel
     public required string Name { get; set; }
     public uint StationTypeId { get; set; }
     public Uri? ImageUrl { get; set; }
-    public virtual StationCategory StationCategory { get; set; } = null!;
     public virtual List<Food> Foods { get; set; } = [];
     public virtual List<Allergy> Allergies { get; set; } = [];
+    public virtual List<StationCategory> StationCategories { get; set; } = [];
 }

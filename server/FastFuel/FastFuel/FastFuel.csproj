@@ -8,10 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="HotChocolate" Version="16.0.0-p.8.6"/>
-        <PackageReference Include="HotChocolate.AspNetCore" Version="16.0.0-p.8.6"/>
-        <PackageReference Include="HotChocolate.Types.Analyzers" Version="16.0.0-p.8.6"/>
-        <PackageReference Include="HotChocolate.Types.Scalars" Version="16.0.0-p.8.6"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">

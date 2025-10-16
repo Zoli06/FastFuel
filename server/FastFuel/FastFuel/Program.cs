@@ -1,5 +1,4 @@
 using FastFuel.Models;
-using FastFuel.Models.GraphQL;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel;
@@ -31,7 +30,8 @@ public static class Program
                     .EnableDetailedErrors();
         });
 
-        builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
+        // Here lies the GraphQL server setup—once powering queries, now retired for simpler times.
+        // builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
 
         builder.Services.AddCors(options =>
         {
@@ -46,11 +46,9 @@ public static class Program
         var app = builder.Build();
 
         app.UseCors("AllowAll");
-        app.MapGraphQL();
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            app.MapNitroApp();
         }
 
         // ----------- TESTING ONLY -----------
@@ -93,15 +91,20 @@ public static class Program
         await context.SaveChangesAsync();
 
         // Add some ingredients
-        var beefPatty = new Ingredient { Name = "Beef Patty", StationCategory = burgerStation };
-        var bun = new Ingredient { Name = "Bun", StationCategory = burgerStation, Allergies = [glutenAllergy] };
-        var lettuce = new Ingredient { Name = "Lettuce", StationCategory = burgerStation };
-        var tomato = new Ingredient { Name = "Tomato", StationCategory = burgerStation };
-        var cheese = new Ingredient { Name = "Cheese", StationCategory = burgerStation };
-        var potato = new Ingredient { Name = "Potato", StationCategory = friesStation };
-        var salt = new Ingredient { Name = "Salt", StationCategory = friesStation };
-        var oil = new Ingredient { Name = "Oil", StationCategory = friesStation };
+        var beefPatty = new Ingredient { Name = "Beef Patty" };
+        var bun = new Ingredient { Name = "Bun", Allergies = [glutenAllergy] };
+        var lettuce = new Ingredient { Name = "Lettuce", };
+        var tomato = new Ingredient { Name = "Tomato" };
+        var cheese = new Ingredient { Name = "Cheese" };
+        var potato = new Ingredient { Name = "Potato" };
+        var salt = new Ingredient { Name = "Salt" };
+        var oil = new Ingredient { Name = "Oil" };
         context.Ingredients.AddRange(beefPatty, bun, lettuce, tomato, cheese, potato, salt, oil);
+        await context.SaveChangesAsync();
+        
+        // Assign ingredients to station categories
+        burgerStation.Ingredients = [beefPatty, bun, lettuce, tomato];
+        friesStation.Ingredients = [potato, salt, oil];
         await context.SaveChangesAsync();
 
         // Create some foods

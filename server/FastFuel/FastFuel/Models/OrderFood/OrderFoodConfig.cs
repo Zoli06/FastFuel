@@ -8,11 +8,5 @@ public class OrderFoodConfig : IEntityTypeConfiguration<OrderFood>
     public void Configure(EntityTypeBuilder<OrderFood> builder)
     {
         builder.Property(of => of.SpecialInstructions).HasMaxLength(300);
-        // Uncomment if we decide to save OrderMenuId in OrderFood
-        // builder.HasOne<OrderMenu>()
-        //     .WithMany(om => om.OrderFoods)
-        //     .HasForeignKey(of => new { of.OrderMenuId, of.OrderId })
-        //     .HasPrincipalKey(om => new { om.Id, om.OrderId });
-        // builder.Ignore(of => of.OrderMenu);
     }
 }

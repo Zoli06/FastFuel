@@ -65,20 +65,26 @@
 			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
 		<table name="ingredientallergies" row_count="1" spec="" >
-			<column name="AllergiesId" type="INT" length="10" mandatory="y" unsigned="y" />
-			<column name="IngredientsId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="IngredientId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="AllergyId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<index name="pk_ingredientallergies" unique="PRIMARY_KEY" >
-				<column name="AllergiesId" />
-				<column name="IngredientsId" />
+				<column name="Id" />
 			</index>
-			<index name="IX_IngredientAllergies_IngredientsId" unique="NORMAL" >
-				<column name="IngredientsId" />
+			<index name="IX_IngredientAllergies_IngredientId_AllergyId" unique="UNIQUE_KEY" >
+				<column name="IngredientId" />
+				<column name="AllergyId" />
 			</index>
-			<fk name="FK_IngredientAllergies_Allergies_AllergiesId" to_schema="fast_fuel" to_table="allergies" delete_action="cascade" options="" >
-				<fk_column name="AllergiesId" pk="Id" />
+			<index name="IX_IngredientAllergies_AllergyId" unique="NORMAL" >
+				<column name="AllergyId" />
+			</index>
+			<fk name="FK_IngredientAllergies_Allergies_AllergyId" to_schema="fast_fuel" to_table="allergies" delete_action="cascade" options="" >
+				<fk_column name="AllergyId" pk="Id" />
 			</fk>
-			<fk name="FK_IngredientAllergies_Ingredients_IngredientsId" to_schema="fast_fuel" to_table="ingredients" delete_action="cascade" options="" >
-				<fk_column name="IngredientsId" pk="Id" />
+			<fk name="FK_IngredientAllergies_Ingredients_IngredientId" to_schema="fast_fuel" to_table="ingredients" delete_action="cascade" options="" >
+				<fk_column name="IngredientId" pk="Id" />
 			</fk>
 			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
@@ -89,22 +95,15 @@
 			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
 			<column name="StationTypeId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="ImageUrl" type="LONGTEXT" />
-			<column name="StationCategoryId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<index name="pk_ingredients" unique="PRIMARY_KEY" >
 				<column name="Id" />
 			</index>
 			<index name="IX_Ingredients_Name" unique="UNIQUE_KEY" >
 				<column name="Name" />
 			</index>
-			<index name="IX_Ingredients_StationCategoryId" unique="NORMAL" >
-				<column name="StationCategoryId" />
-			</index>
 			<index name="IX_Ingredients_StationTypeId" unique="NORMAL" >
 				<column name="StationTypeId" />
 			</index>
-			<fk name="FK_Ingredients_StationCategories_StationCategoryId" to_schema="fast_fuel" to_table="stationcategories" delete_action="cascade" options="" >
-				<fk_column name="StationCategoryId" pk="Id" />
-			</fk>
 			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
 		<table name="menufoods" row_count="2" spec="" >
@@ -269,6 +268,24 @@
 			</index>
 			<options><![CDATA[ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
 		</table>
+		<table name="stationcategoryingredients" spec="" >
+			<column name="StationCategoryId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="IngredientId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<index name="pk_stationcategoryingredients" unique="PRIMARY_KEY" >
+				<column name="StationCategoryId" />
+				<column name="IngredientId" />
+			</index>
+			<index name="IX_StationCategoryIngredients_IngredientId" unique="NORMAL" >
+				<column name="IngredientId" />
+			</index>
+			<fk name="fk_stationcategoryingredients_ingredients_ingredientid" to_schema="fast_fuel" to_table="ingredients" delete_action="cascade" >
+				<fk_column name="IngredientId" pk="Id" />
+			</fk>
+			<fk name="fk_stationcategoryingredients_stationcategories_stationcategory~" to_schema="fast_fuel" to_table="stationcategories" delete_action="cascade" >
+				<fk_column name="StationCategoryId" pk="Id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
 		<table name="stations" row_count="2" spec="" >
 			<column name="Id" type="INT" length="10" mandatory="y" unsigned="y" >
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
@@ -308,13 +325,14 @@
 		<entity schema="fast_fuel" name="menufoods" color="3986C1" x="1596" y="95" />
 		<entity schema="fast_fuel" name="menus" color="3986C1" x="1862" y="95" />
 		<entity schema="fast_fuel" name="ordermenus" color="00FF00" x="1824" y="437" />
-		<entity schema="fast_fuel" name="restaurants" color="3986C1" x="1596" y="741" />
-		<entity schema="fast_fuel" name="openinghours" color="3986C1" x="1862" y="741" />
-		<entity schema="fast_fuel" name="stations" color="3986C1" x="969" y="760" />
+		<entity schema="fast_fuel" name="restaurants" color="3986C1" x="1577" y="722" />
+		<entity schema="fast_fuel" name="openinghours" color="3986C1" x="1843" y="722" />
 		<entity schema="fast_fuel" name="orders" color="00FF00" x="1539" y="418" />
 		<entity schema="fast_fuel" name="orderfoods" color="00FF00" x="1235" y="437" />
 		<entity schema="fast_fuel" name="foodingredients" color="3986C1" x="950" y="95" />
-		<entity schema="fast_fuel" name="stationcategories" color="3986C1" x="589" y="760" />
+		<entity schema="fast_fuel" name="stations" color="3986C1" x="1197" y="722" />
+		<entity schema="fast_fuel" name="stationcategoryingredients" color="3986C1" x="532" y="722" />
+		<entity schema="fast_fuel" name="stationcategories" color="3986C1" x="893" y="722" />
 		<group name="Ordering" color="00FF00" >
 			<entity schema="fast_fuel" name="ordermenus" />
 			<entity schema="fast_fuel" name="orderfoods" />
@@ -324,6 +342,7 @@
 			<entity schema="fast_fuel" name="openinghours" />
 			<entity schema="fast_fuel" name="restaurants" />
 			<entity schema="fast_fuel" name="stations" />
+			<entity schema="fast_fuel" name="stationcategoryingredients" />
 			<entity schema="fast_fuel" name="stationcategories" />
 		</group>
 		<group name="Foods" color="0000FF" >
