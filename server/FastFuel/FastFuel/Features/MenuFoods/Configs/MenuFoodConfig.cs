@@ -8,6 +8,6 @@ public class MenuFoodConfig : IEntityTypeConfiguration<MenuFood>
 {
     public void Configure(EntityTypeBuilder<MenuFood> builder)
     {
-        builder.HasIndex(mf => new { mf.MenuId, mf.FoodId }).IsUnique();
+        builder.HasKey(mf => new { mf.MenuId, mf.FoodId });
     }
 }

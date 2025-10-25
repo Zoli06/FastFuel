@@ -5,7 +5,6 @@ namespace FastFuel.Features.FoodIngredients.Models;
 
 public class FoodIngredient
 {
-    public uint Id { get; set; }
     public uint FoodId { get; set; }
     public virtual Food Food { get; set; } = null!;
     public uint IngredientId { get; set; }
