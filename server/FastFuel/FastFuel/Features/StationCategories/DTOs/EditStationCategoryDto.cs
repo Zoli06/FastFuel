@@ -1,8 +1,7 @@
 ﻿namespace FastFuel.Features.StationCategories.DTOs
 {
-    public class StationCategorieDto
+    public class EditStationCategoryDto
     {
-        public uint Id { get; set; }
         public required string Name { get; set; }
     }
 }
