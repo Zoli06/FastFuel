@@ -1,9 +1,20 @@
-using FastFuel.Models;
-using FastFuel.Models.GraphQL;
+using FastFuel.Features.Allergies.Models;
+using FastFuel.Features.Common;
+using FastFuel.Features.FoodIngredients.Models;
+using FastFuel.Features.Foods.Models;
+using FastFuel.Features.Ingredients.Models;
+using FastFuel.Features.MenuFoods.Models;
+using FastFuel.Features.Menus.Models;
+using FastFuel.Features.OpeningHours.Models;
+using FastFuel.Features.OrderFoods.Models;
+using FastFuel.Features.OrderMenus.Models;
+using FastFuel.Features.Orders.Models;
+using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.StationCategories.Models;
+using FastFuel.Features.Stations.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel;
-
 
 public static class Program
 {
@@ -30,28 +41,33 @@ public static class Program
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
         });
+        
+        builder.Services.AddControllers();
 
-        builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
+        builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(Program).Assembly));
+        if (builder.Environment.IsDevelopment())
+            builder.Services.AddEndpointsApiExplorer();
+
+        // Here lies the GraphQL server setup—once powering queries, now retired for simpler times.
+        // builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
 
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
             {
                 policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
             });
         });
 
         var app = builder.Build();
 
+        // app.UseHttpsRedirection();
+        app.MapControllers();
+
         app.UseCors("AllowAll");
-        app.MapGraphQL();
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-            app.MapNitroApp();
-        }
+        if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
 
         // ----------- TESTING ONLY -----------
         // This will delete and recreate the database on each run
@@ -63,11 +79,6 @@ public static class Program
             await dbContext.Database.MigrateAsync();
 
             await SeedDatabaseAsync(dbContext);
-
-            // Get ingredients for big burger
-            var bigBurger = dbContext.Foods.Include(f => f.Ingredients).First(f => f.Name == "Big Burger");
-            Console.WriteLine($"Ingredients for {bigBurger.Name}:");
-            foreach (var ingredient in bigBurger.Ingredients) Console.WriteLine($"- {ingredient.Name}");
         }
         // ----------- END TESTING ONLY -----------
 
@@ -77,40 +88,51 @@ public static class Program
     private static async Task SeedDatabaseAsync(ApplicationDbContext context)
     {
         // Check if the database is already seeded
-        if (context.Foods.Any()) return; // Database has been seeded
-
+        // if (context.Foods.Any()) return; // Database has been seeded
+        
         // Two types of stations: french fries and burgers
         var burgerStation = new StationCategory { Name = "Burger Station" };
         var friesStation = new StationCategory { Name = "Fries Station" };
         context.StationCategories.AddRange(burgerStation, friesStation);
         await context.SaveChangesAsync();
-
+        
         // Add some allergies
         var glutenAllergy = new Allergy { Name = "Gluten" };
         var dairyAllergy = new Allergy { Name = "Dairy" };
         var peanutAllergy = new Allergy { Name = "Peanuts" };
         context.Allergies.AddRange(glutenAllergy, dairyAllergy, peanutAllergy);
         await context.SaveChangesAsync();
-
+        
         // Add some ingredients
-        var beefPatty = new Ingredient { Name = "Beef Patty", StationCategory = burgerStation };
-        var bun = new Ingredient { Name = "Bun", StationCategory = burgerStation, Allergies = [glutenAllergy] };
-        var lettuce = new Ingredient { Name = "Lettuce", StationCategory = burgerStation };
-        var tomato = new Ingredient { Name = "Tomato", StationCategory = burgerStation };
-        var cheese = new Ingredient { Name = "Cheese", StationCategory = burgerStation };
-        var potato = new Ingredient { Name = "Potato", StationCategory = friesStation };
-        var salt = new Ingredient { Name = "Salt", StationCategory = friesStation };
-        var oil = new Ingredient { Name = "Oil", StationCategory = friesStation };
+        var beefPatty = new Ingredient { Name = "Beef Patty" };
+        var bun = new Ingredient { Name = "Bun", Allergies = [glutenAllergy] };
+        var lettuce = new Ingredient { Name = "Lettuce", };
+        var tomato = new Ingredient { Name = "Tomato" };
+        var cheese = new Ingredient { Name = "Cheese" };
+        var potato = new Ingredient { Name = "Potato" };
+        var salt = new Ingredient { Name = "Salt" };
+        var oil = new Ingredient { Name = "Oil" };
         context.Ingredients.AddRange(beefPatty, bun, lettuce, tomato, cheese, potato, salt, oil);
         await context.SaveChangesAsync();
-
+        
+        // Assign ingredients to station categories
+        burgerStation.Ingredients = [beefPatty, bun, lettuce, tomato];
+        friesStation.Ingredients = [potato, salt, oil];
+        await context.SaveChangesAsync();
+        
         // Create some foods
         var bigBurger = new Food
         {
             Name = "Big Burger",
             Price = 800,
             Description = "A big beef burger with lettuce, tomato, and cheese.",
-            Ingredients = [beefPatty, bun, lettuce, tomato, cheese],
+            FoodIngredients = [
+                new FoodIngredient { Ingredient = beefPatty, Quantity = 1 },
+                new FoodIngredient { Ingredient = bun, Quantity = 1 },
+                new FoodIngredient { Ingredient = lettuce, Quantity = 2 },
+                new FoodIngredient { Ingredient = tomato, Quantity = 2 },
+                new FoodIngredient { Ingredient = cheese, Quantity = 1 }
+            ],
             ImageUrl = new Uri("https://cdn.pixabay.com/photo/2022/08/29/17/44/burger-7419420_1280.jpg")
         };
         var cheeseBurger = new Food
@@ -118,30 +140,41 @@ public static class Program
             Name = "Cheese Burger",
             Price = 700,
             Description = "A beef burger with cheese.",
-            Ingredients = [beefPatty, bun, cheese]
+            FoodIngredients = [
+                new FoodIngredient { Ingredient = beefPatty, Quantity = 1 },
+                new FoodIngredient { Ingredient = bun, Quantity = 1 },
+                new FoodIngredient { Ingredient = cheese, Quantity = 1 }
+            ]
         };
         var fries = new Food
         {
             Name = "Fries",
             Price = 300,
             Description = "Crispy golden fries.",
-            Ingredients = [potato, salt, oil]
+            FoodIngredients = [
+                new FoodIngredient { Ingredient = potato, Quantity = 3 },
+                new FoodIngredient { Ingredient = salt, Quantity = 1 },
+                new FoodIngredient { Ingredient = oil, Quantity = 1 }
+            ]
         };
         context.Foods.AddRange(bigBurger, cheeseBurger, fries);
         await context.SaveChangesAsync();
-
-        // Create a menu
+        
+        // Create a menu (use MenuFood join entities)
         var lunchMenu = new Menu
         {
             Name = "Lunch Menu",
-            IsSpecialDeal = true,
             Price = 1000,
             Description = "A special lunch menu with a Big Burger and Fries.",
-            Foods = [bigBurger, fries]
+            MenuFoods =
+            [
+                new MenuFood { Food = bigBurger, Quantity = 1 },
+                new MenuFood { Food = fries, Quantity = 1 }
+            ]
         };
         context.Menus.Add(lunchMenu);
         await context.SaveChangesAsync();
-
+        
         // Add a restaurant
         var restaurant = new Restaurant
         {
@@ -154,7 +187,7 @@ public static class Program
         };
         context.Restaurants.Add(restaurant);
         await context.SaveChangesAsync();
-
+        
         // Add stations to the restaurant
         var burgerStationInstance = new Station
         {
@@ -172,7 +205,7 @@ public static class Program
         };
         context.Stations.AddRange(burgerStationInstance, friesStationInstance);
         await context.SaveChangesAsync();
-
+        
         // Add opening hours
         var openingHours = Enum.GetValues<DayOfWeek>().Select(day => new OpeningHour
         {
@@ -180,7 +213,7 @@ public static class Program
         }).ToList();
         context.OpeningHours.AddRange(openingHours);
         await context.SaveChangesAsync();
-
+        
         // Place an order
         var order = new Order
         {
@@ -191,10 +224,10 @@ public static class Program
         };
         context.Orders.Add(order);
         await context.SaveChangesAsync();
-
+        
         // TODO: save price at order time
         // This is important because menu and food prices may change over time
-
+        
         // Add a menu and an extra food item to the order
         var orderMenuItem = new OrderMenu
         {
@@ -202,7 +235,7 @@ public static class Program
             Order = order,
             Quantity = 1
         };
-
+        
         var orderFoodItem = new OrderFood
         {
             Food = cheeseBurger,
