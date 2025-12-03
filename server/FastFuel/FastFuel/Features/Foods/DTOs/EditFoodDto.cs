@@ -1,4 +1,6 @@
-﻿namespace FastFuel.Features.Foods.DTOs;
+﻿using FastFuel.Features.FoodIngredients.DTOs;
+
+namespace FastFuel.Features.Foods.DTOs;
 
 public class EditFoodDto
 {
@@ -8,5 +10,5 @@ public class EditFoodDto
     public Uri? ImageUrl { get; set; }
 
     // Allow editing the list of ingredient ids when creating/updating a food
-    public required List<uint> IngredientIds { get; set; } = new();
+    public required List<FoodIngredientDto> Ingredients { get; set; }
 }
