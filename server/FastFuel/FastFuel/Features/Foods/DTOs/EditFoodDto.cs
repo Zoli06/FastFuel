@@ -6,4 +6,7 @@ public class EditFoodDto
     public uint Price { get; set; }
     public string? Description { get; set; }
     public Uri? ImageUrl { get; set; }
+
+    // Allow editing the list of ingredient ids when creating/updating a food
+    public required List<uint> IngredientIds { get; set; } = new();
 }

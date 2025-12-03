@@ -7,5 +7,5 @@ public class FoodDto
     public uint Price { get; set; }
     public string? Description { get; set; }
     public Uri? ImageUrl { get; set; }
-    // TODO: Add Ingredients and Menus maybe with quantities
+    public required List<uint> IngredientIds { get; set; }
 }

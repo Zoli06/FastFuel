@@ -19,7 +19,7 @@ public class FoodController(ApplicationDbContext context, IMapper mapper) : Cont
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<FoodDto>> GetFood(int id)
+    public async Task<ActionResult<FoodDto>> GetFood(uint id)
     {
         var food = await context.Foods.FindAsync(id);
         if (food == null)
@@ -40,7 +40,7 @@ public class FoodController(ApplicationDbContext context, IMapper mapper) : Cont
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateFood(int id, EditFoodDto foodDto)
+    public async Task<IActionResult> UpdateFood(uint id, EditFoodDto foodDto)
     {
         var food = await context.Foods.FindAsync(id);
         if (food == null)
@@ -53,7 +53,7 @@ public class FoodController(ApplicationDbContext context, IMapper mapper) : Cont
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteFood(int id)
+    public async Task<IActionResult> DeleteFood(uint id)
     {
         var food = await context.Foods.FindAsync(id);
         if (food == null)
