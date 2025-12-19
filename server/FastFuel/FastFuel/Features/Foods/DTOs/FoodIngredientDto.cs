@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.FoodIngredients.DTOs;
+﻿namespace FastFuel.Features.Foods.DTOs;
 
 public class FoodIngredientDto
 {

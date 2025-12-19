@@ -1,4 +1,6 @@
-﻿using FastFuel.Features.Restaurants.Models;
+﻿using FastFuel.Features.OrderFoods.Models;
+using FastFuel.Features.OrderMenus.Models;
+using FastFuel.Features.Restaurants.Models;
 
 namespace FastFuel.Features.Orders.Models;
 
@@ -11,4 +13,6 @@ public class Order
     public OrderStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public virtual List<OrderFood> Foods { get; set; } = [];
+    public virtual List<OrderMenu> Menus { get; set; } = [];
 }

@@ -1,8 +1,6 @@
-﻿using FastFuel.Features.OpeningHours.Models;
+﻿namespace FastFuel.Features.Restaurants.DTOs;
 
-namespace FastFuel.Features.Restaurants.Models;
-
-public class Restaurant
+public class RestaurantDto
 {
     public uint Id { get; set; }
     public required string Name { get; set; }
@@ -11,5 +9,5 @@ public class Restaurant
     public double Longitude { get; set; }
     public required string Address { get; set; }
     public string? Phone { get; set; }
-    public virtual List<OpeningHour> OpeningHours { get; set; } = [];
+    public List<RestaurantOpeningHourDto> OpeningHours { get; set; } = [];
 }
