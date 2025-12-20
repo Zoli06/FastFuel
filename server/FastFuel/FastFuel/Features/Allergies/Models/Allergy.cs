@@ -4,8 +4,8 @@ namespace FastFuel.Features.Allergies.Models;
 
 public class Allergy
 {
-    public uint Id { get; set; }
-    public required string Name { get; set; }
+    public uint Id { get; init; }
+    public string Name { get; set; } = string.Empty;
     public string? Message { get; set; }
-    public virtual List<Ingredient> Ingredients { get; set; } = [];
+    public virtual List<Ingredient> Ingredients { get; init; } = [];
 }

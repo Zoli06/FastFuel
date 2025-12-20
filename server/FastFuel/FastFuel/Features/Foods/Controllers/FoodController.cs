@@ -1,7 +1,6 @@
-﻿using AutoMapper;
-using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common;
 using FastFuel.Features.Foods.DTOs;
-using FastFuel.Features.Foods.Models;
+using FastFuel.Features.Foods.Mappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,44 +8,44 @@ namespace FastFuel.Features.Foods.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public class FoodController(ApplicationDbContext context, IMapper mapper) : ControllerBase
+public class FoodController(ApplicationDbContext context) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<FoodDto>>> GetFoods()
+    public async Task<ActionResult<IEnumerable<FoodResponseDto>>> GetFoods()
     {
         var foods = await context.Foods.ToListAsync();
-        return Ok(mapper.Map<List<FoodDto>>(foods));
+        return Ok(foods.Select(f => f.ToDto()));
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<FoodDto>> GetFood(uint id)
+    public async Task<ActionResult<FoodResponseDto>> GetFood(uint id)
     {
         var food = await context.Foods.FindAsync(id);
         if (food == null)
             return NotFound();
 
-        return Ok(mapper.Map<FoodDto>(food));
+        return Ok(food.ToDto());
     }
 
     [HttpPost]
-    public async Task<ActionResult<FoodDto>> CreateFood(EditFoodDto foodDto)
+    public async Task<ActionResult<FoodResponseDto>> CreateFood(FoodRequestDto foodRequestDto)
     {
-        var food = mapper.Map<Food>(foodDto);
+        var food = foodRequestDto.ToModel();
         context.Foods.Add(food);
         await context.SaveChangesAsync();
 
-        var createdFoodDto = mapper.Map<FoodDto>(food);
+        var createdFoodDto = food.ToDto();
         return CreatedAtAction(nameof(GetFood), new { id = food.Id }, createdFoodDto);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateFood(uint id, EditFoodDto foodDto)
+    public async Task<IActionResult> UpdateFood(uint id, FoodRequestDto foodRequestDto)
     {
         var food = await context.Foods.FindAsync(id);
         if (food == null)
             return NotFound();
 
-        mapper.Map(foodDto, food);
+        food.UpdateModel(foodRequestDto);
         await context.SaveChangesAsync();
 
         return NoContent();

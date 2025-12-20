@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using FastFuel.Features.Allergies.Mappers;
 using FastFuel.Features.Common;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,13 +6,13 @@ namespace FastFuel.Features.Allergies.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public class AllergyController(ApplicationDbContext context, IMapper mapper) : ControllerBase
+public class AllergyController(ApplicationDbContext context) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetAllergies()
     {
         var allergies = context.Allergies.ToList();
-        return Ok(mapper.Map<List<DTOs.AllergyDto>>(allergies));
+        return Ok(allergies.Select(a => a.ToDto()));
     }
 
     [HttpGet("{id:int}")]
@@ -21,37 +21,33 @@ public class AllergyController(ApplicationDbContext context, IMapper mapper) : C
         var allergy = context.Allergies.Find(id);
         if (allergy == null)
             return NotFound();
-        return Ok(mapper.Map<DTOs.AllergyDto>(allergy));
+        return Ok(allergy.ToDto());
     }
-
+    
     [HttpPost]
-    public IActionResult CreateAllergy(DTOs.EditAllergyDto allergyDto)
+    public IActionResult CreateAllergy(DTOs.AllergyRequestDto allergyRequestDto)
     {
-        var allergy = mapper.Map<Models.Allergy>(allergyDto);
-        // this is ugly
-        allergy.Ingredients = context.Ingredients
-            .Where(i => allergyDto.IngredientIds.Contains(i.Id))
-            .ToList();
+        var allergy = allergyRequestDto.ToModel(context);
         context.Allergies.Add(allergy);
         context.SaveChanges();
-        var createdAllergyDto = mapper.Map<DTOs.AllergyDto>(allergy);
-        return CreatedAtAction(nameof(GetAllergy), new { id = allergy.Id }, createdAllergyDto);
+        var createdDto = allergy.ToDto();
+        return CreatedAtAction(nameof(GetAllergy), new { id = allergy.Id }, createdDto);
     }
-
+    
     [HttpPut("{id:int}")]
-    public IActionResult UpdateAllergy(uint id, DTOs.EditAllergyDto allergyDto)
+    public IActionResult UpdateAllergy(uint id, DTOs.AllergyRequestDto allergyRequestDto)
     {
-        var allergy = context.Allergies.Find(id);
+        var allergy = context.Allergies
+            .FirstOrDefault(a => a.Id == id);
+        
         if (allergy == null)
             return NotFound();
-        allergy.Ingredients = context.Ingredients
-            .Where(i => allergyDto.IngredientIds.Contains(i.Id))
-            .ToList();
-        mapper.Map(allergyDto, allergy);
+        
+        allergy.UpdateModel(allergyRequestDto, context);
         context.SaveChanges();
         return NoContent();
     }
-
+    
     [HttpDelete("{id:int}")]
     public IActionResult DeleteAllergy(uint id)
     {

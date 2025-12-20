@@ -1,10 +1,10 @@
 ﻿namespace FastFuel.Features.Foods.DTOs;
 
-public class EditFoodDto
+public class FoodRequestDto
 {
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public uint Price { get; set; }
     public string? Description { get; set; }
     public Uri? ImageUrl { get; set; }
-    public required List<FoodIngredientDto> Ingredients { get; set; }
+    public List<FoodIngredientDto> Ingredients { get; set; } = [];
 }
