@@ -11,7 +11,7 @@ public class StationProfile : Profile
         CreateMap<Station, StationDto>()
             .ForMember(dest => dest.StationCategoryId, opt => opt.MapFrom(src => src.StationCategoryId))
             .ForMember(dest => dest.RestaurantId, opt => opt.MapFrom(src => src.RestaurantId));
-        
+
         CreateMap<EditStationDto, Station>();
     }
 }

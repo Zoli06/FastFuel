@@ -1,9 +1,11 @@
-﻿namespace FastFuel.Features.Allergies.DTOs;
+﻿using FastFuel.Features.Common;
 
-public class AllergyResponseDto
+namespace FastFuel.Features.Allergies.DTOs;
+
+public class AllergyResponseDto : IIdentifiable
 {
-    public uint Id { get; set; }
     public required string Name { get; set; }
     public string? Message { get; set; }
     public List<uint> IngredientIds { get; set; } = [];
+    public uint Id { get; set; }
 }

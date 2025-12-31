@@ -12,7 +12,7 @@ public class OrderProfile : Profile
     {
         CreateMap<Order, OrderDto>();
         CreateMap<PlaceOrderDto, Order>();
-        
+
         CreateMap<OrderFood, OrderFoodDto>()
             .ReverseMap();
         CreateMap<OrderMenu, OrderMenuDto>()

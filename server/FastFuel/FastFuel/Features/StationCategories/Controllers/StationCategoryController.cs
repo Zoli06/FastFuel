@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FastFuel.Features.Common;
 using FastFuel.Features.StationCategories.DTOs;
+using FastFuel.Features.StationCategories.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.StationCategories.Controllers;
@@ -28,7 +29,7 @@ public class StationCategoryController(ApplicationDbContext context, IMapper map
     [HttpPost]
     public IActionResult CreateStationCategory(EditStationCategoryDto categoryDto)
     {
-        var category = mapper.Map<Models.StationCategory>(categoryDto);
+        var category = mapper.Map<StationCategory>(categoryDto);
         //TODO: I hate this, switch to Mapperly
         category.Ingredients = context.Ingredients
             .Where(i => categoryDto.IngredientIds.Contains(i.Id))

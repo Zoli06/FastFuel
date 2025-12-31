@@ -11,9 +11,9 @@ public class RestaurantProfile : Profile
     {
         CreateMap<Restaurant, RestaurantDto>()
             .ForMember(dest => dest.OpeningHours, opt => opt.MapFrom(src => src.OpeningHours));
-        
+
         CreateMap<EditRestaurantDto, Restaurant>();
-        
+
         CreateMap<RestaurantOpeningHourDto, OpeningHour>()
             .ReverseMap();
     }

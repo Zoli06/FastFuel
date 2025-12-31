@@ -1,39 +1,38 @@
-﻿using FastFuel.Features.FoodIngredients.Models;
+﻿using FastFuel.Features.Common;
+using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.DTOs;
 using FastFuel.Features.Foods.Models;
 
 namespace FastFuel.Features.Foods.Mappers;
 
-public static class FoodMapper
+public class FoodMapper : Mapper<Food, FoodRequestDto, FoodResponseDto>
 {
-    public static FoodResponseDto ToDto(this Food food)
+    public override FoodResponseDto ToDto(Food model)
     {
         return new FoodResponseDto
         {
-            Id = food.Id,
-            Name = food.Name,
-            Price = food.Price,
-            Description = food.Description,
-            ImageUrl = food.ImageUrl,
-            Ingredients = food.FoodIngredients
-                .Select(fi => fi.ToDto())
-                .ToList(),
-            MenuIds = food.MenuFoods
-                .Select(mf => mf.MenuId)
-                .ToList()
+            Id = model.Id,
+            Name = model.Name,
+            Price = model.Price,
+            Description = model.Description,
+            ImageUrl = model.ImageUrl,
+            Ingredients = model.FoodIngredients
+                .ConvertAll(ToDto),
+            MenuIds = model.MenuFoods
+                .ConvertAll(mf => mf.MenuId)
         };
     }
-    
-    private static FoodIngredientDto ToDto(this FoodIngredient foodIngredient)
+
+    private FoodIngredientDto ToDto(FoodIngredient model)
     {
         return new FoodIngredientDto
         {
-            IngredientId = foodIngredient.IngredientId,
-            Quantity = foodIngredient.Quantity
+            IngredientId = model.IngredientId,
+            Quantity = model.Quantity
         };
     }
-    
-    public static Food ToModel(this FoodRequestDto dto)
+
+    public override Food ToModel(FoodRequestDto dto)
     {
         return new Food
         {
@@ -42,12 +41,11 @@ public static class FoodMapper
             Description = dto.Description,
             ImageUrl = dto.ImageUrl,
             FoodIngredients = dto.Ingredients
-                .Select(i => i.ToModel())
-                .ToList()
+                .ConvertAll(ToModel)
         };
     }
-    
-    private static FoodIngredient ToModel(this FoodIngredientDto dto)
+
+    private FoodIngredient ToModel(FoodIngredientDto dto)
     {
         return new FoodIngredient
         {
@@ -55,38 +53,32 @@ public static class FoodMapper
             Quantity = dto.Quantity
         };
     }
-    
-    public static void UpdateModel(this Food food, FoodRequestDto dto)
+
+    public override void UpdateModel(FoodRequestDto dto, ref Food model)
     {
-        food.Name = dto.Name;
-        food.Price = dto.Price;
-        food.Description = dto.Description;
-        food.ImageUrl = dto.ImageUrl;
+        model.Name = dto.Name;
+        model.Price = dto.Price;
+        model.Description = dto.Description;
+        model.ImageUrl = dto.ImageUrl;
 
         // Update FoodIngredients
         // Remove ingredients not present in the DTO
-        foreach (var rem in food.FoodIngredients
+        foreach (var rem in model.FoodIngredients
                      .Where(fi => dto.Ingredients.All(i => i.IngredientId != fi.IngredientId))
                      .ToList())
-        {
-            food.FoodIngredients.Remove(rem);
-        }
+            model.FoodIngredients.Remove(rem);
 
         // Add or update ingredients from the DTO
         foreach (var ingredientDto in dto.Ingredients)
         {
-            var existingFi = food.FoodIngredients
+            var existingFi = model.FoodIngredients
                 .FirstOrDefault(fi => fi.IngredientId == ingredientDto.IngredientId);
             if (existingFi != null)
-            {
                 // Update quantity if it exists
                 existingFi.Quantity = ingredientDto.Quantity;
-            }
             else
-            {
                 // Add new FoodIngredient
-                food.FoodIngredients.Add(ingredientDto.ToModel());
-            }
+                model.FoodIngredients.Add(ToModel(ingredientDto));
         }
     }
 }

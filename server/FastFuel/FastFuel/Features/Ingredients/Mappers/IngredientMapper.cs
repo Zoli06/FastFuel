@@ -1,26 +1,26 @@
-﻿
-using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common;
 using FastFuel.Features.Ingredients.DTOs;
 using FastFuel.Features.Ingredients.Models;
 
 namespace FastFuel.Features.Ingredients.Mappers;
 
-public static class IngredientMapper
+public class IngredientMapper(ApplicationDbContext dbContext)
+    : Mapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
-    public static IngredientResponseDto ToDto(this Ingredient ingredient)
+    public override IngredientResponseDto ToDto(Ingredient model)
     {
         return new IngredientResponseDto
         {
-            Id = ingredient.Id,
-            Name = ingredient.Name,
-            ImageUrl = ingredient.ImageUrl,
-            AllergyIds = ingredient.Allergies.ConvertAll(allergy => allergy.Id),
-            StationCategoryIds = ingredient.StationCategories.ConvertAll(category => category.Id),
-            FoodIds = ingredient.FoodIngredients.ConvertAll(fi => fi.FoodId)
+            Id = model.Id,
+            Name = model.Name,
+            ImageUrl = model.ImageUrl,
+            AllergyIds = model.Allergies.ConvertAll(allergy => allergy.Id),
+            StationCategoryIds = model.StationCategories.ConvertAll(category => category.Id),
+            FoodIds = model.FoodIngredients.ConvertAll(fi => fi.FoodId)
         };
     }
-    
-    public static Ingredient ToModel(this IngredientRequestDto dto, ApplicationDbContext dbContext)
+
+    public override Ingredient ToModel(IngredientRequestDto dto)
     {
         return new Ingredient
         {
@@ -34,36 +34,36 @@ public static class IngredientMapper
                 .ToList()
         };
     }
-    
-    public static void UpdateModel(this Ingredient ingredient, IngredientRequestDto dto, ApplicationDbContext dbContext)
+
+    public override void UpdateModel(IngredientRequestDto dto, ref Ingredient model)
     {
-        ingredient.Name = dto.Name;
-        ingredient.ImageUrl = dto.ImageUrl;
+        model.Name = dto.Name;
+        model.ImageUrl = dto.ImageUrl;
 
         var targetAllergies = dbContext.Allergies
             .Where(a => dto.AllergyIds.Contains(a.Id))
             .ToList();
 
         // Remove allergies not present in the DTO
-        foreach (var rem in ingredient.Allergies.Where(a => !dto.AllergyIds.Contains(a.Id)).ToList())
-            ingredient.Allergies.Remove(rem);
+        foreach (var rem in model.Allergies.Where(a => !dto.AllergyIds.Contains(a.Id)).ToList())
+            model.Allergies.Remove(rem);
 
         // Add new allergies that are missing
-        var existingAllergyIds = ingredient.Allergies.Select(a => a.Id).ToHashSet();
+        var existingAllergyIds = model.Allergies.Select(a => a.Id).ToHashSet();
         foreach (var allergy in targetAllergies.Where(a => !existingAllergyIds.Contains(a.Id)))
-            ingredient.Allergies.Add(allergy);
+            model.Allergies.Add(allergy);
 
         var targetCategories = dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
             .ToList();
 
         // Remove categories not present in the DTO
-        foreach (var rem in ingredient.StationCategories.Where(sc => !dto.StationCategoryIds.Contains(sc.Id)).ToList())
-            ingredient.StationCategories.Remove(rem);
+        foreach (var rem in model.StationCategories.Where(sc => !dto.StationCategoryIds.Contains(sc.Id)).ToList())
+            model.StationCategories.Remove(rem);
 
         // Add new categories that are missing
-        var existingCategoryIds = ingredient.StationCategories.Select(sc => sc.Id).ToHashSet();
+        var existingCategoryIds = model.StationCategories.Select(sc => sc.Id).ToHashSet();
         foreach (var category in targetCategories.Where(sc => !existingCategoryIds.Contains(sc.Id)))
-            ingredient.StationCategories.Add(category);
+            model.StationCategories.Add(category);
     }
 }
