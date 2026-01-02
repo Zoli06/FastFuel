@@ -1,0 +1,15 @@
+﻿using FastFuel.Features.Common;
+
+namespace FastFuel.Features.Orders.DTOs;
+
+public class OrderResponseDto : IIdentifiable
+{
+    public uint RestaurantId { get; init; }
+    public uint OrderNumber { get; init; }
+    public string Status { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public DateTime? CompletedAt { get; init; }
+    public List<OrderMenuDto> Menus { get; init; } = [];
+    public List<OrderFoodDto> Foods { get; init; } = [];
+    public uint Id { get; init; }
+}

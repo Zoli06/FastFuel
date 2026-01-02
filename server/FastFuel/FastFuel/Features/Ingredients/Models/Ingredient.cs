@@ -1,16 +1,16 @@
 ﻿using FastFuel.Features.Allergies.Models;
+using FastFuel.Features.Common;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.StationCategories.Models;
 
 namespace FastFuel.Features.Ingredients.Models;
 
-public class Ingredient
+public class Ingredient : IIdentifiable
 {
-    public uint Id { get; set; }
-    public required string Name { get; set; }
-    public uint StationTypeId { get; set; }
+    public string Name { get; set; } = string.Empty;
     public Uri? ImageUrl { get; set; }
-    public virtual List<FoodIngredient> FoodIngredients { get; set; } = [];
-    public virtual List<Allergy> Allergies { get; set; } = [];
-    public virtual List<StationCategory> StationCategories { get; set; } = [];
+    public virtual List<FoodIngredient> FoodIngredients { get; init; } = [];
+    public virtual List<Allergy> Allergies { get; init; } = [];
+    public virtual List<StationCategory> StationCategories { get; init; } = [];
+    public uint Id { get; init; }
 }
