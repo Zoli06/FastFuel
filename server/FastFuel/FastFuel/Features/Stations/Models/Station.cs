@@ -6,11 +6,11 @@ namespace FastFuel.Features.Stations.Models;
 
 public class Station : IIdentifiable
 {
-    public uint Id { get; init; }
     public string Name { get; set; } = string.Empty;
     public bool InOperation { get; set; }
     public uint RestaurantId { get; set; }
     public virtual Restaurant Restaurant { get; set; } = null!;
     public uint StationCategoryId { get; set; }
     public virtual StationCategory StationCategory { get; set; } = null!;
+    public uint Id { get; init; }
 }

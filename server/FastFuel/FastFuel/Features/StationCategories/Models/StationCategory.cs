@@ -6,8 +6,8 @@ namespace FastFuel.Features.StationCategories.Models;
 
 public class StationCategory : IIdentifiable
 {
-    public uint Id { get; init; }
     public string Name { get; set; } = string.Empty;
     public virtual List<Ingredient> Ingredients { get; init; } = [];
     public virtual List<Station> Stations { get; init; } = [];
+    public uint Id { get; init; }
 }

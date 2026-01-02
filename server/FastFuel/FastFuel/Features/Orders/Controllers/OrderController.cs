@@ -15,7 +15,7 @@ public class OrderController(ApplicationDbContext dbContext)
         new OrderMapper();
 
     protected override DbSet<Order> DbSet => DbContext.Orders;
-    
+
     public override async Task<IActionResult> Update(uint id, OrderRequestDto requestDto)
     {
         var model = await DbSet
@@ -23,7 +23,7 @@ public class OrderController(ApplicationDbContext dbContext)
 
         if (model == null)
             return NotFound();
-        
+
         if (model.Status != OrderStatus.Pending)
             return BadRequest("Only pending orders can be updated.");
 
@@ -31,7 +31,7 @@ public class OrderController(ApplicationDbContext dbContext)
         await DbContext.SaveChangesAsync();
         return NoContent();
     }
-    
+
     public override async Task<IActionResult> Delete(uint id)
     {
         var model = await DbSet
@@ -39,7 +39,7 @@ public class OrderController(ApplicationDbContext dbContext)
 
         if (model == null)
             return NotFound();
-        
+
         if (model.Status != OrderStatus.Pending)
             return BadRequest("Only pending orders can be deleted.");
 
