@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.StationCategories.Controllers;
 
-public class StationCategoryController(ApplicationDbContext dbContext) : ApplicationController<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>(dbContext)
+public class StationCategoryController(ApplicationDbContext dbContext)
+    : ApplicationController<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>(dbContext)
 {
     protected override Mapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto> Mapper =>
         new StationCategoryMapper(DbContext);

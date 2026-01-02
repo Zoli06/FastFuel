@@ -4,7 +4,8 @@ using FastFuel.Features.StationCategories.Models;
 
 namespace FastFuel.Features.StationCategories.Mappers;
 
-public class StationCategoryMapper(ApplicationDbContext dbContext) : Mapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>
+public class StationCategoryMapper(ApplicationDbContext dbContext)
+    : Mapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>
 {
     public override StationCategoryResponseDto ToDto(StationCategory model)
     {
@@ -34,12 +35,12 @@ public class StationCategoryMapper(ApplicationDbContext dbContext) : Mapper<Stat
     public override void UpdateModel(StationCategoryRequestDto dto, ref StationCategory model)
     {
         model.Name = dto.Name;
-        
+
         model.Ingredients.Clear();
         model.Ingredients.AddRange(dbContext.Ingredients
             .Where(ingredient => dto.IngredientIds.Contains(ingredient.Id))
             .ToList());
-        
+
         model.Stations.Clear();
         model.Stations.AddRange(dbContext.Stations
             .Where(station => dto.StationIds.Contains(station.Id))
