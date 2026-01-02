@@ -4,11 +4,11 @@ namespace FastFuel.Features.Foods.DTOs;
 
 public class FoodResponseDto : IIdentifiable
 {
-    public string Name { get; set; } = string.Empty;
-    public uint Price { get; set; }
-    public string? Description { get; set; }
-    public Uri? ImageUrl { get; set; }
-    public List<FoodIngredientDto> Ingredients { get; set; } = [];
-    public List<uint> MenuIds { get; set; } = [];
-    public uint Id { get; set; }
+    public string Name { get; init; } = string.Empty;
+    public uint Price { get; init; }
+    public string? Description { get; init; }
+    public Uri? ImageUrl { get; init; }
+    public List<FoodIngredientDto> Ingredients { get; init; } = [];
+    public List<uint> MenuIds { get; init; } = [];
+    public uint Id { get; init; }
 }

@@ -40,30 +40,14 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         model.Name = dto.Name;
         model.ImageUrl = dto.ImageUrl;
 
-        var targetAllergies = dbContext.Allergies
+        model.Allergies.Clear();
+        model.Allergies.AddRange(dbContext.Allergies
             .Where(a => dto.AllergyIds.Contains(a.Id))
-            .ToList();
+            .ToList());
 
-        // Remove allergies not present in the DTO
-        foreach (var rem in model.Allergies.Where(a => !dto.AllergyIds.Contains(a.Id)).ToList())
-            model.Allergies.Remove(rem);
-
-        // Add new allergies that are missing
-        var existingAllergyIds = model.Allergies.Select(a => a.Id).ToHashSet();
-        foreach (var allergy in targetAllergies.Where(a => !existingAllergyIds.Contains(a.Id)))
-            model.Allergies.Add(allergy);
-
-        var targetCategories = dbContext.StationCategories
+        model.StationCategories.Clear();
+        model.StationCategories.AddRange(dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
-            .ToList();
-
-        // Remove categories not present in the DTO
-        foreach (var rem in model.StationCategories.Where(sc => !dto.StationCategoryIds.Contains(sc.Id)).ToList())
-            model.StationCategories.Remove(rem);
-
-        // Add new categories that are missing
-        var existingCategoryIds = model.StationCategories.Select(sc => sc.Id).ToHashSet();
-        foreach (var category in targetCategories.Where(sc => !existingCategoryIds.Contains(sc.Id)))
-            model.StationCategories.Add(category);
+            .ToList());
     }
 }

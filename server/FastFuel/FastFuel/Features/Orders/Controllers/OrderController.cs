@@ -1,54 +1,50 @@
-﻿using AutoMapper;
-using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common;
 using FastFuel.Features.Orders.DTOs;
+using FastFuel.Features.Orders.Mappers;
 using FastFuel.Features.Orders.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Orders.Controllers;
 
-[ApiController]
-[Route("/api/[controller]")]
-public class OrderController(ApplicationDbContext context, IMapper mapper) : ControllerBase
+// TODO: Allow staff to update order status and mark as completed
+public class OrderController(ApplicationDbContext dbContext)
+    : ApplicationController<Order, OrderRequestDto, OrderResponseDto>(dbContext)
 {
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
-    {
-        var orders = await context.Orders.ToListAsync();
-        return Ok(mapper.Map<List<OrderDto>>(orders));
-    }
+    protected override Mapper<Order, OrderRequestDto, OrderResponseDto> Mapper =>
+        new OrderMapper();
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<OrderDto>> GetOrder(uint id)
+    protected override DbSet<Order> DbSet => DbContext.Orders;
+    
+    public override async Task<IActionResult> Update(uint id, OrderRequestDto requestDto)
     {
-        var order = await context.Orders.FindAsync(id);
-        if (order == null)
+        var model = await DbSet
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (model == null)
             return NotFound();
+        
+        if (model.Status != OrderStatus.Pending)
+            return BadRequest("Only pending orders can be updated.");
 
-        return Ok(mapper.Map<OrderDto>(order));
+        Mapper.UpdateModel(requestDto, ref model);
+        await DbContext.SaveChangesAsync();
+        return NoContent();
     }
-
-    [HttpPost]
-    public async Task<ActionResult<OrderDto>> CreateOrder(PlaceOrderDto orderDto)
+    
+    public override async Task<IActionResult> Delete(uint id)
     {
-        var order = mapper.Map<Order>(orderDto);
-        context.Orders.Add(order);
-        await context.SaveChangesAsync();
+        var model = await DbSet
+            .FirstOrDefaultAsync(a => a.Id == id);
 
-        var createdOrderDto = mapper.Map<OrderDto>(order);
-        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, createdOrderDto);
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteOrder(uint id)
-    {
-        var order = await context.Orders.FindAsync(id);
-        if (order == null)
+        if (model == null)
             return NotFound();
+        
+        if (model.Status != OrderStatus.Pending)
+            return BadRequest("Only pending orders can be deleted.");
 
-        context.Orders.Remove(order);
-        await context.SaveChangesAsync();
-
+        DbSet.Remove(model);
+        await DbContext.SaveChangesAsync();
         return NoContent();
     }
 }

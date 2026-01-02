@@ -2,7 +2,7 @@
 
 public class OrderFoodDto
 {
-    public uint FoodId { get; set; }
-    public uint Quantity { get; set; }
-    public string? SpecialInstructions { get; set; }
+    public uint FoodId { get; init; }
+    public uint Quantity { get; init; }
+    public string? SpecialInstructions { get; init; }
 }

@@ -2,9 +2,9 @@
 
 public class FoodRequestDto
 {
-    public string Name { get; set; } = string.Empty;
-    public uint Price { get; set; }
-    public string? Description { get; set; }
-    public Uri? ImageUrl { get; set; }
-    public List<FoodIngredientDto> Ingredients { get; set; } = [];
+    public string Name { get; init; } = string.Empty;
+    public uint Price { get; init; }
+    public string? Description { get; init; }
+    public Uri? ImageUrl { get; init; }
+    public List<FoodIngredientDto> Ingredients { get; init; } = [];
 }

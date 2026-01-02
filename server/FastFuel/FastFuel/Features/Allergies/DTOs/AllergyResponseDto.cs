@@ -4,8 +4,8 @@ namespace FastFuel.Features.Allergies.DTOs;
 
 public class AllergyResponseDto : IIdentifiable
 {
-    public required string Name { get; set; }
-    public string? Message { get; set; }
-    public List<uint> IngredientIds { get; set; } = [];
-    public uint Id { get; set; }
+    public string Name { get; init; } = string.Empty;
+    public string? Message { get; init; }
+    public List<uint> IngredientIds { get; init; } = [];
+    public uint Id { get; init; }
 }

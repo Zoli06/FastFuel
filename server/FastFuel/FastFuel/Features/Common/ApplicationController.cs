@@ -13,14 +13,14 @@ public abstract class ApplicationController<TModel, TRequest, TResponse>(Applica
     protected abstract DbSet<TModel> DbSet { get; }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public virtual async Task<IActionResult> GetAll()
     {
         var models = await DbSet.ToListAsync();
         return Ok(models.ConvertAll(m => Mapper.ToDto(m)));
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(uint id)
+    public virtual async Task<IActionResult> GetById(uint id)
     {
         var model = await DbSet.FindAsync(id);
         if (model == null)
@@ -29,7 +29,7 @@ public abstract class ApplicationController<TModel, TRequest, TResponse>(Applica
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(TRequest requestDto)
+    public virtual async Task<IActionResult> Create(TRequest requestDto)
     {
         var model = Mapper.ToModel(requestDto);
         DbSet.Add(model);
@@ -39,7 +39,7 @@ public abstract class ApplicationController<TModel, TRequest, TResponse>(Applica
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(uint id, TRequest requestDto)
+    public virtual async Task<IActionResult> Update(uint id, TRequest requestDto)
     {
         var model = await DbSet
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -53,7 +53,7 @@ public abstract class ApplicationController<TModel, TRequest, TResponse>(Applica
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(uint id)
+    public virtual async Task<IActionResult> Delete(uint id)
     {
         var model = await DbSet.FindAsync(id);
         if (model == null)

@@ -2,7 +2,7 @@
 
 public class OrderMenuDto
 {
-    public uint MenuId { get; set; }
-    public uint Quantity { get; set; }
-    public string? SpecialInstructions { get; set; }
+    public uint MenuId { get; init; }
+    public uint Quantity { get; init; }
+    public string? SpecialInstructions { get; init; }
 }

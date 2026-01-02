@@ -44,7 +44,6 @@ public static class Program
 
         builder.Services.AddControllers();
 
-        builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(Program).Assembly));
         if (builder.Environment.IsDevelopment())
             builder.Services.AddEndpointsApiExplorer();
 
@@ -116,8 +115,8 @@ public static class Program
         await context.SaveChangesAsync();
 
         // Assign ingredients to station categories
-        burgerStation.Ingredients = [beefPatty, bun, lettuce, tomato];
-        friesStation.Ingredients = [potato, salt, oil];
+        burgerStation.Ingredients.AddRange([beefPatty, bun, lettuce, tomato, cheese]);
+        friesStation.Ingredients.AddRange([potato, salt, oil]);
         await context.SaveChangesAsync();
 
         // Create some foods

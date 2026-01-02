@@ -38,17 +38,9 @@ public class AllergyMapper(ApplicationDbContext dbContext)
         model.Name = dto.Name;
         model.Message = dto.Message;
 
-        var targetIngredients = dbContext.Ingredients
+        model.Ingredients.Clear();
+        model.Ingredients.AddRange(dbContext.Ingredients
             .Where(i => dto.IngredientIds.Contains(i.Id))
-            .ToList();
-
-        // Remove ingredients not present in the DTO
-        foreach (var rem in model.Ingredients.Where(i => !dto.IngredientIds.Contains(i.Id)).ToList())
-            model.Ingredients.Remove(rem);
-
-        // Add new ingredients that are missing
-        var existingIds = model.Ingredients.Select(i => i.Id).ToHashSet();
-        foreach (var ing in targetIngredients.Where(ing => !existingIds.Contains(ing.Id)))
-            model.Ingredients.Add(ing);
+            .ToList());
     }
 }

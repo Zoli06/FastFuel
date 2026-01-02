@@ -57,18 +57,8 @@ public class MenuMapper : Mapper<Menu, MenuRequestDto, MenuResponseDto>
         model.Description = dto.Description;
         model.ImageUrl = dto.ImageUrl;
 
-        var targetMenuFoods = dto.Foods
-            .ConvertAll(ToModel);
-
-        // Remove MenuFoods not present in the DTO
-        foreach (var rem in model.MenuFoods
-                     .Where(mf => targetMenuFoods.All(tmf => tmf.FoodId != mf.FoodId))
-                     .ToList())
-            model.MenuFoods.Remove(rem);
-
-        // Add new MenuFoods that are missing
-        var existingFoodIds = model.MenuFoods.Select(mf => mf.FoodId).ToHashSet();
-        foreach (var mf in targetMenuFoods.Where(tmf => !existingFoodIds.Contains(tmf.FoodId)))
-            model.MenuFoods.Add(mf);
+        model.MenuFoods.Clear();
+        model.MenuFoods.AddRange(dto.Foods
+            .ConvertAll(ToModel));
     }
 }

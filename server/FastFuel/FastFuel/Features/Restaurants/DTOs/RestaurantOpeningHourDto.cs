@@ -2,7 +2,7 @@
 
 public class RestaurantOpeningHourDto
 {
-    public DayOfWeek DayOfWeek { get; set; }
-    public TimeOnly OpenTime { get; set; }
-    public TimeOnly CloseTime { get; set; }
+    public DayOfWeek DayOfWeek { get; init; }
+    public TimeOnly OpenTime { get; init; }
+    public TimeOnly CloseTime { get; init; }
 }

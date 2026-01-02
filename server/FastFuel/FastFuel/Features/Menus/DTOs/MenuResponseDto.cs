@@ -4,10 +4,10 @@ namespace FastFuel.Features.Menus.DTOs;
 
 public class MenuResponseDto : IIdentifiable
 {
-    public required string Name { get; set; }
-    public uint Price { get; set; }
-    public string? Description { get; set; }
-    public Uri? ImageUrl { get; set; }
-    public required List<MenuFoodDto> Foods { get; set; }
-    public uint Id { get; set; }
+    public string Name { get; init; } = string.Empty;
+    public uint Price { get; init; }
+    public string? Description { get; init; }
+    public Uri? ImageUrl { get; init; }
+    public required List<MenuFoodDto> Foods { get; init; }
+    public uint Id { get; init; }
 }

@@ -2,7 +2,7 @@
 
 public class AllergyRequestDto
 {
-    public string Name { get; set; } = string.Empty;
-    public string? Message { get; set; }
-    public List<uint> IngredientIds { get; set; } = [];
+    public string Name { get; init; } = string.Empty;
+    public string? Message { get; init; }
+    public List<uint> IngredientIds { get; init; } = [];
 }

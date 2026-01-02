@@ -61,24 +61,8 @@ public class FoodMapper : Mapper<Food, FoodRequestDto, FoodResponseDto>
         model.Description = dto.Description;
         model.ImageUrl = dto.ImageUrl;
 
-        // Update FoodIngredients
-        // Remove ingredients not present in the DTO
-        foreach (var rem in model.FoodIngredients
-                     .Where(fi => dto.Ingredients.All(i => i.IngredientId != fi.IngredientId))
-                     .ToList())
-            model.FoodIngredients.Remove(rem);
-
-        // Add or update ingredients from the DTO
-        foreach (var ingredientDto in dto.Ingredients)
-        {
-            var existingFi = model.FoodIngredients
-                .FirstOrDefault(fi => fi.IngredientId == ingredientDto.IngredientId);
-            if (existingFi != null)
-                // Update quantity if it exists
-                existingFi.Quantity = ingredientDto.Quantity;
-            else
-                // Add new FoodIngredient
-                model.FoodIngredients.Add(ToModel(ingredientDto));
-        }
+        model.FoodIngredients.Clear();
+        model.FoodIngredients.AddRange(dto.Ingredients
+            .ConvertAll(ToModel));
     }
 }

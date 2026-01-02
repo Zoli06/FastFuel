@@ -2,6 +2,6 @@
 
 public class FoodIngredientDto
 {
-    public uint IngredientId { get; set; }
-    public uint Quantity { get; set; }
+    public uint IngredientId { get; init; }
+    public uint Quantity { get; init; }
 }

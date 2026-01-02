@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Ingredients.Controllers;
 
-public class FoodController(ApplicationDbContext dbContext)
+public class IngredientController(ApplicationDbContext dbContext)
     : ApplicationController<Ingredient, IngredientRequestDto, IngredientResponseDto>(dbContext)
 {
     protected override Mapper<Ingredient, IngredientRequestDto, IngredientResponseDto> Mapper =>

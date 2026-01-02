@@ -2,6 +2,6 @@
 
 public class MenuFoodDto
 {
-    public uint FoodId { get; set; }
-    public uint Quantity { get; set; }
+    public uint FoodId { get; init; }
+    public uint Quantity { get; init; }
 }
