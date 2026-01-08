@@ -41,10 +41,9 @@ public static class Program
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
         });
-        
+
         builder.Services.AddControllers();
 
-        builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(Program).Assembly));
         if (builder.Environment.IsDevelopment())
             builder.Services.AddEndpointsApiExplorer();
 
@@ -89,24 +88,24 @@ public static class Program
     {
         // Check if the database is already seeded
         // if (context.Foods.Any()) return; // Database has been seeded
-        
+
         // Two types of stations: french fries and burgers
         var burgerStation = new StationCategory { Name = "Burger Station" };
         var friesStation = new StationCategory { Name = "Fries Station" };
         context.StationCategories.AddRange(burgerStation, friesStation);
         await context.SaveChangesAsync();
-        
+
         // Add some allergies
         var glutenAllergy = new Allergy { Name = "Gluten" };
         var dairyAllergy = new Allergy { Name = "Dairy" };
         var peanutAllergy = new Allergy { Name = "Peanuts" };
         context.Allergies.AddRange(glutenAllergy, dairyAllergy, peanutAllergy);
         await context.SaveChangesAsync();
-        
+
         // Add some ingredients
         var beefPatty = new Ingredient { Name = "Beef Patty" };
         var bun = new Ingredient { Name = "Bun", Allergies = [glutenAllergy] };
-        var lettuce = new Ingredient { Name = "Lettuce", };
+        var lettuce = new Ingredient { Name = "Lettuce" };
         var tomato = new Ingredient { Name = "Tomato" };
         var cheese = new Ingredient { Name = "Cheese" };
         var potato = new Ingredient { Name = "Potato" };
@@ -114,19 +113,20 @@ public static class Program
         var oil = new Ingredient { Name = "Oil" };
         context.Ingredients.AddRange(beefPatty, bun, lettuce, tomato, cheese, potato, salt, oil);
         await context.SaveChangesAsync();
-        
+
         // Assign ingredients to station categories
-        burgerStation.Ingredients = [beefPatty, bun, lettuce, tomato];
-        friesStation.Ingredients = [potato, salt, oil];
+        burgerStation.Ingredients.AddRange([beefPatty, bun, lettuce, tomato, cheese]);
+        friesStation.Ingredients.AddRange([potato, salt, oil]);
         await context.SaveChangesAsync();
-        
+
         // Create some foods
         var bigBurger = new Food
         {
             Name = "Big Burger",
             Price = 800,
             Description = "A big beef burger with lettuce, tomato, and cheese.",
-            FoodIngredients = [
+            FoodIngredients =
+            [
                 new FoodIngredient { Ingredient = beefPatty, Quantity = 1 },
                 new FoodIngredient { Ingredient = bun, Quantity = 1 },
                 new FoodIngredient { Ingredient = lettuce, Quantity = 2 },
@@ -140,7 +140,8 @@ public static class Program
             Name = "Cheese Burger",
             Price = 700,
             Description = "A beef burger with cheese.",
-            FoodIngredients = [
+            FoodIngredients =
+            [
                 new FoodIngredient { Ingredient = beefPatty, Quantity = 1 },
                 new FoodIngredient { Ingredient = bun, Quantity = 1 },
                 new FoodIngredient { Ingredient = cheese, Quantity = 1 }
@@ -151,7 +152,8 @@ public static class Program
             Name = "Fries",
             Price = 300,
             Description = "Crispy golden fries.",
-            FoodIngredients = [
+            FoodIngredients =
+            [
                 new FoodIngredient { Ingredient = potato, Quantity = 3 },
                 new FoodIngredient { Ingredient = salt, Quantity = 1 },
                 new FoodIngredient { Ingredient = oil, Quantity = 1 }
@@ -159,7 +161,7 @@ public static class Program
         };
         context.Foods.AddRange(bigBurger, cheeseBurger, fries);
         await context.SaveChangesAsync();
-        
+
         // Create a menu (use MenuFood join entities)
         var lunchMenu = new Menu
         {
@@ -174,7 +176,7 @@ public static class Program
         };
         context.Menus.Add(lunchMenu);
         await context.SaveChangesAsync();
-        
+
         // Add a restaurant
         var restaurant = new Restaurant
         {
@@ -187,7 +189,7 @@ public static class Program
         };
         context.Restaurants.Add(restaurant);
         await context.SaveChangesAsync();
-        
+
         // Add stations to the restaurant
         var burgerStationInstance = new Station
         {
@@ -205,7 +207,7 @@ public static class Program
         };
         context.Stations.AddRange(burgerStationInstance, friesStationInstance);
         await context.SaveChangesAsync();
-        
+
         // Add opening hours
         var openingHours = Enum.GetValues<DayOfWeek>().Select(day => new OpeningHour
         {
@@ -213,7 +215,7 @@ public static class Program
         }).ToList();
         context.OpeningHours.AddRange(openingHours);
         await context.SaveChangesAsync();
-        
+
         // Place an order
         var order = new Order
         {
@@ -224,10 +226,10 @@ public static class Program
         };
         context.Orders.Add(order);
         await context.SaveChangesAsync();
-        
+
         // TODO: save price at order time
         // This is important because menu and food prices may change over time
-        
+
         // Add a menu and an extra food item to the order
         var orderMenuItem = new OrderMenu
         {
@@ -235,7 +237,7 @@ public static class Program
             Order = order,
             Quantity = 1
         };
-        
+
         var orderFoodItem = new OrderFood
         {
             Food = cheeseBurger,
