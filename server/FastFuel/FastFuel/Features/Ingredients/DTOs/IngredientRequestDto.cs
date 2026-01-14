@@ -7,4 +7,5 @@ public class IngredientRequestDto
     public Uri? ImageUrl { get; init; }
     public List<uint> AllergyIds { get; init; } = [];
     public List<uint> StationCategoryIds { get; init; } = [];
+    public TimeSpan DefaultTimerValue { get; init; }
 }

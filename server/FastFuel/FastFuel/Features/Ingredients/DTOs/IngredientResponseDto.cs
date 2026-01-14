@@ -10,4 +10,5 @@ public class IngredientResponseDto : IIdentifiable
     public List<uint> AllergyIds { get; init; } = [];
     public List<uint> StationCategoryIds { get; init; } = [];
     public uint Id { get; init; }
+    public TimeSpan DefaultTimerValue { get; init; }
 }
