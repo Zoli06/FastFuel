@@ -1,23 +1,23 @@
-﻿using FastFuel.Features.Authentication.DTOs;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using FastFuel.Features.Authentication.DTOs;
 using FastFuel.Features.Common;
 using FastFuel.Features.Restaurants.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace FastFuel.Features.Authentication.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class AuthenticationController(ApplicationDbContext context) : ControllerBase
+[Route("api/auth")]
+public class AuthenticationController(
+    ApplicationDbContext context,
+    JwtSettings jwtSettings)
+    : ControllerBase
 {
-    private readonly PasswordHasher<Restaurant> _hasher = new PasswordHasher<Restaurant>();
-    private const string JwtSecretKey = "YourSuperSecretKeyHere:Mordekaiser"; // move appsettings.json 
-    private const string JwtIssuer = "FastFuelAPI";
-    private const string JwtAudience = "FastFuelClients";
+    private readonly PasswordHasher<Restaurant> _hasher = new();
 
     [HttpPost("login")]
     public ActionResult<AuthenticationResponseDto> Login([FromBody] AuthenticationRequestDto dto)
@@ -25,7 +25,7 @@ public class AuthenticationController(ApplicationDbContext context) : Controller
         var restaurant = context.Restaurants.FirstOrDefault(r => r.Id == dto.Id);
         if (restaurant == null)
             return NotFound(new { Message = "Restaurant not found" });
-        
+
         var result = _hasher.VerifyHashedPassword(restaurant, restaurant.PasswordHash, dto.Password);
         if (result != PasswordVerificationResult.Success)
             return Unauthorized(new { Message = "Invalid password" });
@@ -35,15 +35,15 @@ public class AuthenticationController(ApplicationDbContext context) : Controller
             new Claim(JwtRegisteredClaimNames.Sub, restaurant.Id.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSecretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: JwtIssuer,
-            audience: JwtAudience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1), 
-            signingCredentials: creds
+            jwtSettings.Issuer,
+            jwtSettings.Audience,
+            claims,
+            expires: DateTime.UtcNow.AddHours(1),
+            signingCredentials: credentials
         );
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
