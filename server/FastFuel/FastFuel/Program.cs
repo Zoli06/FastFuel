@@ -1,4 +1,5 @@
 using FastFuel.Features.Allergies.Models;
+using FastFuel.Features.Authentication;
 using FastFuel.Features.Common;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
@@ -12,6 +13,7 @@ using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel;
@@ -26,6 +28,13 @@ public static class Program
     private static async Task MainAsync(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        // Bind JwtSettings from configuration (including User Secrets in development)
+        var jwtSection = builder.Configuration.GetSection("JwtSettings");
+        builder.Services.Configure<JwtSettings>(jwtSection);
+        var jwtSettings = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
+        // Register as singleton so controllers can receive it directly
+        builder.Services.AddSingleton(jwtSettings);
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                                ?? throw new InvalidOperationException(
@@ -187,6 +196,8 @@ public static class Program
             Longitude = -74.0060,
             Phone = "555-1234"
         };
+        var passwordHasher = new PasswordHasher<Restaurant>();
+        restaurant.PasswordHash = passwordHasher.HashPassword(restaurant, "SecurePassword123!");
         context.Restaurants.Add(restaurant);
         await context.SaveChangesAsync();
 
