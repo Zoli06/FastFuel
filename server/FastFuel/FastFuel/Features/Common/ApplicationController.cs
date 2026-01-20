@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common;
 
+[Authorize]
 [ApiController]
 [Route("/api/[controller]")]
 public abstract class ApplicationController<TModel, TRequest, TResponse>(ApplicationDbContext dbContext)
