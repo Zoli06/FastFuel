@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.Authentication;
 using FastFuel.Features.Common;
@@ -15,6 +17,7 @@ using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FastFuel;
 
@@ -35,6 +38,28 @@ public static class Program
         var jwtSettings = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
         // Register as singleton so controllers can receive it directly
         builder.Services.AddSingleton(jwtSettings);
+
+        // Configure authentication with JWT Bearer tokens
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "JwtBearer";
+            options.DefaultChallengeScheme = "JwtBearer";
+        }).AddJwtBearer("JwtBearer", options =>
+        {
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = signingKey,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                                ?? throw new InvalidOperationException(
@@ -72,10 +97,14 @@ public static class Program
         var app = builder.Build();
 
         // app.UseHttpsRedirection();
-        app.MapControllers();
 
         app.UseCors("AllowAll");
         if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers();
 
         // ----------- TESTING ONLY -----------
         // This will delete and recreate the database on each run

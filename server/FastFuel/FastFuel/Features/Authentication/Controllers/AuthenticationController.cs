@@ -22,13 +22,20 @@ public class AuthenticationController(
     [HttpPost("login")]
     public ActionResult<AuthenticationResponseDto> Login([FromBody] AuthenticationRequestDto dto)
     {
+        // Avoid revealing whether the user ID or password was incorrect
+        var unsuccessfulResult = Unauthorized(new AuthenticationResponseDto
+        {
+            Message = "Invalid credentials",
+            Token = null
+        });
+        
         var restaurant = context.Restaurants.FirstOrDefault(r => r.Id == dto.Id);
         if (restaurant == null)
-            return NotFound(new { Message = "Restaurant not found" });
+            return unsuccessfulResult;
 
         var result = _hasher.VerifyHashedPassword(restaurant, restaurant.PasswordHash, dto.Password);
         if (result != PasswordVerificationResult.Success)
-            return Unauthorized(new { Message = "Invalid password" });
+            return unsuccessfulResult;
 
         var claims = new[]
         {
