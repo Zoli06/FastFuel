@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,53 +16,54 @@ public abstract class ApplicationController<TModel, TRequest, TResponse>(Applica
     protected abstract DbSet<TModel> DbSet { get; }
 
     [HttpGet]
-    public virtual async Task<IActionResult> GetAll()
+    public virtual async Task<Results<Ok<List<TResponse>>, UnauthorizedHttpResult>> GetAll()
     {
         var models = await DbSet.ToListAsync();
-        return Ok(models.ConvertAll(m => Mapper.ToDto(m)));
+        return TypedResults.Ok(models.ConvertAll(m => Mapper.ToDto(m)));
     }
 
     [HttpGet("{id:int}")]
-    public virtual async Task<IActionResult> GetById(uint id)
+    public virtual async Task<Results<Ok<TResponse>, NotFound, UnauthorizedHttpResult>> GetById(uint id)
     {
         var model = await DbSet.FindAsync(id);
         if (model == null)
-            return NotFound();
-        return Ok(Mapper.ToDto(model));
+            return TypedResults.NotFound();
+        return TypedResults.Ok(Mapper.ToDto(model));
     }
 
     [HttpPost]
-    public virtual async Task<IActionResult> Create(TRequest requestDto)
+    public virtual async Task<Results<Created<TResponse>, Conflict<ProblemDetails>, UnauthorizedHttpResult>> Create(TRequest requestDto)
     {
         var model = Mapper.ToModel(requestDto);
         DbSet.Add(model);
         await DbContext.SaveChangesAsync();
         var responseDto = Mapper.ToDto(model);
-        return CreatedAtAction(nameof(GetById), new { id = model.Id }, responseDto);
+        var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
+        return TypedResults.Created(location!, responseDto);
     }
 
     [HttpPut("{id:int}")]
-    public virtual async Task<IActionResult> Update(uint id, TRequest requestDto)
+    public virtual async Task<Results<NoContent, NotFound, BadRequest<ProblemDetails>, Conflict<ProblemDetails>, UnauthorizedHttpResult>> Update(uint id, TRequest requestDto)
     {
         var model = await DbSet
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (model == null)
-            return NotFound();
+            return TypedResults.NotFound();
 
         Mapper.UpdateModel(requestDto, ref model);
         await DbContext.SaveChangesAsync();
-        return NoContent();
+        return TypedResults.NoContent();
     }
 
     [HttpDelete("{id:int}")]
-    public virtual async Task<IActionResult> Delete(uint id)
+    public virtual async Task<Results<NoContent, NotFound, BadRequest<ProblemDetails>, UnauthorizedHttpResult>> Delete(uint id)
     {
         var model = await DbSet.FindAsync(id);
         if (model == null)
-            return NotFound();
+            return TypedResults.NotFound();
         DbSet.Remove(model);
         await DbContext.SaveChangesAsync();
-        return NoContent();
+        return TypedResults.NoContent();
     }
 }

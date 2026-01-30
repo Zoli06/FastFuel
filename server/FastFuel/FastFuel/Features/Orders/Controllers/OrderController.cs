@@ -2,6 +2,7 @@
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Mappers;
 using FastFuel.Features.Orders.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,7 @@ public class OrderController(ApplicationDbContext dbContext)
 
     protected override DbSet<Order> DbSet => DbContext.Orders;
 
-    public override async Task<IActionResult> Create(OrderRequestDto requestDto)
+    public override async Task<Results<Created<OrderResponseDto>, Conflict<ProblemDetails>, UnauthorizedHttpResult>> Create(OrderRequestDto requestDto)
     {
         var model = Mapper.ToModel(requestDto);
 
@@ -33,38 +34,47 @@ public class OrderController(ApplicationDbContext dbContext)
         await DbSet.AddAsync(model);
         await DbContext.SaveChangesAsync();
         var responseDto = Mapper.ToDto(model);
-        return CreatedAtAction(nameof(GetById), new { id = model.Id }, responseDto);
+        var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
+        return TypedResults.Created(location!, responseDto);
     }
 
-    public override async Task<IActionResult> Update(uint id, OrderRequestDto requestDto)
+    public override async Task<Results<NoContent, NotFound, BadRequest<ProblemDetails>, Conflict<ProblemDetails>, UnauthorizedHttpResult>> Update(uint id, OrderRequestDto requestDto)
     {
         var model = await DbSet
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (model == null)
-            return NotFound();
+            return TypedResults.NotFound();
 
         if (model.Status != OrderStatus.Pending)
-            return BadRequest("Only pending orders can be updated.");
+            return TypedResults.BadRequest(new ProblemDetails
+            {
+                Title = "Only pending orders can be modified.",
+                Status = StatusCodes.Status400BadRequest
+            });
 
         Mapper.UpdateModel(requestDto, ref model);
         await DbContext.SaveChangesAsync();
-        return NoContent();
+        return TypedResults.NoContent();
     }
 
-    public override async Task<IActionResult> Delete(uint id)
+    public override async Task<Results<NoContent, NotFound, BadRequest<ProblemDetails>, UnauthorizedHttpResult>> Delete(uint id)
     {
         var model = await DbSet
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (model == null)
-            return NotFound();
+            return TypedResults.NotFound();
 
         if (model.Status != OrderStatus.Pending)
-            return BadRequest("Only pending orders can be deleted.");
+            return TypedResults.BadRequest(new ProblemDetails
+            {
+                Title = "Only pending orders can be modified.",
+                Status = StatusCodes.Status400BadRequest
+            });
 
         DbSet.Remove(model);
         await DbContext.SaveChangesAsync();
-        return NoContent();
+        return TypedResults.NoContent();
     }
 }
