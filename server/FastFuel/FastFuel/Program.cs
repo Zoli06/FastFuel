@@ -78,11 +78,10 @@ public static class Program
 
         builder.Services.AddControllers();
 
-        if (builder.Environment.IsDevelopment())
-            builder.Services.AddEndpointsApiExplorer();
-
-        // Here lies the GraphQL server setup—once powering queries, now retired for simpler times.
-        // builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
+        builder.Services.AddOpenApiDocument(config =>
+        {
+            config.OperationProcessors.Add(new NSwag.UnauthorizedHttpResultOperationProcessor());
+        });
 
         builder.Services.AddCors(options =>
         {
@@ -96,10 +95,13 @@ public static class Program
 
         var app = builder.Build();
 
-        // app.UseHttpsRedirection();
-
         app.UseCors("AllowAll");
-        if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseOpenApi();
+            app.UseSwaggerUi();
+        }
 
         app.UseAuthentication();
         app.UseAuthorization();

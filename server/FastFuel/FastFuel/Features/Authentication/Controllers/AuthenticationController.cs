@@ -4,14 +4,16 @@ using System.Text;
 using FastFuel.Features.Authentication.DTOs;
 using FastFuel.Features.Common;
 using FastFuel.Features.Restaurants.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FastFuel.Features.Authentication.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/Auth")]
 public class AuthenticationController(
     ApplicationDbContext context,
     JwtSettings jwtSettings)
@@ -20,22 +22,15 @@ public class AuthenticationController(
     private readonly PasswordHasher<Restaurant> _hasher = new();
 
     [HttpPost("login")]
-    public ActionResult<AuthenticationResponseDto> Login([FromBody] AuthenticationRequestDto dto)
+    public async Task<Results<Ok<AuthenticationResponseDto>, UnauthorizedHttpResult>> Login(AuthenticationRequestDto dto)
     {
-        // Avoid revealing whether the user ID or password was incorrect
-        var unsuccessfulResult = Unauthorized(new AuthenticationResponseDto
-        {
-            Message = "Invalid credentials",
-            Token = null
-        });
-        
-        var restaurant = context.Restaurants.FirstOrDefault(r => r.Id == dto.Id);
+        var restaurant = await context.Restaurants.FirstOrDefaultAsync(r => r.Id == dto.Id);
         if (restaurant == null)
-            return unsuccessfulResult;
+            return TypedResults.Unauthorized();
 
         var result = _hasher.VerifyHashedPassword(restaurant, restaurant.PasswordHash, dto.Password);
         if (result != PasswordVerificationResult.Success)
-            return unsuccessfulResult;
+            return TypedResults.Unauthorized();
 
         var claims = new[]
         {
@@ -55,7 +50,7 @@ public class AuthenticationController(
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return Ok(new AuthenticationResponseDto
+        return TypedResults.Ok(new AuthenticationResponseDto
         {
             Message = "Login successful",
             Token = tokenString
