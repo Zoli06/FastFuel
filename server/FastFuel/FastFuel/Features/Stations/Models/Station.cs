@@ -11,6 +11,6 @@ public class Station : IIdentifiable
     public uint RestaurantId { get; set; }
     public virtual Restaurant Restaurant { get; set; } = null!;
     public uint StationCategoryId { get; set; }
-    public virtual StationCategory StationCategory { get; set; } = null!;//delete this comment
+    public virtual StationCategory StationCategory { get; set; } = null!;
     public uint Id { get; init; }
 }

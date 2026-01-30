@@ -13,6 +13,6 @@ namespace FastFuel.Features.Users.Models
         public uint Id { get; init; }       
         public string Name { get; set; } = string.Empty;
         public List<Order> Orders { get; init; } = [];
-        public Theme Theme { get; init; } = new Theme(); 
+        public Theme Theme { get; set; } = new Theme();
     }
 }
