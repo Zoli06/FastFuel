@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Mappers;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.DTOs;
 using FastFuel.Features.Foods.Models;

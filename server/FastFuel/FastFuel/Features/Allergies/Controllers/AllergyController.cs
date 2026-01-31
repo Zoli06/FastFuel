@@ -1,14 +1,14 @@
 ﻿using FastFuel.Features.Allergies.DTOs;
-using FastFuel.Features.Allergies.Mappers;
 using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Common;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Allergies.Services;
+using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Services;
 
 namespace FastFuel.Features.Allergies.Controllers;
 
 public class AllergyController(ApplicationDbContext dbContext)
-    : ApplicationController<Allergy, AllergyRequestDto, AllergyResponseDto>(dbContext)
+    : CrudController<Allergy, AllergyRequestDto, AllergyResponseDto>
 {
-    protected override Mapper<Allergy, AllergyRequestDto, AllergyResponseDto> Mapper => new AllergyMapper(DbContext);
-    protected override DbSet<Allergy> DbSet => DbContext.Allergies;
+    protected override CrudService<Allergy, AllergyRequestDto, AllergyResponseDto> Service { get; } = new AllergyService(dbContext);
 }

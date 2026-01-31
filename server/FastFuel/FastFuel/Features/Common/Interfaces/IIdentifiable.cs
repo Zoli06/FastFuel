@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Common;
+﻿namespace FastFuel.Features.Common.Interfaces;
 
 public interface IIdentifiable
 {

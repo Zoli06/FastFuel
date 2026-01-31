@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.MenuFoods.Models;
 
 namespace FastFuel.Features.Menus.Models;

@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Mappers;
 using FastFuel.Features.OpeningHours.Models;
 using FastFuel.Features.Restaurants.DTOs;
 using FastFuel.Features.Restaurants.Models;

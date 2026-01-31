@@ -13,7 +13,7 @@ using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FastFuel.Features.Common;
+namespace FastFuel.Features.Common.DbContexts;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {

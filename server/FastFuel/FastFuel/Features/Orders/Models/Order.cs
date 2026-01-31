@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.OrderFoods.Models;
 using FastFuel.Features.OrderMenus.Models;
 using FastFuel.Features.Restaurants.Models;
