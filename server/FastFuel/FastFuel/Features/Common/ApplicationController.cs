@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FastFuel.Features.Common.ExceptionFilters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ namespace FastFuel.Features.Common;
 
 [Authorize]
 [ApiController]
+[UniqueConstraintExceptionFilter]
 [Route("/api/[controller]")]
 public abstract class ApplicationController<TModel, TRequest, TResponse>(ApplicationDbContext dbContext)
     : ControllerBase where TModel : class, IIdentifiable where TResponse : IIdentifiable
