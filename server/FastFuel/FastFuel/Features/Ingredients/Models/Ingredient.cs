@@ -1,5 +1,5 @@
 ﻿using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Common;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.StationCategories.Models;
 

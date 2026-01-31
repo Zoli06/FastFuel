@@ -1,14 +1,14 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Services;
 using FastFuel.Features.Foods.DTOs;
-using FastFuel.Features.Foods.Mappers;
 using FastFuel.Features.Foods.Models;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Foods.Services;
 
 namespace FastFuel.Features.Foods.Controllers;
 
 public class FoodController(ApplicationDbContext dbContext)
-    : ApplicationController<Food, FoodRequestDto, FoodResponseDto>(dbContext)
+    : CrudController<Food, FoodRequestDto, FoodResponseDto>
 {
-    protected override Mapper<Food, FoodRequestDto, FoodResponseDto> Mapper => new FoodMapper();
-    protected override DbSet<Food> DbSet => DbContext.Foods;
+    protected override CrudService<Food, FoodRequestDto, FoodResponseDto> Service { get; } = new FoodService(dbContext);
 }
