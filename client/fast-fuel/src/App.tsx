@@ -1,10 +1,12 @@
 import '@mantine/core/styles.css'
 import './App.css'
-import BrowseFoods from "./pages/BrowseFoods.tsx";
+import { Home } from './pages/Home.tsx';
 
 function App() {
     return (
-        <BrowseFoods/>
+        <div className='app'> 
+            <Home />
+        </div>
     )
 }
 

@@ -1,0 +1,9 @@
+.menu-link {
+    text-decoration: none;
+    color: darkred;
+    font-weight: bold;
+    font-size: 3em;
+    padding: 6px 10px;
+    display: inline-block;
+}
+

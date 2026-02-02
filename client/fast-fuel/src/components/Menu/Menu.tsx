@@ -1,15 +1,17 @@
 import React from 'react'
+import { MenuLink } from './MenuLink'
+import './Menu.css'
 
 export const Menu = () => {
   return (
-    <div>
-            
-            {/* <a href="#">Foods</a>
-            <a href="#">Ingredients</a>
-            <a href="#">Menus</a>
-            <a href="#">Orders</a>
-            <a href="#">Restaurants</a>
-            <a href="#">Stations</a> */}
+    <div className='menu'>
+        <MenuLink text="Allergies" to="#" />
+        <MenuLink text="Foods" to="#" />
+        <MenuLink text="Ingredients" to="#" />
+        <MenuLink text="Menus" to="#" />
+        <MenuLink text="Orders" to="#" />
+        <MenuLink text="Restaurants" to="#" />
+        <MenuLink text="Stations" to="#" />
     </div>
   )
 }

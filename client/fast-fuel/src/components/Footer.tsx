@@ -1,8 +1,9 @@
 import React from 'react'
+import './Footer.css'
 
 export const Footer = () => {
   return (
-    <footer>
+    <footer className='footer'>
         <p>© 2024 Fast Fuel. All rights reserved.</p>
     </footer>
   )

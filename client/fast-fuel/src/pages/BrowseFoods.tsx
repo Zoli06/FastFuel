@@ -1,11 +1,9 @@
 ﻿import Food from "../components/Food.tsx";
 
-const BrowseFoods = () => {
+export const BrowseFoods = () => {
     return (
         <div>
             <Food/>
         </div>
     );
 };
-
-export BrowseFoods;
