@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Common;
+﻿namespace FastFuel.Features.Common.Mappers;
 
 public abstract class Mapper<TModel, TRequest, TResponse>
 {
