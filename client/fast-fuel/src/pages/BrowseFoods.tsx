@@ -8,4 +8,4 @@ const BrowseFoods = () => {
     );
 };
 
-export default BrowseFoods;
+export BrowseFoods;
