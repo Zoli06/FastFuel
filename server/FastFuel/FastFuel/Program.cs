@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Authentication;
+using FastFuel.Features.Authentication.Settings;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
@@ -15,6 +15,7 @@ using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
+using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -35,9 +36,8 @@ public static class Program
         // Bind JwtSettings from configuration (including User Secrets in development)
         var jwtSection = builder.Configuration.GetSection("JwtSettings");
         builder.Services.Configure<JwtSettings>(jwtSection);
-        var jwtSettings = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
-        // Register as singleton so controllers can receive it directly
-        builder.Services.AddSingleton(jwtSettings);
+        var jwtSettings = jwtSection.Get<JwtSettings>()
+                          ?? throw new InvalidOperationException("JWT settings are not configured properly.");
 
         // Configure authentication with JWT Bearer tokens
         builder.Services.AddAuthentication(options =>
@@ -80,7 +80,7 @@ public static class Program
 
         builder.Services.AddOpenApiDocument(config =>
         {
-            config.OperationProcessors.Add(new NSwag.UnauthorizedHttpResultOperationProcessor());
+            config.OperationProcessors.Add(new UnauthorizedHttpResultOperationProcessor());
         });
 
         builder.Services.AddCors(options =>
@@ -92,6 +92,14 @@ public static class Program
                     .AllowAnyHeader();
             });
         });
+
+        builder.Services.AddTransient<IPasswordHasher<Restaurant>, PasswordHasher<Restaurant>>();
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(typeof(Program).Assembly)
+            .AddClasses(classes => classes.InNamespaces("FastFuel.Features"))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
+        builder.Services.AddSingleton<IJwtSettings>(jwtSettings);
 
         var app = builder.Build();
 
