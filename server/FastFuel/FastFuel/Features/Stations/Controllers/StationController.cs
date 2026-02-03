@@ -1,14 +1,15 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Services;
 using FastFuel.Features.Stations.DTOs;
-using FastFuel.Features.Stations.Mappers;
 using FastFuel.Features.Stations.Models;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Stations.Services;
 
 namespace FastFuel.Features.Stations.Controllers;
 
 public class StationController(ApplicationDbContext dbContext)
-    : ApplicationController<Station, StationRequestDto, StationResponseDto>(dbContext)
+    : CrudController<Station, StationRequestDto, StationResponseDto>
 {
-    protected override Mapper<Station, StationRequestDto, StationResponseDto> Mapper => new StationMapper();
-    protected override DbSet<Station> DbSet => DbContext.Stations;
+    protected override CrudService<Station, StationRequestDto, StationResponseDto> Service =>
+        new StationService(dbContext);
 }

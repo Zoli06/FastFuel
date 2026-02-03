@@ -1,0 +1,15 @@
+.menu {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-items: center;
+    gap: 12px 24px;
+    margin: 20px auto;
+    width: fit-content;
+    background-color: beige;
+    border: 3px solid black;
+    padding: 15px;
+}
+
+.menu :last-child {
+    grid-column: 2;   
+}

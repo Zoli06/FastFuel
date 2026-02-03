@@ -9,4 +9,5 @@ public class RestaurantRequestDto
     public string Address { get; init; } = string.Empty;
     public string? Phone { get; init; }
     public List<RestaurantOpeningHourDto> OpeningHours { get; init; } = [];
+    public string Password { get; set; } = string.Empty;
 }

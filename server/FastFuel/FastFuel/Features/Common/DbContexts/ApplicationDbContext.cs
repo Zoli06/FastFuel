@@ -1,4 +1,5 @@
-﻿using FastFuel.Features.Allergies.Models;
+﻿using EntityFramework.Exceptions.MySQL.Pomelo;
+using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
 using FastFuel.Features.Ingredients.Models;
@@ -15,8 +16,7 @@ using FastFuel.Features.Themes.Models;
 using FastFuel.Features.Users.Models;   
 using Microsoft.EntityFrameworkCore;
 
-
-namespace FastFuel.Features.Common;
+namespace FastFuel.Features.Common.DbContexts;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
@@ -37,8 +37,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<User> Users { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseExceptionProcessor();
     }
 }

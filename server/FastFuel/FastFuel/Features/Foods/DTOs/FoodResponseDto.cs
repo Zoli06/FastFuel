@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Foods.DTOs;
 

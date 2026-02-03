@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.OrderFoods.Models;
 using FastFuel.Features.OrderMenus.Models;
 using FastFuel.Features.Restaurants.Models;
@@ -9,7 +9,7 @@ public class Order : IIdentifiable
 {
     public uint RestaurantId { get; set; }
     public virtual Restaurant Restaurant { get; init; } = null!;
-    public uint OrderNumber { get; init; }
+    public uint OrderNumber { get; set; }
     public OrderStatus Status { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? CompletedAt { get; init; }

@@ -1,4 +1,5 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Mappers;
 using FastFuel.Features.Ingredients.DTOs;
 using FastFuel.Features.Ingredients.Models;
 
@@ -16,7 +17,8 @@ public class IngredientMapper(ApplicationDbContext dbContext)
             ImageUrl = model.ImageUrl,
             AllergyIds = model.Allergies.ConvertAll(allergy => allergy.Id),
             StationCategoryIds = model.StationCategories.ConvertAll(category => category.Id),
-            FoodIds = model.FoodIngredients.ConvertAll(fi => fi.FoodId)
+            FoodIds = model.FoodIngredients.ConvertAll(fi => fi.FoodId),
+            DefaultTimerValue = model.DefaultTimerValue
         };
     }
 
@@ -31,7 +33,8 @@ public class IngredientMapper(ApplicationDbContext dbContext)
                 .ToList(),
             StationCategories = dbContext.StationCategories
                 .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
-                .ToList()
+                .ToList(),
+            DefaultTimerValue = dto.DefaultTimerValue
         };
     }
 
@@ -49,5 +52,6 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         model.StationCategories.AddRange(dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
             .ToList());
+        model.DefaultTimerValue = dto.DefaultTimerValue;
     }
 }

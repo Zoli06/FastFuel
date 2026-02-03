@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Ingredients.DTOs;
 
@@ -9,5 +9,6 @@ public class IngredientResponseDto : IIdentifiable
     public List<uint> FoodIds { get; init; } = [];
     public List<uint> AllergyIds { get; init; } = [];
     public List<uint> StationCategoryIds { get; init; } = [];
+    public TimeSpan DefaultTimerValue { get; init; }
     public uint Id { get; init; }
 }

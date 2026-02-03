@@ -1,6 +1,7 @@
 ﻿using FastFuel.Features.Allergies.DTOs;
 using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Common;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Mappers;
 
 namespace FastFuel.Features.Allergies.Mappers;
 

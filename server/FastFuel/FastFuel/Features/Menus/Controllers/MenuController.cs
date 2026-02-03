@@ -1,14 +1,15 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Services;
 using FastFuel.Features.Menus.DTOs;
-using FastFuel.Features.Menus.Mappers;
 using FastFuel.Features.Menus.Models;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Menus.Services;
 
 namespace FastFuel.Features.Menus.Controllers;
 
 public class MenuController(ApplicationDbContext dbContext)
-    : ApplicationController<Menu, MenuRequestDto, MenuResponseDto>(dbContext)
+    : CrudController<Menu, MenuRequestDto, MenuResponseDto>
 {
-    protected override Mapper<Menu, MenuRequestDto, MenuResponseDto> Mapper => new MenuMapper();
-    protected override DbSet<Menu> DbSet => DbContext.Menus;
+    protected override CrudService<Menu, MenuRequestDto, MenuResponseDto> Service =>
+        new MenuService(dbContext);
 }

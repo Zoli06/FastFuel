@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Common;
+using FastFuel.Features.Authentication;
+using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
 using FastFuel.Features.Ingredients.Models;
@@ -12,7 +15,9 @@ using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FastFuel;
 
@@ -26,6 +31,35 @@ public static class Program
     private static async Task MainAsync(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        // Bind JwtSettings from configuration (including User Secrets in development)
+        var jwtSection = builder.Configuration.GetSection("JwtSettings");
+        builder.Services.Configure<JwtSettings>(jwtSection);
+        var jwtSettings = jwtSection.Get<JwtSettings>() ?? new JwtSettings();
+        // Register as singleton so controllers can receive it directly
+        builder.Services.AddSingleton(jwtSettings);
+
+        // Configure authentication with JWT Bearer tokens
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "JwtBearer";
+            options.DefaultChallengeScheme = "JwtBearer";
+        }).AddJwtBearer("JwtBearer", options =>
+        {
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = signingKey,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                                ?? throw new InvalidOperationException(
@@ -44,11 +78,10 @@ public static class Program
 
         builder.Services.AddControllers();
 
-        if (builder.Environment.IsDevelopment())
-            builder.Services.AddEndpointsApiExplorer();
-
-        // Here lies the GraphQL server setup—once powering queries, now retired for simpler times.
-        // builder.Services.AddGraphQLServer().AddQueryType<Query>().AddTypes().BindRuntimeType<uint, UnsignedIntType>();
+        builder.Services.AddOpenApiDocument(config =>
+        {
+            config.OperationProcessors.Add(new NSwag.UnauthorizedHttpResultOperationProcessor());
+        });
 
         builder.Services.AddCors(options =>
         {
@@ -62,11 +95,18 @@ public static class Program
 
         var app = builder.Build();
 
-        // app.UseHttpsRedirection();
-        app.MapControllers();
-
         app.UseCors("AllowAll");
-        if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseOpenApi();
+            app.UseSwaggerUi();
+        }
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers();
 
         // ----------- TESTING ONLY -----------
         // This will delete and recreate the database on each run
@@ -187,6 +227,8 @@ public static class Program
             Longitude = -74.0060,
             Phone = "555-1234"
         };
+        var passwordHasher = new PasswordHasher<Restaurant>();
+        restaurant.PasswordHash = passwordHasher.HashPassword(restaurant, "SecurePassword123!");
         context.Restaurants.Add(restaurant);
         await context.SaveChangesAsync();
 
