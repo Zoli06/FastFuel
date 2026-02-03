@@ -1,10 +1,10 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Mappers;
 using FastFuel.Features.Themes.DTOs;
 using FastFuel.Features.Themes.Models;
 
 namespace FastFuel.Features.Themes.Mappers;
 
-public class  ThemeMapper : Mapper<Theme, ThemeRequestDto, ThemeResponseDto>
+public class ThemeMapper : Mapper<Theme, ThemeRequestDto, ThemeResponseDto>
 {
     public override ThemeResponseDto ToDto(Theme model)
     {

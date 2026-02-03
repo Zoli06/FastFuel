@@ -1,21 +1,20 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Mappers;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Models;
-using FastFuel.Features.Themes.Mappers;
 
 namespace FastFuel.Features.Users.Mappers;
 
 public class UserMapper : Mapper<User, UserRequestDto, UserResponseDto>
 {
-    private readonly ThemeMapper _themeMapper = new ThemeMapper();
-
     public override UserResponseDto ToDto(User model)
     {
         return new UserResponseDto
         {
             Id = model.Id,
             Name = model.Name,
-            Theme = _themeMapper.ToDto(model.Theme)
+            Email = model.Email,
+            Username = model.Username,
+            ThemeId = model.Theme.Id
         };
     }
 
@@ -24,13 +23,17 @@ public class UserMapper : Mapper<User, UserRequestDto, UserResponseDto>
         return new User
         {
             Name = dto.Name,
-            Theme = _themeMapper.ToModel(dto.Theme)
+            Email = dto.Email,
+            Username = dto.Username,
+            ThemeId = dto.ThemeId
         };
     }
 
     public override void UpdateModel(UserRequestDto dto, ref User model)
     {
         model.Name = dto.Name;
-        model.Theme = _themeMapper.ToModel(dto.Theme);
+        model.ThemeId = dto.ThemeId;
+        model.Username = dto.Username;
+        model.Email = dto.Email;
     }
 }

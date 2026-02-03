@@ -1,8 +1,4 @@
-﻿using FastFuel.Features.Common;
-using FastFuel.Features.Restaurants.Models;
-using FastFuel.Features.StationCategories.Models;
-using System;
-using System.Collections.Generic;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Themes.Models;
 using FastFuel.Features.Orders.Models;
 
@@ -12,7 +8,10 @@ namespace FastFuel.Features.Users.Models
     {
         public uint Id { get; init; }       
         public string Name { get; set; } = string.Empty;
-        public List<Order> Orders { get; init; } = [];
-        public Theme Theme { get; set; } = new Theme();
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public virtual List<Order> Orders { get; init; } = [];
+        public uint ThemeId { get; set; }
+        public virtual Theme Theme { get; set; } = null!;
     }
 }

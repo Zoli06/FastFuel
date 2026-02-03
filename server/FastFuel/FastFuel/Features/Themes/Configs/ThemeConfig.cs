@@ -8,11 +8,6 @@ namespace FastFuel.Features.Themes.Configs
     {
         public void Configure(EntityTypeBuilder<Theme> builder)
         {
-            builder.HasKey(t => t.Id);
-
-            builder.Property(t => t.Id)
-                .ValueGeneratedOnAdd();
-            
             builder.Property(t => t.Name)
                 .IsRequired()
                 .HasMaxLength(100);

@@ -1,14 +1,14 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Services;
 using FastFuel.Features.Themes.DTOs;
-using FastFuel.Features.Themes.Mappers;
 using FastFuel.Features.Themes.Models;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Themes.Services;
 
 namespace FastFuel.Features.Themes.Controllers;
 
 public class ThemeController(ApplicationDbContext dbContext)
-    : ApplicationController<Theme, ThemeRequestDto, ThemeResponseDto>(dbContext)
+    : CrudController<Theme, ThemeRequestDto, ThemeResponseDto>
 {
-    protected override Mapper<Theme, ThemeRequestDto, ThemeResponseDto> Mapper => new ThemeMapper();
-    protected override DbSet<Theme> DbSet => DbContext.Themes;
+    protected override CrudService<Theme, ThemeRequestDto, ThemeResponseDto> Service { get; } = new ThemeService(dbContext);
 }

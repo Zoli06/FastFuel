@@ -1,5 +1,4 @@
-﻿using FastFuel.Features.Common;
-using FastFuel.Features.Themes.DTOs;
+﻿using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Users.DTOs;
 
@@ -7,5 +6,7 @@ public class UserResponseDto : IIdentifiable
 {
     public uint Id { get; init; }
     public string Name { get; init; } = string.Empty;
-    public ThemeResponseDto Theme { get; init; } = new ThemeResponseDto();
+    public string Email { get; init; } = string.Empty;
+    public string Username { get; init; } = string.Empty;
+    public uint ThemeId { get; init; }
 }
