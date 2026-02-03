@@ -1,7 +1,7 @@
 ﻿import Food from "../components/Food.tsx";
 import {apiClient} from "../apiClient.ts";
 
-const BrowseFoods = () => {
+export const BrowseFoods = () => {
     const { data, error, isLoading } = apiClient.useQuery(
         'get',
         '/api/Food',
@@ -26,5 +26,3 @@ const BrowseFoods = () => {
         </div>
     );
 };
-
-export default BrowseFoods;

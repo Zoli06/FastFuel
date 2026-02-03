@@ -1,16 +1,15 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Services;
 using FastFuel.Features.Ingredients.DTOs;
-using FastFuel.Features.Ingredients.Mappers;
 using FastFuel.Features.Ingredients.Models;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Ingredients.Services;
 
 namespace FastFuel.Features.Ingredients.Controllers;
 
 public class IngredientController(ApplicationDbContext dbContext)
-    : ApplicationController<Ingredient, IngredientRequestDto, IngredientResponseDto>(dbContext)
+    : CrudController<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
-    protected override Mapper<Ingredient, IngredientRequestDto, IngredientResponseDto> Mapper =>
-        new IngredientMapper(DbContext);
-
-    protected override DbSet<Ingredient> DbSet => DbContext.Ingredients;
+    protected override CrudService<Ingredient, IngredientRequestDto, IngredientResponseDto> Service { get; } =
+        new IngredientService(dbContext);
 }

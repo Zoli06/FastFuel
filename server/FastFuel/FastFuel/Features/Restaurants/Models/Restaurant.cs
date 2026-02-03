@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.OpeningHours.Models;
 
 namespace FastFuel.Features.Restaurants.Models
