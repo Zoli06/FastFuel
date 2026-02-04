@@ -51,7 +51,7 @@ public static class Program
         await app.RunAsync();
     }
 
-    // Binds JwtSettings, registers authentication and the IJwtSettings singleton
+    // Binds JwtSettings and registers authentication
     private static void ConfigureJwtAndAuthentication(WebApplicationBuilder builder)
     {
         var jwtSection = builder.Configuration.GetSection("JwtSettings");
