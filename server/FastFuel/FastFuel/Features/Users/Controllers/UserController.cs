@@ -5,5 +5,5 @@ using FastFuel.Features.Users.Models;
 
 namespace FastFuel.Features.Users.Controllers;
 
-public class UserController(ICrudService<UserRequestDto, UserResponseDto> userService)
-    : CrudController<User, UserRequestDto, UserResponseDto>(userService);
+public class UserController(ICrudService<UserRequestDto, UserResponseDto> service)
+    : CrudController<User, UserRequestDto, UserResponseDto>(service);
