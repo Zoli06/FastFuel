@@ -15,6 +15,8 @@ using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
+using FastFuel.Features.Themes.Models;
+using FastFuel.Features.Users.Models;
 using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -94,12 +96,12 @@ public static class Program
         });
 
         builder.Services.AddTransient<IPasswordHasher<Restaurant>, PasswordHasher<Restaurant>>();
+        builder.Services.AddSingleton<IJwtSettings>(jwtSettings);
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
-            .AddClasses(classes => classes.InNamespaces("FastFuel.Features"))
+            .AddClasses(classes => classes.InNamespaces("FastFuel.Features").Where(type => !typeof(IJwtSettings).IsAssignableFrom(type)))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
-        builder.Services.AddSingleton<IJwtSettings>(jwtSettings);
 
         var app = builder.Build();
 
@@ -265,6 +267,30 @@ public static class Program
         }).ToList();
         context.OpeningHours.AddRange(openingHours);
         await context.SaveChangesAsync();
+        
+        // Register user with a theme
+        var theme = new Theme
+        {
+            Name = "Dark Mode",
+            Background = "#121212",
+            Footer = "#1e1e1e",
+            ButtonPrimary = "#bb86fc",
+            ButtonSecondary = "#03dac6"
+        };
+        
+        context.Themes.Add(theme);
+        await context.SaveChangesAsync();
+        
+        var user = new User
+        {
+            Name = "Test User",
+            Username = "testuser",
+            Email = "asd@asd.asd",
+            Theme = theme
+        };
+        
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
 
         // Place an order
         var order = new Order
@@ -272,7 +298,8 @@ public static class Program
             Restaurant = restaurant,
             OrderNumber = 1,
             Status = OrderStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            User = user
         };
         context.Orders.Add(order);
         await context.SaveChangesAsync();

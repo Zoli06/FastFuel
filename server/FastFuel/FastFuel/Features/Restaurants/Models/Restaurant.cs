@@ -12,7 +12,7 @@ namespace FastFuel.Features.Restaurants.Models
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string? Phone { get; set; }
-        public virtual List<OpeningHour> OpeningHours { get; init; } = new();
+        public virtual List<OpeningHour> OpeningHours { get; init; } = [];
         public string PasswordHash { get; set; } = string.Empty;
     }
 }
