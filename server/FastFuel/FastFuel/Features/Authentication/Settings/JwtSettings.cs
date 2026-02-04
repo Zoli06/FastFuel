@@ -1,9 +1,9 @@
 namespace FastFuel.Features.Authentication.Settings;
 
-public class JwtSettings(string secretKey, string issuer, string audience, int expirationMinutes) : IJwtSettings
+public class JwtSettings
 {
-    public string SecretKey { get; } = secretKey;
-    public string Issuer { get; } = issuer;
-    public string Audience { get; } = audience;
-    public int ExpirationMinutes { get; } = expirationMinutes;
+    public string SecretKey { get; set; } = string.Empty;
+    public string Issuer { get; set; } = string.Empty;
+    public string Audience { get; set; } = string.Empty;
+    public int ExpirationMinutes { get; set; }
 }

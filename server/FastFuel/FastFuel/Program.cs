@@ -80,8 +80,6 @@ public static class Program
             };
         });
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
-        builder.Services.AddSingleton<IJwtSettings>(jwtSettings);
     }
 
     // Configures the application's EF Core DbContext

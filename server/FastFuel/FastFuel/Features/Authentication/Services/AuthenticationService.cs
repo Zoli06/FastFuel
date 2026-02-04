@@ -7,13 +7,14 @@ using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Restaurants.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FastFuel.Features.Authentication.Services;
 
 public class AuthenticationService(
     ApplicationDbContext dbContext,
-    IJwtSettings jwtSettings,
+    IOptions<JwtSettings> jwtOptions,
     IPasswordHasher<Restaurant> passwordHasher) : IAuthenticationService
 {
     public async Task<AuthenticationResponseDto?> AuthenticateAsync(AuthenticationRequestDto dto)
@@ -29,6 +30,7 @@ public class AuthenticationService(
         {
             new Claim(JwtRegisteredClaimNames.Sub, restaurant.Id.ToString())
         };
+        var jwtSettings = jwtOptions.Value;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
