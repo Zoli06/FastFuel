@@ -43,7 +43,6 @@ public static class Program
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
-            await dbContext.Database.MigrateAsync();
 
             await DatabaseSeeder.SeedAsync(dbContext);
         }
