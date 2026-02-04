@@ -12,6 +12,8 @@ using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
+using FastFuel.Features.Themes.Models;
+using FastFuel.Features.Users.Models;   
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.DbContexts;
@@ -31,7 +33,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Restaurant> Restaurants { get; set; }
     public DbSet<StationCategory> StationCategories { get; set; }
     public DbSet<Station> Stations { get; set; }
-
+    public DbSet<Theme> Themes { get; set; }
+    public DbSet<User> Users { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
