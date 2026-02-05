@@ -1,13 +1,13 @@
-﻿using FastFuel.Features.Common.Mappers;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.DTOs;
 using FastFuel.Features.Foods.Models;
 
 namespace FastFuel.Features.Foods.Mappers;
 
-public class FoodMapper : Mapper<Food, FoodRequestDto, FoodResponseDto>
+public class FoodMapper : IMapper<Food, FoodRequestDto, FoodResponseDto>
 {
-    public override FoodResponseDto ToDto(Food model)
+    public FoodResponseDto ToDto(Food model)
     {
         return new FoodResponseDto
         {
@@ -23,16 +23,7 @@ public class FoodMapper : Mapper<Food, FoodRequestDto, FoodResponseDto>
         };
     }
 
-    private FoodIngredientDto ToDto(FoodIngredient model)
-    {
-        return new FoodIngredientDto
-        {
-            IngredientId = model.IngredientId,
-            Quantity = model.Quantity
-        };
-    }
-
-    public override Food ToModel(FoodRequestDto dto)
+    public Food ToModel(FoodRequestDto dto)
     {
         return new Food
         {
@@ -45,16 +36,7 @@ public class FoodMapper : Mapper<Food, FoodRequestDto, FoodResponseDto>
         };
     }
 
-    private FoodIngredient ToModel(FoodIngredientDto dto)
-    {
-        return new FoodIngredient
-        {
-            IngredientId = dto.IngredientId,
-            Quantity = dto.Quantity
-        };
-    }
-
-    public override void UpdateModel(FoodRequestDto dto, ref Food model)
+    public void UpdateModel(FoodRequestDto dto, ref Food model)
     {
         model.Name = dto.Name;
         model.Price = dto.Price;
@@ -64,5 +46,23 @@ public class FoodMapper : Mapper<Food, FoodRequestDto, FoodResponseDto>
         model.FoodIngredients.Clear();
         model.FoodIngredients.AddRange(dto.Ingredients
             .ConvertAll(ToModel));
+    }
+
+    private FoodIngredientDto ToDto(FoodIngredient model)
+    {
+        return new FoodIngredientDto
+        {
+            IngredientId = model.IngredientId,
+            Quantity = model.Quantity
+        };
+    }
+
+    private FoodIngredient ToModel(FoodIngredientDto dto)
+    {
+        return new FoodIngredient
+        {
+            IngredientId = dto.IngredientId,
+            Quantity = dto.Quantity
+        };
     }
 }

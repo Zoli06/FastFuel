@@ -1,12 +1,12 @@
-﻿using FastFuel.Features.Common.Mappers;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Themes.DTOs;
 using FastFuel.Features.Themes.Models;
 
 namespace FastFuel.Features.Themes.Mappers;
 
-public class ThemeMapper : Mapper<Theme, ThemeRequestDto, ThemeResponseDto>
+public class ThemeMapper : IMapper<Theme, ThemeRequestDto, ThemeResponseDto>
 {
-    public override ThemeResponseDto ToDto(Theme model)
+    public ThemeResponseDto ToDto(Theme model)
     {
         return new ThemeResponseDto
         {
@@ -19,7 +19,7 @@ public class ThemeMapper : Mapper<Theme, ThemeRequestDto, ThemeResponseDto>
         };
     }
 
-    public override Theme ToModel(ThemeRequestDto dto)
+    public Theme ToModel(ThemeRequestDto dto)
     {
         return new Theme
         {
@@ -31,7 +31,7 @@ public class ThemeMapper : Mapper<Theme, ThemeRequestDto, ThemeResponseDto>
         };
     }
 
-    public override void UpdateModel(ThemeRequestDto dto, ref Theme model)
+    public void UpdateModel(ThemeRequestDto dto, ref Theme model)
     {
         model.Name = dto.Name;
         model.Background = dto.Background;

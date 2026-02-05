@@ -1,14 +1,14 @@
 ﻿using FastFuel.Features.Common.DbContexts;
-using FastFuel.Features.Common.Mappers;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Ingredients.DTOs;
 using FastFuel.Features.Ingredients.Models;
 
 namespace FastFuel.Features.Ingredients.Mappers;
 
 public class IngredientMapper(ApplicationDbContext dbContext)
-    : Mapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
+    : IMapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
-    public override IngredientResponseDto ToDto(Ingredient model)
+    public IngredientResponseDto ToDto(Ingredient model)
     {
         return new IngredientResponseDto
         {
@@ -22,7 +22,7 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public override Ingredient ToModel(IngredientRequestDto dto)
+    public Ingredient ToModel(IngredientRequestDto dto)
     {
         return new Ingredient
         {
@@ -38,7 +38,7 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public override void UpdateModel(IngredientRequestDto dto, ref Ingredient model)
+    public void UpdateModel(IngredientRequestDto dto, ref Ingredient model)
     {
         model.Name = dto.Name;
         model.ImageUrl = dto.ImageUrl;

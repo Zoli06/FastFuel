@@ -1,20 +1,18 @@
 ﻿using FastFuel.Features.Common.DbContexts;
-using FastFuel.Features.Common.Mappers;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Orders.DTOs;
-using FastFuel.Features.Orders.Mappers;
 using FastFuel.Features.Orders.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Orders.Services;
 
-public class OrderService(ApplicationDbContext dbContext)
-    : CrudService<Order, OrderRequestDto, OrderResponseDto>(dbContext)
+public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
+    : CrudService<Order, OrderRequestDto, OrderResponseDto>(dbContext, mapper)
 {
     private const int MinOrderNumberBeforeReset = 99;
     private const int MinHoursBeforeReset = 3;
-    protected override Mapper<Order, OrderRequestDto, OrderResponseDto> Mapper { get; } = new OrderMapper();
-    protected override DbSet<Order> DbSet => DbContext.Orders;
+    protected override DbSet<Order> DbSet { get; } = dbContext.Orders;
 
     private static uint GetNextOrderNumber(Order? lastOrder)
     {

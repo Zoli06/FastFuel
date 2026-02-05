@@ -1,12 +1,12 @@
-﻿using FastFuel.Features.Common.Mappers;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Stations.DTOs;
 using FastFuel.Features.Stations.Models;
 
 namespace FastFuel.Features.Stations.Mappers;
 
-public class StationMapper : Mapper<Station, StationRequestDto, StationResponseDto>
+public class StationMapper : IMapper<Station, StationRequestDto, StationResponseDto>
 {
-    public override StationResponseDto ToDto(Station model)
+    public StationResponseDto ToDto(Station model)
     {
         return new StationResponseDto
         {
@@ -18,7 +18,7 @@ public class StationMapper : Mapper<Station, StationRequestDto, StationResponseD
         };
     }
 
-    public override Station ToModel(StationRequestDto dto)
+    public Station ToModel(StationRequestDto dto)
     {
         return new Station
         {
@@ -29,7 +29,7 @@ public class StationMapper : Mapper<Station, StationRequestDto, StationResponseD
         };
     }
 
-    public override void UpdateModel(StationRequestDto dto, ref Station model)
+    public void UpdateModel(StationRequestDto dto, ref Station model)
     {
         model.Name = dto.Name;
         model.InOperation = dto.InOperation;
