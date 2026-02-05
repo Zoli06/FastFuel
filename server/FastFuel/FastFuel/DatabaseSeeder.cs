@@ -20,7 +20,7 @@ namespace FastFuel;
 
 public static class DatabaseSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, IPasswordHasher<Restaurant> passwordHasher)
     {
         // Two types of stations: french fries and burgers
         var burgerStation = new StationCategory { Name = "Burger Station" };
@@ -120,7 +120,6 @@ public static class DatabaseSeeder
             Longitude = -74.0060,
             Phone = "555-1234"
         };
-        var passwordHasher = new PasswordHasher<Restaurant>();
         restaurant.PasswordHash = passwordHasher.HashPassword(restaurant, "SecurePassword123!");
         context.Restaurants.Add(restaurant);
         await context.SaveChangesAsync();

@@ -44,7 +44,8 @@ public static class Program
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
 
-            await DatabaseSeeder.SeedAsync(dbContext);
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Restaurant>>();
+            await DatabaseSeeder.SeedAsync(dbContext, passwordHasher);
         }
         // ----------- END TESTING ONLY -----------
 
