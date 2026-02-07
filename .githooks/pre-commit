@@ -1,0 +1,82 @@
+#!/bin/sh
+
+FAILED=0
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔍 PRE-COMMIT QUALITY CHECKS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+check() {
+  NAME="$1"
+  DIR="$2"
+  CMD="$3"
+  FIX_CMD="$4"
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📁 Checking folder: $DIR"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  (
+    cd "$DIR" || exit 1
+    sh -c "$CMD"
+  )
+
+  if [ $? -ne 0 ]; then
+    FAILED=1
+    echo ""
+    echo "❌ Check FAILED in: $DIR"
+    echo ""
+    echo "Fix it by running:"
+    echo "  cd $DIR"
+    echo "  $FIX_CMD"
+    echo ""
+  else
+    echo ""
+    echo "✅ Check passed: $DIR"
+    echo ""
+  fi
+}
+
+# ──────────────
+# .NET projects
+# ──────────────
+check ".NET format" "server/FastFuel" \
+  "dotnet format --verify-no-changes" \
+  "dotnet format"
+
+# ──────────────
+# Node projects
+# ──────────────
+check "Node lint" "client/fast-fuel" \
+  "npm run lint" \
+  "npm run lint -- --fix"
+
+# ──────────────
+
+if [ $FAILED -ne 0 ]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "❌ COMMIT BLOCKED"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "One or more checks failed."
+  echo ""
+  echo "Fix the issues using the commands above,"
+  echo "then commit again."
+  echo ""
+  echo "⚠️  Emergency bypass (NOT recommended):"
+  echo "   git commit --no-verify"
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  exit 1
+fi
+
+echo ""
+echo "✅ All checks passed"
+exit 0
