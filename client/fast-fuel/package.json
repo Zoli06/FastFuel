@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "prettier:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "prettier:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test:ts": "tsc --noEmit",
     "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api.d.ts"
   },
