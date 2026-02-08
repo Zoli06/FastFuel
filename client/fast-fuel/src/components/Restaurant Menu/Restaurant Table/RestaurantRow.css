@@ -1,0 +1,31 @@
+.row-contianer {
+    display: flex;
+    align-items: center;
+    background-color: lightgray;
+    justify-content: space-between;
+    border-bottom: 1px solid black;
+}
+
+.left-side {
+    align-items: 'left',;
+    display: 'flex',;
+    flex-direction: 'column',;
+}
+
+.left-side span {
+    border-right: 1px solid black;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.right-side {
+    display: flex;
+    padding-left: 10px;
+}
+
+.expand-button {
+    background-color: transparent;
+    font-size: small;
+}   
+
+

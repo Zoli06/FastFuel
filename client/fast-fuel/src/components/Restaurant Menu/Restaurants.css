@@ -1,0 +1,29 @@
+.restaurant {
+    justify-items: center;
+    gap: 12px 24px;
+    margin: 20px auto;
+    background-color: beige;
+    border: 3px solid black;
+    padding: 15px;
+}
+
+.restaurant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-bottom: 1px solid black;
+}
+
+.add-restaurant-button {
+    background-color: gray;
+    border: 2px solid black;
+    cursor: pointer;
+    align-items: end;
+}
+
+.restaurant-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: '10px 20px';
+}

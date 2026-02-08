@@ -1,0 +1,14 @@
+.general-header {
+    text-align: center;
+    -webkit-text-stroke: 1px darkred;
+    text-stroke: 1px darkred;
+}
+
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.header-flex button {
+    background-color: gray;
+}
