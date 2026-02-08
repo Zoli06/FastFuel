@@ -46,7 +46,7 @@ check() {
 # ──────────────
 check "Backend compiler errors and warnings" "server/FastFuel" \
   "dotnet build -warnaserror" \
-  "FIX YOUR CODE BRUH, NO COMMAND CAN HELP YOU HERE"
+  "BACKEND IS NOT BUILDING, FIX IT"
 
 check "Backend code formatting" "server/FastFuel" \
   "dotnet format --verify-no-changes" \
@@ -62,6 +62,10 @@ check "Frontend linter errors and warnings" "client/fast-fuel" \
 check "Frontend code formatting" "client/fast-fuel" \
   "npm run prettier:check" \
   "npm run format"
+
+check "Frontend type errors" "client/fast-fuel" \
+  "npm run test:ts" \
+  "FRONTEND TYPESCRIPT ERRORS, FIX IT"
 
 # ──────────────
 
