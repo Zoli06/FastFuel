@@ -25,5 +25,5 @@
 .restaurant-list {
   flex: 1;
   overflow-y: auto;
-  padding: '10px 20px';
+  padding: 10px 20px;
 }
