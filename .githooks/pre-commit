@@ -16,7 +16,7 @@ check() {
 
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "📁 Checking folder: $DIR"
+  echo "📁 Checking folder: $DIR for: $NAME"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
 
