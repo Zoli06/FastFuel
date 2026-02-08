@@ -42,18 +42,26 @@ check() {
 }
 
 # ──────────────
-# .NET projects
+# Backend
 # ──────────────
-check ".NET format" "server/FastFuel" \
+check "Backend compiler errors and warnings" "server/FastFuel" \
+  "dotnet build -warnaserror" \
+  "FIX YOUR CODE BRUH, NO COMMAND CAN HELP YOU HERE"
+
+check "Backend code formatting" "server/FastFuel" \
   "dotnet format --verify-no-changes" \
   "dotnet format"
 
 # ──────────────
-# Node projects
+# Frontend
 # ──────────────
-check "Node lint" "client/fast-fuel" \
+check "Frontend linter errors and warnings" "client/fast-fuel" \
   "npm run lint" \
   "npm run lint -- --fix"
+
+check "Frontend code formatting" "client/fast-fuel" \
+  "npm run prettier:check" \
+  "npm run format"
 
 # ──────────────
 
@@ -68,7 +76,7 @@ if [ $FAILED -ne 0 ]; then
   echo "Fix the issues using the commands above,"
   echo "then commit again."
   echo ""
-  echo "⚠️  Emergency bypass (NOT recommended):"
+  echo "⚠️  Bypass (NOT recommended):"
   echo "   git commit --no-verify"
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
