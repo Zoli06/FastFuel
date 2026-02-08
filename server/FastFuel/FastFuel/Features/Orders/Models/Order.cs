@@ -3,6 +3,7 @@ using FastFuel.Features.OrderFoods.Models;
 using FastFuel.Features.OrderMenus.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.Users.Models;
+
 namespace FastFuel.Features.Orders.Models;
 
 public class Order : IIdentifiable

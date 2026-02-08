@@ -15,12 +15,13 @@ public class UniqueConstraintExceptionFilter : ExceptionFilterAttribute
             var problem = new ProblemDetails
             {
                 Title = uniqueConstraintException.Message,
-                Detail = $"A record with the same field(s) '{string.Join(", ", uniqueConstraintException.ConstraintProperties)}' already exists",
+                Detail =
+                    $"A record with the same field(s) '{string.Join(", ", uniqueConstraintException.ConstraintProperties)}' already exists",
                 Status = StatusCodes.Status409Conflict,
                 Extensions =
                 {
-                    {"table", uniqueConstraintException.SchemaQualifiedTableName},
-                    {"entries", uniqueConstraintException.ConstraintProperties}
+                    { "table", uniqueConstraintException.SchemaQualifiedTableName },
+                    { "entries", uniqueConstraintException.ConstraintProperties }
                 }
             };
 
