@@ -1,13 +1,13 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.MenuFoods.Models;
 using FastFuel.Features.Menus.DTOs;
 using FastFuel.Features.Menus.Models;
 
 namespace FastFuel.Features.Menus.Mappers;
 
-public class MenuMapper : Mapper<Menu, MenuRequestDto, MenuResponseDto>
+public class MenuMapper : IMapper<Menu, MenuRequestDto, MenuResponseDto>
 {
-    public override MenuResponseDto ToDto(Menu model)
+    public MenuResponseDto ToDto(Menu model)
     {
         return new MenuResponseDto
         {
@@ -20,16 +20,7 @@ public class MenuMapper : Mapper<Menu, MenuRequestDto, MenuResponseDto>
         };
     }
 
-    private MenuFoodDto ToDto(MenuFood model)
-    {
-        return new MenuFoodDto
-        {
-            FoodId = model.FoodId,
-            Quantity = model.Quantity
-        };
-    }
-
-    public override Menu ToModel(MenuRequestDto dto)
+    public Menu ToModel(MenuRequestDto dto)
     {
         return new Menu
         {
@@ -41,16 +32,7 @@ public class MenuMapper : Mapper<Menu, MenuRequestDto, MenuResponseDto>
         };
     }
 
-    private MenuFood ToModel(MenuFoodDto dto)
-    {
-        return new MenuFood
-        {
-            FoodId = dto.FoodId,
-            Quantity = dto.Quantity
-        };
-    }
-
-    public override void UpdateModel(MenuRequestDto dto, ref Menu model)
+    public void UpdateModel(MenuRequestDto dto, ref Menu model)
     {
         model.Name = dto.Name;
         model.Price = dto.Price;
@@ -60,5 +42,23 @@ public class MenuMapper : Mapper<Menu, MenuRequestDto, MenuResponseDto>
         model.MenuFoods.Clear();
         model.MenuFoods.AddRange(dto.Foods
             .ConvertAll(ToModel));
+    }
+
+    private MenuFoodDto ToDto(MenuFood model)
+    {
+        return new MenuFoodDto
+        {
+            FoodId = model.FoodId,
+            Quantity = model.Quantity
+        };
+    }
+
+    private MenuFood ToModel(MenuFoodDto dto)
+    {
+        return new MenuFood
+        {
+            FoodId = dto.FoodId,
+            Quantity = dto.Quantity
+        };
     }
 }

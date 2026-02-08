@@ -1,13 +1,14 @@
 ﻿using FastFuel.Features.Allergies.DTOs;
 using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Common;
+using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Allergies.Mappers;
 
 public class AllergyMapper(ApplicationDbContext dbContext)
-    : Mapper<Allergy, AllergyRequestDto, AllergyResponseDto>
+    : IMapper<Allergy, AllergyRequestDto, AllergyResponseDto>
 {
-    public override AllergyResponseDto ToDto(Allergy model)
+    public AllergyResponseDto ToDto(Allergy model)
     {
         return new AllergyResponseDto
         {
@@ -18,7 +19,7 @@ public class AllergyMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public override Allergy ToModel(AllergyRequestDto dto)
+    public Allergy ToModel(AllergyRequestDto dto)
     {
         return new Allergy
         {
@@ -33,7 +34,7 @@ public class AllergyMapper(ApplicationDbContext dbContext)
     }
 
 
-    public override void UpdateModel(AllergyRequestDto dto, ref Allergy model)
+    public void UpdateModel(AllergyRequestDto dto, ref Allergy model)
     {
         model.Name = dto.Name;
         model.Message = dto.Message;

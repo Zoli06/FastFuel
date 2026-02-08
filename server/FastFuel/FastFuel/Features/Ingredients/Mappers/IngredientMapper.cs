@@ -1,13 +1,14 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Ingredients.DTOs;
 using FastFuel.Features.Ingredients.Models;
 
 namespace FastFuel.Features.Ingredients.Mappers;
 
 public class IngredientMapper(ApplicationDbContext dbContext)
-    : Mapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
+    : IMapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
-    public override IngredientResponseDto ToDto(Ingredient model)
+    public IngredientResponseDto ToDto(Ingredient model)
     {
         return new IngredientResponseDto
         {
@@ -16,11 +17,12 @@ public class IngredientMapper(ApplicationDbContext dbContext)
             ImageUrl = model.ImageUrl,
             AllergyIds = model.Allergies.ConvertAll(allergy => allergy.Id),
             StationCategoryIds = model.StationCategories.ConvertAll(category => category.Id),
-            FoodIds = model.FoodIngredients.ConvertAll(fi => fi.FoodId)
+            FoodIds = model.FoodIngredients.ConvertAll(fi => fi.FoodId),
+            DefaultTimerValue = model.DefaultTimerValue
         };
     }
 
-    public override Ingredient ToModel(IngredientRequestDto dto)
+    public Ingredient ToModel(IngredientRequestDto dto)
     {
         return new Ingredient
         {
@@ -31,11 +33,12 @@ public class IngredientMapper(ApplicationDbContext dbContext)
                 .ToList(),
             StationCategories = dbContext.StationCategories
                 .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
-                .ToList()
+                .ToList(),
+            DefaultTimerValue = dto.DefaultTimerValue
         };
     }
 
-    public override void UpdateModel(IngredientRequestDto dto, ref Ingredient model)
+    public void UpdateModel(IngredientRequestDto dto, ref Ingredient model)
     {
         model.Name = dto.Name;
         model.ImageUrl = dto.ImageUrl;
@@ -49,5 +52,6 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         model.StationCategories.AddRange(dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
             .ToList());
+        model.DefaultTimerValue = dto.DefaultTimerValue;
     }
 }

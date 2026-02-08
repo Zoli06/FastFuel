@@ -1,13 +1,14 @@
-﻿using FastFuel.Features.Common;
+﻿using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.StationCategories.DTOs;
 using FastFuel.Features.StationCategories.Models;
 
 namespace FastFuel.Features.StationCategories.Mappers;
 
 public class StationCategoryMapper(ApplicationDbContext dbContext)
-    : Mapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>
+    : IMapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>
 {
-    public override StationCategoryResponseDto ToDto(StationCategory model)
+    public StationCategoryResponseDto ToDto(StationCategory model)
     {
         return new StationCategoryResponseDto
         {
@@ -18,7 +19,7 @@ public class StationCategoryMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public override StationCategory ToModel(StationCategoryRequestDto dto)
+    public StationCategory ToModel(StationCategoryRequestDto dto)
     {
         return new StationCategory
         {
@@ -32,7 +33,7 @@ public class StationCategoryMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public override void UpdateModel(StationCategoryRequestDto dto, ref StationCategory model)
+    public void UpdateModel(StationCategoryRequestDto dto, ref StationCategory model)
     {
         model.Name = dto.Name;
 
