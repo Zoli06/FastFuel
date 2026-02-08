@@ -19,5 +19,25 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Disallow `import React from 'react'` (default import)
+      'no-restricted-imports': ['error', {
+        paths: [
+          {
+            name: 'react',
+            importNames: ['default'],
+            message: 'Default React import is unnecessary with the new JSX transform — use named imports for hooks instead.'
+          }
+        ]
+      }],
+
+      // Disallow `import * as React from 'react'` (namespace import)
+      'no-restricted-syntax': ['error',
+        {
+          selector: "ImportNamespaceSpecifier[source.value='react']",
+          message: 'Namespace React import is unnecessary — use named imports for hooks instead.'
+        }
+      ]
+    }
   },
 ])
