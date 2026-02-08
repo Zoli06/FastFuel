@@ -1,12 +1,12 @@
-﻿using FastFuel.Features.Common.Mappers;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Models;
 
 namespace FastFuel.Features.Users.Mappers;
 
-public class UserMapper : Mapper<User, UserRequestDto, UserResponseDto>
+public class UserMapper : IMapper<User, UserRequestDto, UserResponseDto>
 {
-    public override UserResponseDto ToDto(User model)
+    public UserResponseDto ToDto(User model)
     {
         return new UserResponseDto
         {
@@ -18,7 +18,7 @@ public class UserMapper : Mapper<User, UserRequestDto, UserResponseDto>
         };
     }
 
-    public override User ToModel(UserRequestDto dto)
+    public User ToModel(UserRequestDto dto)
     {
         return new User
         {
@@ -29,7 +29,7 @@ public class UserMapper : Mapper<User, UserRequestDto, UserResponseDto>
         };
     }
 
-    public override void UpdateModel(UserRequestDto dto, ref User model)
+    public void UpdateModel(UserRequestDto dto, ref User model)
     {
         model.Name = dto.Name;
         model.ThemeId = dto.ThemeId;

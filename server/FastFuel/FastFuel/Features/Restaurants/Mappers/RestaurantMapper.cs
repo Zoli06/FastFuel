@@ -1,13 +1,13 @@
-﻿using FastFuel.Features.Common.Mappers;
+﻿using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.OpeningHours.Models;
 using FastFuel.Features.Restaurants.DTOs;
 using FastFuel.Features.Restaurants.Models;
 
 namespace FastFuel.Features.Restaurants.Mappers;
 
-public class RestaurantMapper : Mapper<Restaurant, RestaurantRequestDto, RestaurantResponseDto>
+public class RestaurantMapper : IMapper<Restaurant, RestaurantRequestDto, RestaurantResponseDto>
 {
-    public override RestaurantResponseDto ToDto(Restaurant model)
+    public RestaurantResponseDto ToDto(Restaurant model)
     {
         return new RestaurantResponseDto
         {
@@ -22,17 +22,7 @@ public class RestaurantMapper : Mapper<Restaurant, RestaurantRequestDto, Restaur
         };
     }
 
-    private RestaurantOpeningHourDto ToDto(OpeningHour openingHour)
-    {
-        return new RestaurantOpeningHourDto
-        {
-            DayOfWeek = openingHour.DayOfWeek,
-            OpenTime = openingHour.OpenTime,
-            CloseTime = openingHour.CloseTime
-        };
-    }
-
-    public override Restaurant ToModel(RestaurantRequestDto dto)
+    public Restaurant ToModel(RestaurantRequestDto dto)
     {
         return new Restaurant
         {
@@ -46,17 +36,7 @@ public class RestaurantMapper : Mapper<Restaurant, RestaurantRequestDto, Restaur
         };
     }
 
-    private OpeningHour ToModel(RestaurantOpeningHourDto dto)
-    {
-        return new OpeningHour
-        {
-            DayOfWeek = dto.DayOfWeek,
-            OpenTime = dto.OpenTime,
-            CloseTime = dto.CloseTime
-        };
-    }
-
-    public override void UpdateModel(RestaurantRequestDto dto, ref Restaurant model)
+    public void UpdateModel(RestaurantRequestDto dto, ref Restaurant model)
     {
         model.Name = dto.Name;
         model.Description = dto.Description;
@@ -67,5 +47,25 @@ public class RestaurantMapper : Mapper<Restaurant, RestaurantRequestDto, Restaur
 
         model.OpeningHours.Clear();
         model.OpeningHours.AddRange(dto.OpeningHours.ConvertAll(ToModel));
+    }
+
+    private RestaurantOpeningHourDto ToDto(OpeningHour openingHour)
+    {
+        return new RestaurantOpeningHourDto
+        {
+            DayOfWeek = openingHour.DayOfWeek,
+            OpenTime = openingHour.OpenTime,
+            CloseTime = openingHour.CloseTime
+        };
+    }
+
+    private OpeningHour ToModel(RestaurantOpeningHourDto dto)
+    {
+        return new OpeningHour
+        {
+            DayOfWeek = dto.DayOfWeek,
+            OpenTime = dto.OpenTime,
+            CloseTime = dto.CloseTime
+        };
     }
 }
