@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Authentication.DTOs;
+using FastFuel.Features.Authentication.DTOs;
 
 namespace FastFuel.Features.Authentication.Services;
 

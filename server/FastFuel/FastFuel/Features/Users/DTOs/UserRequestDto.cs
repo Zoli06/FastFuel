@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Users.DTOs;
+namespace FastFuel.Features.Users.DTOs;
 
 public class UserRequestDto
 {

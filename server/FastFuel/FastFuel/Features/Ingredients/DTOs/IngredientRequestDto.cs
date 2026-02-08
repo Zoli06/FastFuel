@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Ingredients.DTOs;
+namespace FastFuel.Features.Ingredients.DTOs;
 
 public class IngredientRequestDto
 {

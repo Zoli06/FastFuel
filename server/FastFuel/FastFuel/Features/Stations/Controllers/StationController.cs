@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.Controllers;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Stations.DTOs;
 using FastFuel.Features.Stations.Models;

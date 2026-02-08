@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.OpeningHours.Models;
+using FastFuel.Features.OpeningHours.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

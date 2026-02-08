@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Allergies.DTOs;
 

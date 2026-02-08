@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Allergies.DTOs;
+namespace FastFuel.Features.Allergies.DTOs;
 
 public class AllergyRequestDto
 {

@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Models;
 
