@@ -1,72 +1,122 @@
 #!/bin/sh
 
 FAILED=0
+TMP_DIR="$(mktemp -d)"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔍 PRE-COMMIT QUALITY CHECKS"
+echo "🔍 PRE-COMMIT QUALITY CHECKS (PARALLEL)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-check() {
-  NAME="$1"
-  DIR="$2"
-  CMD="$3"
-  FIX_CMD="$4"
+run_check() {
+  IDX="$1"
+  NAME="$2"
+  DIR="$3"
+  CMD="$4"
+  FIX_CMD="$5"
 
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "📁 Checking folder: $DIR for: $NAME"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
+  OUT="$TMP_DIR/out_$IDX"
+  STATUS="$TMP_DIR/status_$IDX"
+  NAME_F="$TMP_DIR/name_$IDX"
+  DIR_F="$TMP_DIR/dir_$IDX"
+  FIX_F="$TMP_DIR/fix_$IDX"
+
+  printf "%s" "$NAME" >"$NAME_F"
+  printf "%s" "$DIR" >"$DIR_F"
+  printf "%s" "$FIX_CMD" >"$FIX_F"
 
   (
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📁 Checking folder: $DIR for: $NAME"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
     cd "$DIR" || exit 1
     sh -c "$CMD"
-  )
+  ) >"$OUT" 2>&1
 
-  if [ $? -ne 0 ]; then
+  echo $? >"$STATUS"
+}
+
+# ──────────────
+# Schedule checks
+# ──────────────
+
+i=0
+
+run_check $i "Backend compiler errors and warnings" "server/FastFuel" \
+  "dotnet build -warnaserror" \
+  "" &
+i=$((i+1))
+
+run_check $i "Backend code formatting" "server/FastFuel" \
+  "dotnet format --verify-no-changes" \
+  "dotnet format" &
+i=$((i+1))
+
+run_check $i "Frontend linter errors and warnings" "client/fast-fuel" \
+  "npm run lint" \
+  "npm run lint -- --fix" &
+i=$((i+1))
+
+run_check $i "Frontend code formatting" "client/fast-fuel" \
+  "npm run prettier:check" \
+  "npm run format" &
+i=$((i+1))
+
+run_check $i "Frontend type errors" "client/fast-fuel" \
+  "npm run test:ts" \
+  "" &
+i=$((i+1))
+
+# ──────────────
+# Wait for all
+# ──────────────
+wait
+
+# ──────────────
+# Print results
+# ──────────────
+
+i=0
+while [ -f "$TMP_DIR/status_$i" ]; do
+  STATUS="$(cat "$TMP_DIR/status_$i")"
+  NAME="$(cat "$TMP_DIR/name_$i")"
+  DIR="$(cat "$TMP_DIR/dir_$i")"
+  FIX_CMD="$(cat "$TMP_DIR/fix_$i")"
+
+  cat "$TMP_DIR/out_$i"
+
+  if [ "$STATUS" -ne 0 ]; then
     FAILED=1
     echo ""
     echo "❌ Check FAILED in: $DIR"
     echo ""
-    echo "Fix it by running:"
-    echo "  cd $DIR"
-    echo "  $FIX_CMD"
+
+    if [ -n "$FIX_CMD" ]; then
+      echo "Fix it by running:"
+      echo "  cd $DIR"
+      echo "  $FIX_CMD"
+    else
+      echo "ℹ️  No automatic fix command provided."
+    fi
+
     echo ""
   else
     echo ""
     echo "✅ Check passed: $DIR"
     echo ""
   fi
-}
+
+  i=$((i+1))
+done
+
+rm -rf "$TMP_DIR"
 
 # ──────────────
-# Backend
-# ──────────────
-check "Backend compiler errors and warnings" "server/FastFuel" \
-  "dotnet build -warnaserror" \
-  "BACKEND IS NOT BUILDING, FIX IT"
-
-check "Backend code formatting" "server/FastFuel" \
-  "dotnet format --verify-no-changes" \
-  "dotnet format"
-
-# ──────────────
-# Frontend
-# ──────────────
-check "Frontend linter errors and warnings" "client/fast-fuel" \
-  "npm run lint" \
-  "npm run lint -- --fix"
-
-check "Frontend code formatting" "client/fast-fuel" \
-  "npm run prettier:check" \
-  "npm run format"
-
-check "Frontend type errors" "client/fast-fuel" \
-  "npm run test:ts" \
-  "FRONTEND TYPESCRIPT ERRORS, FIX IT"
-
+# Final result
 # ──────────────
 
 if [ $FAILED -ne 0 ]; then
@@ -85,7 +135,6 @@ if [ $FAILED -ne 0 ]; then
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
-
   exit 1
 fi
 
