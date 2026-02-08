@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;

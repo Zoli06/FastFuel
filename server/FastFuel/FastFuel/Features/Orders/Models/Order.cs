@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.OrderFoods.Models;
 using FastFuel.Features.OrderMenus.Models;
 using FastFuel.Features.Restaurants.Models;
@@ -13,7 +13,7 @@ public class Order : IIdentifiable
     public OrderStatus Status { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? CompletedAt { get; init; }
-    
+
     public uint UserId { get; init; }
     public virtual User User { get; init; } = null!;
     public virtual List<OrderFood> Foods { get; init; } = [];

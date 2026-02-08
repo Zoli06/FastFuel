@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Ingredients.Models;
 
 namespace FastFuel.Features.Allergies.Models;

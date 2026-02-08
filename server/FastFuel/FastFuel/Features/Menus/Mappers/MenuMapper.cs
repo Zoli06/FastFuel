@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.MenuFoods.Models;
 using FastFuel.Features.Menus.DTOs;
 using FastFuel.Features.Menus.Models;

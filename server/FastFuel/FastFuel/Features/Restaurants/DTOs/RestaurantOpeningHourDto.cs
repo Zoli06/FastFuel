@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Restaurants.DTOs;
+namespace FastFuel.Features.Restaurants.DTOs;
 
 public class RestaurantOpeningHourDto
 {

@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Menus.Models;
+using FastFuel.Features.Menus.Models;
 using FastFuel.Features.Orders.Models;
 
 namespace FastFuel.Features.OrderMenus.Models;

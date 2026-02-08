@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Foods.DTOs;
+namespace FastFuel.Features.Foods.DTOs;
 
 public class FoodRequestDto
 {

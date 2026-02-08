@@ -1,4 +1,4 @@
-﻿using EntityFramework.Exceptions.Common;
+using EntityFramework.Exceptions.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -15,7 +15,7 @@ public class UniqueConstraintExceptionFilter : ExceptionFilterAttribute
             var problem = new ProblemDetails
             {
                 Title = uniqueConstraintException.Message,
-                Detail = $"A record with the same field(s) '{string.Join(", ", uniqueConstraintException.ConstraintProperties)}' already exists", 
+                Detail = $"A record with the same field(s) '{string.Join(", ", uniqueConstraintException.ConstraintProperties)}' already exists",
                 Status = StatusCodes.Status409Conflict,
                 Extensions =
                 {

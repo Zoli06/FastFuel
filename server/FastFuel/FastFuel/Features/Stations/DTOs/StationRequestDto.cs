@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Stations.DTOs;
+namespace FastFuel.Features.Stations.DTOs;
 
 public class StationRequestDto
 {

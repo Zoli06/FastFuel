@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.Authentication.DTOs;
+using FastFuel.Features.Authentication.DTOs;
 using FastFuel.Features.Authentication.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

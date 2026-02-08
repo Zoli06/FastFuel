@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Themes.DTOs;
+namespace FastFuel.Features.Themes.DTOs;
 
 public class ThemeRequestDto
 {

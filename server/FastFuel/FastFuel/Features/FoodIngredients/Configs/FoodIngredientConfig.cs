@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.FoodIngredients.Models;
+using FastFuel.Features.FoodIngredients.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

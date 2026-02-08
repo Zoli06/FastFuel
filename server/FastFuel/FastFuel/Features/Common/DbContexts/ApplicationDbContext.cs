@@ -1,4 +1,4 @@
-﻿using EntityFramework.Exceptions.MySQL.Pomelo;
+using EntityFramework.Exceptions.MySQL.Pomelo;
 using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
@@ -13,7 +13,7 @@ using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using FastFuel.Features.Themes.Models;
-using FastFuel.Features.Users.Models;   
+using FastFuel.Features.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.DbContexts;

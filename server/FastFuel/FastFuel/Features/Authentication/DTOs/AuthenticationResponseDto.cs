@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Authentication.DTOs;
+namespace FastFuel.Features.Authentication.DTOs;
 
 public class AuthenticationResponseDto
 {

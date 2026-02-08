@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Orders.Models;
+namespace FastFuel.Features.Orders.Models;
 
 public enum OrderStatus
 {

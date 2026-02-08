@@ -1,4 +1,4 @@
-﻿using FastFuel.Features.OrderMenus.Models;
+using FastFuel.Features.OrderMenus.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

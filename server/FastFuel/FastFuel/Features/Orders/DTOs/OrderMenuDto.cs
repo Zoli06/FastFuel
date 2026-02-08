@@ -1,4 +1,4 @@
-﻿namespace FastFuel.Features.Orders.DTOs;
+namespace FastFuel.Features.Orders.DTOs;
 
 public class OrderMenuDto
 {
