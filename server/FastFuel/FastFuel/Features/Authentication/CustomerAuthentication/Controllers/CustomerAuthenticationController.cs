@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FastFuel.Features.Authentication.CustomerAuthentication.Controllers;
 
 [ApiController]
-[Route("api/Auth")]
+[Route("/api/[controller]")]
 public class CustomerAuthenticationController(
     ICustomerAuthenticationService authService)
     : ControllerBase
