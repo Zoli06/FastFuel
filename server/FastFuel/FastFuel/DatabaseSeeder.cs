@@ -1,5 +1,6 @@
 using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Customers.Models;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
 using FastFuel.Features.Ingredients.Models;
@@ -13,7 +14,6 @@ using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using FastFuel.Features.Themes.Models;
-using FastFuel.Features.Users.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel;
@@ -163,7 +163,7 @@ public static class DatabaseSeeder
         context.Themes.Add(theme);
         await context.SaveChangesAsync();
 
-        var user = new User
+        var customer = new Customer
         {
             Name = "Test User",
             Username = "testuser",
@@ -171,7 +171,7 @@ public static class DatabaseSeeder
             Theme = theme
         };
 
-        context.Users.Add(user);
+        context.Customers.Add(customer);
         await context.SaveChangesAsync();
 
         // Place an order
@@ -181,7 +181,7 @@ public static class DatabaseSeeder
             OrderNumber = 1,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            User = user
+            Customer = customer
         };
         context.Orders.Add(order);
         await context.SaveChangesAsync();

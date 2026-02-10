@@ -1,14 +1,14 @@
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.Users.DTOs;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Customers.DTOs;
+using FastFuel.Features.Customers.Models;
 
-namespace FastFuel.Features.Users.Mappers;
+namespace FastFuel.Features.Customers.Mappers;
 
-public class UserMapper : IMapper<User, UserRequestDto, UserResponseDto>
+public class CustomerMapper : IMapper<Customer, CustomerRequestDto, CustomerResponseDto>
 {
-    public UserResponseDto ToDto(User model)
+    public CustomerResponseDto ToDto(Customer model)
     {
-        return new UserResponseDto
+        return new CustomerResponseDto
         {
             Id = model.Id,
             Name = model.Name,
@@ -18,9 +18,9 @@ public class UserMapper : IMapper<User, UserRequestDto, UserResponseDto>
         };
     }
 
-    public User ToModel(UserRequestDto dto)
+    public Customer ToModel(CustomerRequestDto dto)
     {
-        return new User
+        return new Customer
         {
             Name = dto.Name,
             Email = dto.Email,
@@ -29,7 +29,7 @@ public class UserMapper : IMapper<User, UserRequestDto, UserResponseDto>
         };
     }
 
-    public void UpdateModel(UserRequestDto dto, ref User model)
+    public void UpdateModel(CustomerRequestDto dto, ref Customer model)
     {
         model.Name = dto.Name;
         model.ThemeId = dto.ThemeId;

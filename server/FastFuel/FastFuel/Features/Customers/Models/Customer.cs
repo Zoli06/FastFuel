@@ -2,9 +2,9 @@ using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Themes.Models;
 
-namespace FastFuel.Features.Users.Models;
+namespace FastFuel.Features.Customers.Models;
 
-public class User : IIdentifiable
+public class Customer : IIdentifiable
 {
     public string Name { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
@@ -12,5 +12,6 @@ public class User : IIdentifiable
     public virtual List<Order> Orders { get; init; } = [];
     public uint ThemeId { get; set; }
     public virtual Theme Theme { get; set; } = null!;
+    public string PasswordHash { get; set; } = string.Empty;
     public uint Id { get; init; }
 }
