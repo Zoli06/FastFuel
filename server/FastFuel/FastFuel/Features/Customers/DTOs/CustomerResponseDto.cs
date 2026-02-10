@@ -1,9 +1,12 @@
-namespace FastFuel.Features.Users.DTOs;
+using FastFuel.Features.Common.Interfaces;
 
-public class UserRequestDto
+namespace FastFuel.Features.Customers.DTOs;
+
+public class CustomerResponseDto : IIdentifiable
 {
     public string Name { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string Username { get; init; } = string.Empty;
     public uint ThemeId { get; init; }
+    public uint Id { get; init; }
 }

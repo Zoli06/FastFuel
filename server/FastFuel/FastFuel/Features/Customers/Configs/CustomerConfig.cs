@@ -1,12 +1,12 @@
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Customers.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace FastFuel.Features.Users.Configs;
+namespace FastFuel.Features.Customers.Configs;
 
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public class UserConfiguration : IEntityTypeConfiguration<Customer>
 {
-    public void Configure(EntityTypeBuilder<User> builder)
+    public void Configure(EntityTypeBuilder<Customer> builder)
     {
         builder.Property(u => u.Name)
             .IsRequired()
@@ -25,5 +25,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Username)
             .IsUnique();
+        builder.Property(r => r.PasswordHash).HasMaxLength(256);
     }
 }

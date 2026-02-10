@@ -1,34 +1,34 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using FastFuel.Features.Authentication.DTOs;
+using FastFuel.Features.Authentication.CustomerAuthentication.DTOs;
 using FastFuel.Features.Authentication.Settings;
 using FastFuel.Features.Common.DbContexts;
-using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Customers.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FastFuel.Features.Authentication.Services;
+namespace FastFuel.Features.Authentication.CustomerAuthentication.Services;
 
-public class AuthenticationService(
+public class CustomerAuthenticationService(
     ApplicationDbContext dbContext,
     IOptions<JwtSettings> jwtOptions,
-    IPasswordHasher<Restaurant> passwordHasher) : IAuthenticationService
+    IPasswordHasher<Customer> passwordHasher) : ICustomerAuthenticationService
 {
-    public async Task<AuthenticationResponseDto?> AuthenticateAsync(AuthenticationRequestDto dto)
+    public async Task<CustomerAuthenticationResponseDto?> AuthenticateAsync(CustomerAuthenticationRequestDto dto)
     {
-        var restaurant = await dbContext.Restaurants
-            .FirstOrDefaultAsync(r => r.Id == dto.Id);
-        if (restaurant == null)
+        var customer = await dbContext.Customers
+            .FirstOrDefaultAsync(c => c.Username == dto.Username);
+        if (customer == null)
             return null;
-        var result = passwordHasher.VerifyHashedPassword(restaurant, restaurant.PasswordHash, dto.Password);
+        var result = passwordHasher.VerifyHashedPassword(customer, customer.PasswordHash, dto.Password);
         if (result != PasswordVerificationResult.Success)
             return null;
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, restaurant.Id.ToString())
+            new Claim(JwtRegisteredClaimNames.Sub, customer.Id.ToString())
         };
         var jwtSettings = jwtOptions.Value;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
@@ -41,7 +41,7 @@ public class AuthenticationService(
             signingCredentials: credentials
         );
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        return new AuthenticationResponseDto
+        return new CustomerAuthenticationResponseDto
         {
             Message = "Login successful",
             Token = tokenString
