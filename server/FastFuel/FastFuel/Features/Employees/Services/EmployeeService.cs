@@ -14,7 +14,7 @@ public class EmployeeService(
     IPasswordHasher<Employee> passwordHasher)
     : CrudService<Employee, EmployeeRequestDto, EmployeeResponseDto>(dbContext, mapper)
 {
-    protected override DbSet<Employee> DbSet { get; } = dbContext.Employee;
+    protected override DbSet<Employee> DbSet { get; } = dbContext.Employees;
 
     protected override Task OnBeforeCreateModelAsync(Employee model)
     {
