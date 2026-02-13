@@ -1,6 +1,7 @@
 using EntityFramework.Exceptions.MySQL.Pomelo;
 using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.Customers.Models;
+using FastFuel.Features.Employees.Models;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
 using FastFuel.Features.Ingredients.Models;
@@ -31,6 +32,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<OrderMenu> OrderMenus { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<Employee> Employees { get; set; }
     public DbSet<StationCategory> StationCategories { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<Theme> Themes { get; set; }

@@ -11,7 +11,10 @@ public class Restaurant : IIdentifiable
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string? Phone { get; set; }
+
     public virtual List<OpeningHour> OpeningHours { get; init; } = [];
+
+    //TODO:make Shifts Tabel public List<Shift> Shifts{ get; set; }  
     public string PasswordHash { get; set; } = string.Empty;
     public uint Id { get; init; }
 }
