@@ -11,7 +11,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "prettier:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test:ts": "tsc --noEmit",
-    "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api.d.ts"
+    "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api.d.ts --properties-required-by-default"
   },
   "dependencies": {
     "@mantine/core": "^8.3.4",
