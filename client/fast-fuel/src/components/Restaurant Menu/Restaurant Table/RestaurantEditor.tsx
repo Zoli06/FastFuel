@@ -1,19 +1,11 @@
 import type { components } from '../../../types/api';
-import {
-  Button,
-  Divider,
-  Fieldset,
-  Group,
-  Modal,
-  NumberInput,
-  PasswordInput,
-  TextInput,
-} from '@mantine/core';
+import { Button, Divider, Fieldset, Group, Modal, PasswordInput, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { apiClient } from '../../../apiClient.ts';
 import { useEffect } from 'react';
 import { TimePicker } from '@mantine/dates';
 import { NumericSelect } from '../../NumericSelect/NumericSelect.tsx';
+import { LocationPicker } from './LocationPicker';
 
 type RestaurantEditorPropsCreate = {
   mode: 'create';
@@ -169,15 +161,26 @@ export const RestaurantEditor = (props: RestaurantEditorProps) => {
       >
         <TextInput label="Name" {...form.getInputProps('name')} required />
         <TextInput label="Description" {...form.getInputProps('description')} />
+        <TextInput label="Phone" {...form.getInputProps('phone')} />
         <PasswordInput
           label="Password (required for creating, optional for editing)"
           {...form.getInputProps('password')}
           required={mode === 'create'}
         />
-        <NumberInput label="Latitude" {...form.getInputProps('latitude')} required />
-        <NumberInput label="Longitude" {...form.getInputProps('longitude')} required />
-        <TextInput label="Address" {...form.getInputProps('address')} required />
-        <TextInput label="Phone" {...form.getInputProps('phone')} />
+        <Fieldset legend="Location">
+          <LocationPicker
+            lat={form.values.latitude}
+            lng={form.values.longitude}
+            onLocationChange={({ lat, lng, address }) => {
+              form.setFieldValue('latitude', lat);
+              form.setFieldValue('longitude', lng);
+              if (address) {
+                form.setFieldValue('address', address);
+              }
+            }}
+          />
+          <TextInput label="Address" {...form.getInputProps('address')} required />
+        </Fieldset>
         <Fieldset legend="Opening Hours">
           {form.values.openingHours.map((_oh, index) => (
             <div key={index}>
