@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FastFuel.Features.Authentication.Settings;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.ExceptionFilters;
 using FastFuel.Features.Customers.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.NSwag;
@@ -105,7 +106,11 @@ public static class Program
     // Registers controllers, OpenAPI, CORS, password hasher and scans feature services
     private static void ConfigureAppServices(WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers();
+        builder.Services.AddControllers(options =>
+        {
+            // Convert UniqueConstraintException from EF into HTTP 409 responses globally
+            options.Filters.Add<UniqueConstraintExceptionFilter>();
+        });
 
         builder.Services.AddOpenApiDocument(config =>
         {
