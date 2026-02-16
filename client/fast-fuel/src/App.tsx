@@ -1,11 +1,11 @@
 import '@mantine/core/styles.css';
 import './App.css';
-import { Restaurant } from './components/Restaurant Menu/Restaurants.tsx';
+import { RestaurantPage } from './pages/RestaurantPage.tsx';
 
 export function App() {
   return (
     <div className="app">
-      <Restaurant />
+      <RestaurantPage />
     </div>
   );
 }

@@ -16,7 +16,9 @@
   "dependencies": {
     "@mantine/core": "^8.3.4",
     "@mantine/dates": "^8.3.14",
+    "@mantine/form": "^8.3.14",
     "@mantine/hooks": "^8.3.4",
+    "@tabler/icons-react": "^3.36.1",
     "dayjs": "^1.11.19",
     "openapi-fetch": "^0.15.0",
     "openapi-react-query": "^0.5.1",
