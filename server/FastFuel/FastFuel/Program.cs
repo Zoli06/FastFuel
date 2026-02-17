@@ -4,6 +4,7 @@ using FastFuel.Features.Authentication.Settings;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
 using FastFuel.Features.Customers.Models;
+using FastFuel.Features.Employees.Models;
 using FastFuel.Features.Restaurants.Models;
 using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
@@ -129,6 +130,7 @@ public static class Program
 
         builder.Services.AddTransient<IPasswordHasher<Restaurant>, PasswordHasher<Restaurant>>();
         builder.Services.AddTransient<IPasswordHasher<Customer>, PasswordHasher<Customer>>();
+        builder.Services.AddTransient<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter.InNamespaces("FastFuel.Features"))
