@@ -16,9 +16,17 @@ public class EmployeeService(
 {
     protected override DbSet<Employee> DbSet { get; } = dbContext.Employees;
 
-    protected override Task OnBeforeCreateModelAsync(Employee model)
+    protected override Task OnBeforeCreateModelAsync(Employee model, EmployeeRequestDto requestDto)
     {
-        model.PasswordHash = passwordHasher.HashPassword(model, model.PasswordHash);
+        if (requestDto.Password == null)
+            throw new ArgumentException("Password is required for employee creation.");
+        model.PasswordHash = passwordHasher.HashPassword(model, requestDto.Password);
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnBeforeUpdateModelAsync(Employee model, EmployeeRequestDto requestDto)
+    {
+        if (requestDto.Password != null) model.PasswordHash = passwordHasher.HashPassword(model, requestDto.Password);
         return Task.CompletedTask;
     }
 }
