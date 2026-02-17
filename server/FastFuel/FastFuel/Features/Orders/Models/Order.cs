@@ -15,8 +15,8 @@ public class Order : IIdentifiable
     public DateTime CreatedAt { get; init; }
     public DateTime? CompletedAt { get; init; }
 
-    public uint CustomerId { get; init; }
-    public virtual Customer Customer { get; init; } = null!;
+    public uint? CustomerId { get; init; }
+    public virtual Customer? Customer { get; init; }
     public virtual List<OrderFood> Foods { get; init; } = [];
     public virtual List<OrderMenu> Menus { get; init; } = [];
     public uint Id { get; init; }

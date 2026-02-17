@@ -11,7 +11,6 @@ public class Employee : IIdentifiable
     public string Name { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public virtual List<Order> Orders { get; init; } = [];
     public uint ThemeId { get; set; }
     public virtual Theme Theme { get; set; } = null!;
     public virtual List<Shift> Shifts { get; set; } = [];
