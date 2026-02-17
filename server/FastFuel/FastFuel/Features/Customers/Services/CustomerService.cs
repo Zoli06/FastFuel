@@ -16,9 +16,17 @@ public class CustomerService(
 {
     protected override DbSet<Customer> DbSet { get; } = dbContext.Customers;
 
-    protected override Task OnBeforeCreateModelAsync(Customer model)
+    protected override Task OnBeforeCreateModelAsync(Customer model, CustomerRequestDto requestDto)
     {
-        model.PasswordHash = passwordHasher.HashPassword(model, model.PasswordHash);
+        if (requestDto.Password == null)
+            throw new ArgumentException("Password is required for customer creation.");
+        model.PasswordHash = passwordHasher.HashPassword(model, requestDto.Password);
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnBeforeUpdateModelAsync(Customer model, CustomerRequestDto requestDto)
+    {
+        if (requestDto.Password != null) model.PasswordHash = passwordHasher.HashPassword(model, requestDto.Password);
         return Task.CompletedTask;
     }
 }

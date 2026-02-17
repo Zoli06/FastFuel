@@ -38,7 +38,7 @@ public abstract class CrudService<TModel, TRequest, TResponse>(
     {
         await OnBeforeCreateAsync(requestDto);
         var model = mapper.ToModel(requestDto);
-        await OnBeforeCreateModelAsync(model);
+        await OnBeforeCreateModelAsync(model, requestDto);
         DbSet.Add(model);
         await DbContext.SaveChangesAsync();
         await OnAfterCreateAsync(model);
@@ -70,7 +70,7 @@ public abstract class CrudService<TModel, TRequest, TResponse>(
             return false;
 
         mapper.UpdateModel(requestDto, ref model);
-        await OnBeforeUpdateModelAsync(model);
+        await OnBeforeUpdateModelAsync(model, requestDto);
         await DbContext.SaveChangesAsync();
         await OnAfterUpdateAsync(model);
         return true;
@@ -111,7 +111,7 @@ public abstract class CrudService<TModel, TRequest, TResponse>(
         return Task.CompletedTask;
     }
 
-    protected virtual Task OnBeforeCreateModelAsync(TModel model)
+    protected virtual Task OnBeforeCreateModelAsync(TModel model, TRequest requestDto)
     {
         return Task.CompletedTask;
     }
@@ -131,7 +131,7 @@ public abstract class CrudService<TModel, TRequest, TResponse>(
         return Task.CompletedTask;
     }
 
-    protected virtual Task OnBeforeUpdateModelAsync(TModel model)
+    protected virtual Task OnBeforeUpdateModelAsync(TModel model, TRequest requestDto)
     {
         return Task.CompletedTask;
     }

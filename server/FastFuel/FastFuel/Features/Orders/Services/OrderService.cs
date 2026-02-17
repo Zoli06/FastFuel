@@ -22,7 +22,7 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         return (lastOrder?.OrderNumber ?? 0) + 1;
     }
 
-    protected override Task OnBeforeCreateModelAsync(Order model)
+    protected override Task OnBeforeCreateModelAsync(Order model, OrderRequestDto requestDto)
     {
         return Task.Run(async () =>
         {
@@ -39,7 +39,7 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
             throw new InvalidOperationException("Only pending orders can be modified.");
     }
 
-    protected override Task OnBeforeUpdateModelAsync(Order model)
+    protected override Task OnBeforeUpdateModelAsync(Order model, OrderRequestDto requestDto)
     {
         return Task.Run(() => { EnsurePendingStatus(model); });
     }

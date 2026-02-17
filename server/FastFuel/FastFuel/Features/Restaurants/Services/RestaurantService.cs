@@ -16,9 +16,17 @@ public class RestaurantService(
 {
     protected override DbSet<Restaurant> DbSet { get; } = dbContext.Restaurants;
 
-    protected override Task OnBeforeCreateModelAsync(Restaurant model)
+    protected override Task OnBeforeCreateModelAsync(Restaurant model, RestaurantRequestDto requestDto)
     {
-        model.PasswordHash = passwordHasher.HashPassword(model, model.PasswordHash);
+        if (requestDto.Password == null)
+            throw new ArgumentException("Password is required for restaurant creation.");
+        model.PasswordHash = passwordHasher.HashPassword(model, requestDto.Password);
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnBeforeUpdateModelAsync(Restaurant model, RestaurantRequestDto requestDto)
+    {
+        if (requestDto.Password != null) model.PasswordHash = passwordHasher.HashPassword(model, requestDto.Password);
         return Task.CompletedTask;
     }
 }
