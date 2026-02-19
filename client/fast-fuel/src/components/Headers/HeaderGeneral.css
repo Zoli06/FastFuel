@@ -1,14 +1,13 @@
 .general-header {
   text-align: center;
   -webkit-text-stroke: 1px darkred;
-  text-stroke: 1px darkred;
+  margin: 0;
 }
 
 .header-flex {
-  display: flex;
-  justify-content: space-between;
+  width: 100%;
 }
 
-.header-flex button {
+.home-button:first-of-type {
   background-color: gray;
 }
