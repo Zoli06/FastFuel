@@ -1,12 +1,10 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.Common.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("/api/[controller]")]
 public abstract class CrudController<TModel, TRequest, TResponse>(ICrudService<TRequest, TResponse> service)

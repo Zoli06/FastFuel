@@ -1,8 +1,8 @@
 namespace FastFuel.Features.Shifts.DTOs;
 
-public class ShiftRequestDto
+public record ShiftRequestDto
 {
-    public DateTime StartTime { get; init; }
-    public DateTime EndTime { get; init; }
-    public uint EmployeeId { get; init; }
+    public required DateTime StartTime { get; init; }
+    public required DateTime EndTime { get; init; }
+    public required uint EmployeeId { get; init; }
 }

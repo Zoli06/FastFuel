@@ -1,15 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using FastFuel.Features.Authentication.Settings;
+using FastFuel.Features.Auth;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
-using FastFuel.Features.Customers.Models;
-using FastFuel.Features.Employees.Models;
-using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Users.Models;
 using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Scrutor;
 
 namespace FastFuel;
@@ -25,8 +20,8 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Configure JWT and authentication, throws if missing
-        ConfigureJwtAndAuthentication(builder);
+        // Configure authorization and authentication (JWT)
+        ConfigureAuth(builder);
 
         // Configure database
         ConfigureDatabase(builder);
@@ -47,7 +42,7 @@ public static class Program
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
 
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Restaurant>>();
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
             await DatabaseSeeder.SeedAsync(dbContext, passwordHasher);
         }
         // ----------- END TESTING ONLY -----------
@@ -55,34 +50,16 @@ public static class Program
         await app.RunAsync();
     }
 
-    // Binds JwtSettings and registers authentication
-    private static void ConfigureJwtAndAuthentication(WebApplicationBuilder builder)
+    // Configures JWT authentication and IdentityCore for User management
+    private static void ConfigureAuth(WebApplicationBuilder builder)
     {
-        var jwtSection = builder.Configuration.GetSection("JwtSettings");
-        builder.Services.Configure<JwtSettings>(jwtSection);
-        var jwtSettings = jwtSection.Get<JwtSettings>()
-                          ?? throw new InvalidOperationException("JWT settings are not configured properly.");
+        builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+            .AddCookie();
 
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = "JwtBearer";
-            options.DefaultChallengeScheme = "JwtBearer";
-        }).AddJwtBearer("JwtBearer", options =>
-        {
-            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings.Issuer,
-                ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = signingKey,
-                ClockSkew = TimeSpan.Zero
-            };
-        });
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        builder.Services.AddAuthorization();
+        builder.Services.AddIdentityCore<User>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddApiEndpoints();
     }
 
     // Configures the application's EF Core DbContext
@@ -111,7 +88,10 @@ public static class Program
         {
             // Convert UniqueConstraintException from EF into HTTP 409 responses globally
             options.Filters.Add<UniqueConstraintExceptionFilter>();
+            // TODO: Add filter for reference constraint exceptions
         });
+
+        builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApiDocument(config =>
         {
@@ -128,9 +108,7 @@ public static class Program
             });
         });
 
-        builder.Services.AddTransient<IPasswordHasher<Restaurant>, PasswordHasher<Restaurant>>();
-        builder.Services.AddTransient<IPasswordHasher<Customer>, PasswordHasher<Customer>>();
-        builder.Services.AddTransient<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
+        builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter.InNamespaces("FastFuel.Features"))
@@ -152,6 +130,7 @@ public static class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGroup("/api/Auth").WithTags("Auth").MapCustomIdentityApi<User>();
 
         app.MapControllers();
     }

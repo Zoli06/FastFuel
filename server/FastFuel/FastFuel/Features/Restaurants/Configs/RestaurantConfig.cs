@@ -14,6 +14,5 @@ public class RestaurantConfig : IEntityTypeConfiguration<Restaurant>
         builder.Property(r => r.Description).HasMaxLength(600);
         builder.Property(r => r.Address).HasMaxLength(200);
         builder.Property(r => r.Phone).HasMaxLength(15);
-        builder.Property(r => r.PasswordHash).HasMaxLength(256);
     }
 }
