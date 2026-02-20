@@ -1,58 +1,49 @@
-import './RestaurantRow.css';
-import { Button, Container, Flex } from '@mantine/core';
+import { Button, Table } from '@mantine/core';
+import type { components } from '../../../types/api';
+import { apiClient } from '../../../apiClient.ts';
 
-interface OpeningHour {
-  day: number;
-  openTime: string;
-  closeTime: string;
-}
+export type RestaurantRowProps = {
+  restaurant: components['schemas']['RestaurantResponseDto'];
+  openRestaurantEditor: () => void;
+  refetchRestaurants: () => void;
+};
 
-interface RestaurantRowProps {
-  id: number;
-  name: string;
-  address: string;
-  passwordHash: string;
-  openingHours: OpeningHour[];
-  description?: string;
-  phone: string;
-}
+const maxLength = 100;
+const getDisplayedDescription = (description: string | null) => {
+  if (!description) {
+    return 'No description provided';
+  }
+  return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
+};
 
 export const RestaurantRow = ({
-  id,
-  name,
-  address,
-  passwordHash,
-  openingHours,
-  phone,
-  description,
+  restaurant,
+  openRestaurantEditor,
+  refetchRestaurants,
 }: RestaurantRowProps) => {
-  const maxLength = 100;
-  const isTooLong = description && description.length > maxLength;
-
-  const displayText = isTooLong
-    ? `${description.substring(0, maxLength)}...`
-    : description || 'No description provided';
+  const { mutate: deleteRestaurant } = apiClient.useMutation('delete', '/api/Restaurant/{id}', {
+    onSuccess: () => {
+      refetchRestaurants();
+    },
+  });
 
   return (
-    <Container className="row-contianer">
-      <Flex className="left-side">
-        <span>{id} </span>
-        <span>{name} </span>
-        <span>{address} </span>
-        <span>{passwordHash} </span>
-        <span>{JSON.stringify(openingHours)} </span>
-        <span>{phone} </span>
-      </Flex>
-
-      <Flex className="right-side">
-        <p>{displayText}</p>
-
-        {isTooLong && (
-          <Button variant="transparent" color="gray" size="xs" className="expand-button">
-            ↓
-          </Button>
-        )}
-      </Flex>
-    </Container>
+    <Table.Tr>
+      <Table.Td>{restaurant.name}</Table.Td>
+      <Table.Td>{restaurant.address} </Table.Td>
+      <Table.Td>{getDisplayedDescription(restaurant.description)} </Table.Td>
+      <Table.Td>{restaurant.phone} </Table.Td>
+      <Table.Td>
+        <Button onClick={openRestaurantEditor}>Edit</Button>
+      </Table.Td>
+      <Table.Td>
+        <Button
+          onClick={() => deleteRestaurant({ params: { path: { id: restaurant.id } } })}
+          color="red"
+        >
+          Delete
+        </Button>
+      </Table.Td>
+    </Table.Tr>
   );
 };
