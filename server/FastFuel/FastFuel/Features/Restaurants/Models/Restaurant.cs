@@ -12,6 +12,5 @@ public class Restaurant : IIdentifiable
     public double Longitude { get; set; }
     public string? Phone { get; set; }
     public virtual List<OpeningHour> OpeningHours { get; init; } = [];
-    public string PasswordHash { get; set; } = string.Empty;
     public uint Id { get; init; }
 }

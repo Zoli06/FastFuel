@@ -14,13 +14,14 @@ using FastFuel.Features.Restaurants.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using FastFuel.Features.Themes.Models;
+using FastFuel.Features.Users.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel;
 
 public static class DatabaseSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context, IPasswordHasher<Restaurant> passwordHasher)
+    public static async Task SeedAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
     {
         // Two types of stations: french fries and burgers
         var burgerStation = new StationCategory { Name = "Burger Station" };
@@ -120,7 +121,6 @@ public static class DatabaseSeeder
             Longitude = -74.0060,
             Phone = "555-1234"
         };
-        restaurant.PasswordHash = passwordHasher.HashPassword(restaurant, "SecurePassword123!");
         context.Restaurants.Add(restaurant);
         await context.SaveChangesAsync();
 
@@ -166,7 +166,7 @@ public static class DatabaseSeeder
         var customer = new Customer
         {
             Name = "Test User",
-            Username = "testuser",
+            UserName = "testuser",
             Email = "asd@asd.asd",
             Theme = theme
         };

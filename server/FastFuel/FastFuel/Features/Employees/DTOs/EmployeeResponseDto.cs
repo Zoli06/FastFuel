@@ -1,13 +1,9 @@
-using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Users.DTOs;
 
 namespace FastFuel.Features.Employees.DTOs;
 
-public class EmployeeResponseDto : IIdentifiable
+public record EmployeeResponseDto : UserResponseDto
 {
-    public string Name { get; init; } = string.Empty;
-    public string Email { get; init; } = string.Empty;
-    public string Username { get; init; } = string.Empty;
-    public uint ThemeId { get; init; }
-    public List<uint> ShiftIds { get; init; } = [];
-    public uint Id { get; init; }
+    public required List<uint> ShiftIds { get; init; }
+    public required List<uint> StationCategoryIds { get; init; }
 }
