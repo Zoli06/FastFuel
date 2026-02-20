@@ -3,7 +3,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home.tsx';
 import { Restaurant } from './components/Restaurant/Restaurants.tsx';
-import { Login } from './components/Login/login.tsx';
+import { Login } from './components/Login/Login.tsx';
 
 export function App() {
   return (
