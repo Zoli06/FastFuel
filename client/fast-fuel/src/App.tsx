@@ -3,7 +3,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home.tsx';
 import { Login } from './pages/Login.tsx';
-import { Restaurant } from './components/Restaurant/Restaurants.tsx';
+import { Restaurants } from './components/Restaurant/Restaurants.tsx';
 
 export function App() {
   return (
@@ -13,7 +13,7 @@ export function App() {
           {/* Default */}
           <Route path="/" element={<Home />} />
 
-          <Route path="/restaurants" element={<Restaurant />} />
+          <Route path="/restaurants" element={<Restaurants />} />
 
           <Route path="/login" element={<Login />} />
         </Routes>

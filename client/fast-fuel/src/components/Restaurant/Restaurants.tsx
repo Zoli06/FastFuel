@@ -4,7 +4,7 @@ import { Footer } from '../Footer/Footer';
 import { Button, Container, Flex } from '@mantine/core';
 import { RestaurantTable } from './Restaurant Table/RestaurantTable';
 
-export const Restaurant = () => {
+export const Restaurants = () => {
   return (
     <>
       <HeaderGeneral title="Restaurants" />
