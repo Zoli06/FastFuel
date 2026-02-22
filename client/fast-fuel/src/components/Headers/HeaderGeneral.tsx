@@ -11,8 +11,7 @@ interface HeaderProps {
 
 export const HeaderGeneral = ({
   title,
-  hideLeftButton = false,
-  rightButtonText = 'Go back',
+  rightButtonText = 'Go Back',
   rightButtonNavigateTo = -1,
 }: HeaderProps) => {
   const navigate = useNavigate();
@@ -21,14 +20,7 @@ export const HeaderGeneral = ({
     <>
       <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
         {/* Left */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            justifyContent: 'flex-start',
-            visibility: hideLeftButton ? 'hidden' : 'visible',
-          }}
-        >
+        <Flex flex={1} justify="flex-start">
           <Button
             variant="filled"
             className="home-button"
@@ -37,15 +29,14 @@ export const HeaderGeneral = ({
           >
             Home
           </Button>
-        </div>
-
+        </Flex>
         {/* Center Section */}
         <h1 className="general-header" style={{ margin: 0, whiteSpace: 'nowrap' }}>
           {title}
         </h1>
 
         {/* Right Section */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        <Flex flex={1} justify="flex-end">
           <Button
             variant="filled"
             className="home-button"
@@ -61,7 +52,7 @@ export const HeaderGeneral = ({
           >
             {rightButtonText}
           </Button>
-        </div>
+        </Flex>
       </Flex>
     </>
   );

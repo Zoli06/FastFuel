@@ -2,21 +2,19 @@ import '@mantine/core/styles.css';
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home.tsx';
-import { Restaurant } from './components/Restaurant/Restaurants.tsx';
 import { Login } from './components/Login/Login.tsx';
+import { Restaurant } from './components/Restaurant/Restaurants.tsx';
 
 export function App() {
   return (
     <BrowserRouter>
       <div className="app">
         <Routes>
-          {/* First page */}
-          <Route path="/" element={<Restaurant />} />
+          {/* Default */}
+          <Route path="/" element={<Home />} />
 
-          {/* Home */}
-          <Route path="/home" element={<Home />} />
+          <Route path="/restaurants" element={<Restaurant />} />
 
-          {/* Login */}
           <Route path="/login" element={<Login />} />
         </Routes>
       </div>
