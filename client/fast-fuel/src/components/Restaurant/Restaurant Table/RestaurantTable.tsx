@@ -1,19 +1,40 @@
-import './RestaurantTable.css';
 import { RestaurantRow } from './RestaurantRow';
-import { Container } from '@mantine/core';
+import { Table } from '@mantine/core';
+import type { components } from '../../../types/api';
 
-export const RestaurantTable = () => {
+export type RestaurantTableProps = {
+  restaurants: components['schemas']['RestaurantResponseDto'][];
+  refetchRestaurants: () => void;
+  openRestaurantEditor: (restaurant: components['schemas']['RestaurantResponseDto']) => void;
+};
+
+export const RestaurantTable = ({
+  restaurants,
+  refetchRestaurants,
+  openRestaurantEditor,
+}: RestaurantTableProps) => {
   return (
-    <Container className="table-container">
-      <RestaurantRow
-        id={1}
-        name="Test Restaurant"
-        address="123 Main St"
-        passwordHash="abc123"
-        openingHours={[]}
-        description="This is a test restaurant with a very long description that should be truncated in the displaydddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd."
-        phone="555-1234"
-      ></RestaurantRow>
-    </Container>
+    <Table>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Name</Table.Th>
+          <Table.Th>Address</Table.Th>
+          <Table.Th>Description</Table.Th>
+          <Table.Th>Phone</Table.Th>
+          <Table.Th>Edit</Table.Th>
+          <Table.Th>Delete</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {restaurants.map((restaurant) => (
+          <RestaurantRow
+            key={restaurant.id}
+            restaurant={restaurant}
+            openRestaurantEditor={() => openRestaurantEditor(restaurant)}
+            refetchRestaurants={refetchRestaurants}
+          />
+        ))}
+      </Table.Tbody>
+    </Table>
   );
 };

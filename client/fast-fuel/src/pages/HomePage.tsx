@@ -8,7 +8,7 @@ export const HomePage = () => {
       <HeaderGeneral
         title={'Fast Fuel'}
         hideLeftButton={true}
-        rightButtonText={'LoginPage'}
+        rightButtonText={'Login'}
         rightButtonNavigateTo={'/login'}
       />
 

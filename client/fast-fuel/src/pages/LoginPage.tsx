@@ -4,7 +4,7 @@ import { HeaderGeneral } from '../components/Headers/HeaderGeneral.tsx';
 export const LoginPage = () => {
   return (
     <div>
-      <HeaderGeneral title={'LoginPage'} />
+      <HeaderGeneral title={'Login'} />
 
       <Loginform />
     </div>

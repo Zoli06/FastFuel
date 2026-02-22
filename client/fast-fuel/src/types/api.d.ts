@@ -440,7 +440,7 @@ export interface components {
             address: string;
             phone: string | null;
             openingHours: components["schemas"]["RestaurantOpeningHourDto"][];
-            password: string;
+            password: string | null;
         };
         OrderResponseDto: {
             customerId: number;
@@ -547,7 +547,7 @@ export interface components {
             email: string;
             username: string;
             themeId: number;
-            password: string;
+            password: string | null;
         };
         RestaurantAuthenticationResponseDto: {
             message: string;
