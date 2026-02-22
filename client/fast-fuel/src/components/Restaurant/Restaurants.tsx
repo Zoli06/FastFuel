@@ -7,11 +7,11 @@ import { RestaurantTable } from './Restaurant Table/RestaurantTable';
 export const Restaurants = () => {
   return (
     <>
-      <HeaderGeneral title="Restaurants" />
+      <HeaderGeneral title="RestaurantsPage" />
 
       <Container className="restaurant">
         <Flex className="restaurant-header">
-          <h2>Restaurants</h2>
+          <h2>RestaurantsPage</h2>
           <Button className="add-restaurant-button">Add Restaurant</Button>
         </Flex>
         <Container className="restaurant-list">

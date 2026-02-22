@@ -1,9 +1,9 @@
 import '@mantine/core/styles.css';
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Home } from './pages/Home.tsx';
-import { Login } from './pages/Login.tsx';
-import { Restaurants } from './components/Restaurant/Restaurants.tsx';
+import { HomePage } from './pages/HomePage.tsx';
+import { LoginPage } from './pages/LoginPage.tsx';
+import { RestaurantsPage } from './pages/RestaurantsPage.tsx';
 
 export function App() {
   return (
@@ -11,13 +11,13 @@ export function App() {
       <div className="app">
         <Routes>
           {/* Default */}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
 
-          <Route path="/restaurants" element={<Restaurants />} />
+          <Route path="/restaurants" element={<RestaurantsPage />} />
 
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<LoginPage />} />
 
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={<HomePage />} />
         </Routes>
       </div>
     </BrowserRouter>

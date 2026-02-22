@@ -1,10 +1,10 @@
 import { Loginform } from '../components/Login/LoginForm.tsx';
 import { HeaderGeneral } from '../components/Headers/HeaderGeneral.tsx';
 
-export const Login = () => {
+export const LoginPage = () => {
   return (
     <div>
-      <HeaderGeneral title={'Login'} />
+      <HeaderGeneral title={'LoginPage'} />
 
       <Loginform />
     </div>
