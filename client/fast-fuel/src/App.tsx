@@ -16,6 +16,8 @@ export function App() {
           <Route path="/restaurants" element={<Restaurants />} />
 
           <Route path="/login" element={<Login />} />
+
+          <Route path="/home" element={<Home />} />
         </Routes>
       </div>
     </BrowserRouter>
