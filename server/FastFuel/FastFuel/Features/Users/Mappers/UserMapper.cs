@@ -1,20 +1,33 @@
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Roles.Models;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Users.Mappers;
 
-public class UserMapper : IMapper<User, UserRequestDto, UserResponseDto>
+public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
+    : IMapper<User, UserRequestDto, UserResponseDto>
 {
-    public UserResponseDto ToDto(User model)
+    protected abstract string UserType { get; }
+
+    public virtual UserResponseDto ToDto(User model)
     {
+        // TODO: make mappers async to avoid blocking calls to GetRolesAsync
+        var userRoles = userManager.GetRolesAsync(model).Result;
+
         return new UserResponseDto
         {
             Id = model.Id,
             Name = model.UserName,
             Email = model.Email,
             UserName = model.UserName,
-            ThemeId = model.ThemeId
+            ThemeId = model.ThemeId,
+            RoleIds = roleManager.Roles
+                .Where(r => userRoles.Contains(r.Name))
+                .Select(r => r.Id)
+                .ToList(),
+            UserType = UserType
         };
     }
 
@@ -29,7 +42,7 @@ public class UserMapper : IMapper<User, UserRequestDto, UserResponseDto>
         };
     }
 
-    public void UpdateModel(UserRequestDto dto, ref User model)
+    public void UpdateModel(UserRequestDto dto, User model)
     {
         model.Name = dto.Name;
         model.Email = dto.Email;

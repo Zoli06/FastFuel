@@ -7,9 +7,25 @@ namespace FastFuel.Features.Users.Models;
 public class User : IdentityUser<uint>, IIdentifiable
 {
     public string Name { get; set; } = string.Empty;
-    public new virtual string Email { get; set; } = string.Empty;
-    public new virtual string UserName { get; set; } = string.Empty;
-    public new virtual string PasswordHash { get; set; } = string.Empty;
-    public uint ThemeId { get; set; }
-    public virtual Theme Theme { get; set; } = null!;
+
+    public new string Email
+    {
+        get => base.Email ?? string.Empty;
+        set => base.Email = value;
+    }
+
+    public new string UserName
+    {
+        get => base.UserName ?? string.Empty;
+        set => base.UserName = value;
+    }
+
+    public new string PasswordHash
+    {
+        get => base.PasswordHash ?? string.Empty;
+        set => base.PasswordHash = value;
+    }
+
+    public uint? ThemeId { get; set; }
+    public virtual Theme? Theme { get; set; }
 }

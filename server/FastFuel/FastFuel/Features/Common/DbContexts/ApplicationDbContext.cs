@@ -12,19 +12,19 @@ using FastFuel.Features.OrderFoods.Models;
 using FastFuel.Features.OrderMenus.Models;
 using FastFuel.Features.Orders.Models;
 using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Roles.Models;
 using FastFuel.Features.Shifts.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using FastFuel.Features.Themes.Models;
 using FastFuel.Features.Users.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.DbContexts;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<User, IdentityRole<uint>, uint>(options)
+    : IdentityDbContext<User, Role, uint>(options)
 {
     public DbSet<Allergy> Allergies { get; set; }
     public DbSet<Customer> Customers { get; set; }

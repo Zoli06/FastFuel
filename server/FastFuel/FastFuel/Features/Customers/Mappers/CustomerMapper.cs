@@ -1,22 +1,30 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Models;
+using FastFuel.Features.Roles.Models;
 using FastFuel.Features.Users.Mappers;
 using FastFuel.Features.Users.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Customers.Mappers;
 
-public class CustomerMapper : UserMapper, IMapper<Customer, CustomerRequestDto, CustomerResponseDto>
+public class CustomerMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
+    : UserMapper(roleManager, userManager), IMapper<Customer, CustomerRequestDto, CustomerResponseDto>
 {
+    protected override string UserType => "Customer";
+
     public CustomerResponseDto ToDto(Customer model)
     {
+        var userDto = base.ToDto(model);
         return new CustomerResponseDto
         {
-            Id = model.Id,
-            Name = model.UserName,
-            Email = model.Email,
-            UserName = model.UserName,
-            ThemeId = model.ThemeId,
+            Id = userDto.Id,
+            Name = userDto.Name,
+            Email = userDto.Email,
+            UserName = userDto.UserName,
+            ThemeId = userDto.ThemeId,
+            RoleIds = userDto.RoleIds,
+            UserType = userDto.UserType,
             OrderIds = model.Orders.ConvertAll(order => order.Id)
         };
     }
@@ -34,9 +42,9 @@ public class CustomerMapper : UserMapper, IMapper<Customer, CustomerRequestDto, 
         };
     }
 
-    public void UpdateModel(CustomerRequestDto dto, ref Customer model)
+    public void UpdateModel(CustomerRequestDto dto, Customer model)
     {
         User userModel = model;
-        base.UpdateModel(dto, ref userModel);
+        base.UpdateModel(dto, userModel);
     }
 }

@@ -12,8 +12,8 @@ namespace FastFuel.Features.Customers.Services;
 public class CustomerService(
     ApplicationDbContext dbContext,
     IMapper<Customer, CustomerRequestDto, CustomerResponseDto> mapper,
-    IPasswordHasher<User> passwordHasher)
-    : UserService<Customer, CustomerRequestDto, CustomerResponseDto>(dbContext, mapper, passwordHasher)
+    UserManager<User> userManager)
+    : UserService<Customer, CustomerRequestDto, CustomerResponseDto>(dbContext, mapper, userManager)
 {
     protected override DbSet<Customer> DbSet { get; } = dbContext.Customers;
 }

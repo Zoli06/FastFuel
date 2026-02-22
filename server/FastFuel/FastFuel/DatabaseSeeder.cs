@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Customers.Models;
+using FastFuel.Features.Employees.Models;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
 using FastFuel.Features.Ingredients.Models;
@@ -10,31 +12,41 @@ using FastFuel.Features.OpeningHours.Models;
 using FastFuel.Features.OrderFoods.Models;
 using FastFuel.Features.OrderMenus.Models;
 using FastFuel.Features.Orders.Models;
+using FastFuel.Features.Permissions.Services;
 using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Roles.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using FastFuel.Features.Themes.Models;
 using FastFuel.Features.Users.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel;
 
-public static class DatabaseSeeder
+public class DatabaseSeeder(IServiceProvider serviceProvider)
 {
-    public static async Task SeedAsync(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
+    private readonly ApplicationDbContext _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+    private readonly IPermissionService _permissionService = serviceProvider.GetRequiredService<IPermissionService>();
+    private readonly RoleManager<Role> _roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
+    private readonly UserManager<User> _userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+
+    // Get services from the DI container
+
+    public async Task SeedAsync()
     {
         // Two types of stations: french fries and burgers
         var burgerStation = new StationCategory { Name = "Burger Station" };
         var friesStation = new StationCategory { Name = "Fries Station" };
-        context.StationCategories.AddRange(burgerStation, friesStation);
-        await context.SaveChangesAsync();
+        _context.StationCategories.AddRange(burgerStation, friesStation);
+        await _context.SaveChangesAsync();
 
         // Add some allergies
         var glutenAllergy = new Allergy { Name = "Gluten" };
         var dairyAllergy = new Allergy { Name = "Dairy" };
         var peanutAllergy = new Allergy { Name = "Peanuts" };
-        context.Allergies.AddRange(glutenAllergy, dairyAllergy, peanutAllergy);
-        await context.SaveChangesAsync();
+        _context.Allergies.AddRange(glutenAllergy, dairyAllergy, peanutAllergy);
+        await _context.SaveChangesAsync();
 
         // Add some ingredients
         var beefPatty = new Ingredient { Name = "Beef Patty" };
@@ -45,13 +57,13 @@ public static class DatabaseSeeder
         var potato = new Ingredient { Name = "Potato" };
         var salt = new Ingredient { Name = "Salt" };
         var oil = new Ingredient { Name = "Oil" };
-        context.Ingredients.AddRange(beefPatty, bun, lettuce, tomato, cheese, potato, salt, oil);
-        await context.SaveChangesAsync();
+        _context.Ingredients.AddRange(beefPatty, bun, lettuce, tomato, cheese, potato, salt, oil);
+        await _context.SaveChangesAsync();
 
         // Assign ingredients to station categories
         burgerStation.Ingredients.AddRange([beefPatty, bun, lettuce, tomato, cheese]);
         friesStation.Ingredients.AddRange([potato, salt, oil]);
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         // Create some foods
         var bigBurger = new Food
@@ -93,8 +105,8 @@ public static class DatabaseSeeder
                 new FoodIngredient { Ingredient = oil, Quantity = 1 }
             ]
         };
-        context.Foods.AddRange(bigBurger, cheeseBurger, fries);
-        await context.SaveChangesAsync();
+        _context.Foods.AddRange(bigBurger, cheeseBurger, fries);
+        await _context.SaveChangesAsync();
 
         // Create a menu (use MenuFood join entities)
         var lunchMenu = new Menu
@@ -108,8 +120,8 @@ public static class DatabaseSeeder
                 new MenuFood { Food = fries, Quantity = 1 }
             ]
         };
-        context.Menus.Add(lunchMenu);
-        await context.SaveChangesAsync();
+        _context.Menus.Add(lunchMenu);
+        await _context.SaveChangesAsync();
 
         // Add a restaurant
         var restaurant = new Restaurant
@@ -121,8 +133,8 @@ public static class DatabaseSeeder
             Longitude = -74.0060,
             Phone = "555-1234"
         };
-        context.Restaurants.Add(restaurant);
-        await context.SaveChangesAsync();
+        _context.Restaurants.Add(restaurant);
+        await _context.SaveChangesAsync();
 
         // Add stations to the restaurant
         var burgerStationInstance = new Station
@@ -139,16 +151,16 @@ public static class DatabaseSeeder
             Restaurant = restaurant,
             StationCategory = friesStation
         };
-        context.Stations.AddRange(burgerStationInstance, friesStationInstance);
-        await context.SaveChangesAsync();
+        _context.Stations.AddRange(burgerStationInstance, friesStationInstance);
+        await _context.SaveChangesAsync();
 
         // Add opening hours
         var openingHours = Enum.GetValues<DayOfWeek>().Select(day => new OpeningHour
         {
             DayOfWeek = day, OpenTime = new TimeOnly(9, 0), CloseTime = new TimeOnly(21, 0), Restaurant = restaurant
         }).ToList();
-        context.OpeningHours.AddRange(openingHours);
-        await context.SaveChangesAsync();
+        _context.OpeningHours.AddRange(openingHours);
+        await _context.SaveChangesAsync();
 
         // Register user with a theme
         var theme = new Theme
@@ -160,19 +172,12 @@ public static class DatabaseSeeder
             ButtonSecondary = "#03dac6"
         };
 
-        context.Themes.Add(theme);
-        await context.SaveChangesAsync();
+        _context.Themes.Add(theme);
+        await _context.SaveChangesAsync();
 
-        var customer = new Customer
-        {
-            Name = "Test User",
-            UserName = "testuser",
-            Email = "asd@asd.asd",
-            Theme = theme
-        };
-
-        context.Customers.Add(customer);
-        await context.SaveChangesAsync();
+        await SeedAdmin();
+        await SeedEmployee();
+        await SeedCustomer();
 
         // Place an order
         var order = new Order
@@ -180,11 +185,10 @@ public static class DatabaseSeeder
             Restaurant = restaurant,
             OrderNumber = 1,
             Status = OrderStatus.Pending,
-            CreatedAt = DateTime.UtcNow,
-            Customer = customer
+            CreatedAt = DateTime.UtcNow
         };
-        context.Orders.Add(order);
-        await context.SaveChangesAsync();
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
 
         // TODO: save price at order time
         // This is important because menu and food prices may change over time
@@ -203,8 +207,109 @@ public static class DatabaseSeeder
             Order = order,
             Quantity = 1
         };
-        context.OrderMenus.Add(orderMenuItem);
-        context.OrderFoods.Add(orderFoodItem);
-        await context.SaveChangesAsync();
+        _context.OrderMenus.Add(orderMenuItem);
+        _context.OrderFoods.Add(orderFoodItem);
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedEmployee()
+    {
+        var employee = new Employee
+        {
+            UserName = "employee1",
+            Email = "employee@example.com",
+            Name = "Employee One"
+        };
+
+        var permissions = new[]
+        {
+            "Permission:Order:Create",
+            "Permission:Order:Read",
+            "Permission:Order:Update",
+            "Permission:Order:Delete",
+            "Permission:Station:Read",
+            "Permission:StationCategory:Read",
+            "Permission:Menu:Read",
+            "Permission:Food:Read",
+            "Permission:Ingredient:Read",
+            "Permission:Allergy:Read",
+            "Permission:Customer:Read"
+        };
+
+        var result = await _userManager.CreateAsync(employee, "Employee123!");
+        if (!result.Succeeded) return;
+
+        var role = await _roleManager.FindByNameAsync("Employee");
+        if (role == null)
+        {
+            role = new Role { Name = "Employee" };
+            await _roleManager.CreateAsync(role);
+            foreach (var permission in permissions)
+                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
+        }
+
+        await _userManager.AddToRoleAsync(employee, "Employee");
+    }
+
+    private async Task SeedCustomer()
+    {
+        var customer = new Customer
+        {
+            UserName = "customer1",
+            Email = "customer@example.com",
+            Name = "Customer One",
+            Theme = await _context.Themes.FirstOrDefaultAsync()
+        };
+
+        var permissions = new[]
+        {
+            "Permission:Order:Create",
+            "Permission:Menu:Read",
+            "Permission:Food:Read",
+            "Permission:Ingredient:Read",
+            "Permission:Allergy:Read",
+            "Permission:Restaurant:Read"
+        };
+
+        var result = await _userManager.CreateAsync(customer, "Customer123!");
+        if (!result.Succeeded) return;
+
+        var role = await _roleManager.FindByNameAsync("Customer");
+        if (role == null)
+        {
+            role = new Role { Name = "Customer" };
+            await _roleManager.CreateAsync(role);
+            foreach (var permission in permissions)
+                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
+        }
+
+        await _userManager.AddToRoleAsync(customer, "Customer");
+    }
+
+    private async Task SeedAdmin()
+    {
+        var admin = new Employee
+        {
+            UserName = "admin",
+            Email = "admin@example.com",
+            Name = "Admin User"
+        };
+
+        // Get all permissions from the PermissionService
+        var allPermissions = _permissionService.GetAllPermissions();
+
+        var result = await _userManager.CreateAsync(admin, "Admin123!");
+        if (!result.Succeeded) return;
+
+        var role = await _roleManager.FindByNameAsync("Admin");
+        if (role == null)
+        {
+            role = new Role { Name = "Admin" };
+            await _roleManager.CreateAsync(role);
+            foreach (var permission in allPermissions)
+                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
+        }
+
+        await _userManager.AddToRoleAsync(admin, "Admin");
     }
 }

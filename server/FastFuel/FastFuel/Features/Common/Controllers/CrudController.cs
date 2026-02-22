@@ -1,3 +1,4 @@
+using FastFuel.Features.Common.Authorization;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,14 +14,25 @@ public abstract class CrudController<TModel, TRequest, TResponse>(ICrudService<T
     : ControllerBase where TModel : class, IIdentifiable where TResponse : IIdentifiable
 {
     [HttpGet]
-    public virtual async Task<Results<Ok<List<TResponse>>, UnauthorizedHttpResult>> GetAll()
+    [CrudAuthorize(PermissionType.Read)]
+    public virtual async Task<Results<
+            Ok<List<TResponse>>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        GetAll()
     {
         var dtos = await service.GetAllAsync();
         return TypedResults.Ok(dtos);
     }
 
     [HttpGet("{id:int}")]
-    public virtual async Task<Results<Ok<TResponse>, NotFound, UnauthorizedHttpResult>> GetById(uint id)
+    [CrudAuthorize(PermissionType.Read)]
+    public virtual async Task<Results<
+            Ok<TResponse>,
+            NotFound,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        GetById(uint id)
     {
         var dto = await service.GetByIdAsync(id);
         if (dto == null)
@@ -29,8 +41,13 @@ public abstract class CrudController<TModel, TRequest, TResponse>(ICrudService<T
     }
 
     [HttpPost]
-    public virtual async Task<Results<Created<TResponse>, Conflict<ProblemDetails>, UnauthorizedHttpResult>> Create(
-        TRequest requestDto)
+    [CrudAuthorize(PermissionType.Create)]
+    public virtual async Task<Results<
+            Created<TResponse>,
+            Conflict<ProblemDetails>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        Create(TRequest requestDto)
     {
         var responseDto = await service.CreateAsync(requestDto);
         var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
@@ -38,9 +55,15 @@ public abstract class CrudController<TModel, TRequest, TResponse>(ICrudService<T
     }
 
     [HttpPut("{id:int}")]
-    public virtual async Task<Results<NoContent, NotFound, BadRequest<ProblemDetails>, Conflict<ProblemDetails>,
-        UnauthorizedHttpResult>> Update(
-        uint id, TRequest requestDto)
+    [CrudAuthorize(PermissionType.Update)]
+    public virtual async Task<Results<
+            NoContent,
+            NotFound,
+            BadRequest<ProblemDetails>,
+            Conflict<ProblemDetails>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        Update(uint id, TRequest requestDto)
     {
         var success = await service.UpdateAsync(id, requestDto);
         if (!success)
@@ -49,7 +72,13 @@ public abstract class CrudController<TModel, TRequest, TResponse>(ICrudService<T
     }
 
     [HttpDelete("{id:int}")]
-    public virtual async Task<Results<NoContent, NotFound, BadRequest<ProblemDetails>, UnauthorizedHttpResult>>
+    [CrudAuthorize(PermissionType.Delete)]
+    public virtual async Task<Results<
+            NoContent,
+            NotFound,
+            BadRequest<ProblemDetails>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
         Delete(uint id)
     {
         var success = await service.DeleteAsync(id);

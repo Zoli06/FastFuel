@@ -35,7 +35,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
         };
     }
 
-    public void UpdateModel(OrderRequestDto dto, ref Order model)
+    public void UpdateModel(OrderRequestDto dto, Order model)
     {
         if (dto.CustomerId != model.CustomerId)
             throw new InvalidOperationException("Cannot change the CustomerId of an order.");

@@ -1,10 +1,13 @@
-using FastFuel.Features.Auth;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
+using FastFuel.Features.Roles.Models;
 using FastFuel.Features.Users.Models;
 using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using Scrutor;
 
 namespace FastFuel;
@@ -42,8 +45,9 @@ public static class Program
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
 
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
-            await DatabaseSeeder.SeedAsync(dbContext, passwordHasher);
+
+            var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+            await databaseSeeder.SeedAsync();
         }
         // ----------- END TESTING ONLY -----------
 
@@ -53,13 +57,11 @@ public static class Program
     // Configures JWT authentication and IdentityCore for User management
     private static void ConfigureAuth(WebApplicationBuilder builder)
     {
-        builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
-            .AddCookie();
-
         builder.Services.AddAuthorization();
-        builder.Services.AddIdentityCore<User>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddApiEndpoints();
+        builder.Services
+            .AddIdentityApiEndpoints<User>()
+            .AddRoles<Role>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
     }
 
     // Configures the application's EF Core DbContext
@@ -95,7 +97,17 @@ public static class Program
 
         builder.Services.AddOpenApiDocument(config =>
         {
-            config.OperationProcessors.Add(new UnauthorizedHttpResultOperationProcessor());
+            config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
+
+            config.AddSecurity("Bearer", new OpenApiSecurityScheme
+            {
+                Type = OpenApiSecuritySchemeType.Http,
+                In = OpenApiSecurityApiKeyLocation.Header,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+
+            config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
         });
 
         builder.Services.AddCors(options =>
@@ -111,7 +123,10 @@ public static class Program
         builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
-            .AddClasses(filter => filter.InNamespaces("FastFuel.Features"))
+            .AddClasses(filter => filter
+                .InNamespaces("FastFuel.Features")
+                .Where(t => !typeof(IFilterMetadata).IsAssignableFrom(t)
+                            && !typeof(IFilterFactory).IsAssignableFrom(t)))
             .UsingRegistrationStrategy(RegistrationStrategy.Skip)
             .AsImplementedInterfaces()
             .WithScopedLifetime());
@@ -130,7 +145,6 @@ public static class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-        app.MapGroup("/api/Auth").WithTags("Auth").MapCustomIdentityApi<User>();
 
         app.MapControllers();
     }
