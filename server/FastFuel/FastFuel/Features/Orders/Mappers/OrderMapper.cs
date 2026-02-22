@@ -13,7 +13,6 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
         return new OrderResponseDto
         {
             Id = model.Id,
-            CustomerId = model.CustomerId,
             RestaurantId = model.RestaurantId,
             OrderNumber = model.OrderNumber,
             Status = model.Status.ToString(),
@@ -28,7 +27,6 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
     {
         return new Order
         {
-            CustomerId = dto.CustomerId,
             RestaurantId = dto.RestaurantId,
             Menus = dto.Menus.ConvertAll(ToModel),
             Foods = dto.Foods.ConvertAll(ToModel)
@@ -37,9 +35,6 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
 
     public void UpdateModel(OrderRequestDto dto, ref Order model)
     {
-        if (dto.CustomerId != model.CustomerId)
-            throw new InvalidOperationException("Cannot change the CustomerId of an order.");
-
         model.RestaurantId = dto.RestaurantId;
 
         model.Menus.Clear();

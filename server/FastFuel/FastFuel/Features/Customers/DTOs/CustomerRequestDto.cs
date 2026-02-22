@@ -1,5 +1,10 @@
-using FastFuel.Features.Users.DTOs;
-
 namespace FastFuel.Features.Customers.DTOs;
 
-public record CustomerRequestDto : UserRequestDto;
+public class CustomerRequestDto
+{
+    public string Name { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string Username { get; init; } = string.Empty;
+    public uint ThemeId { get; init; }
+    public string? Password { get; set; } = string.Empty;
+}

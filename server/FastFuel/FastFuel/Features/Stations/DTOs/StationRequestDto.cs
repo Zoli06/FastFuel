@@ -1,9 +1,9 @@
 namespace FastFuel.Features.Stations.DTOs;
 
-public record StationRequestDto
+public class StationRequestDto
 {
-    public required string Name { get; init; }
-    public required bool InOperation { get; init; }
-    public required uint RestaurantId { get; init; }
-    public required uint StationCategoryId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public bool InOperation { get; init; }
+    public uint RestaurantId { get; init; }
+    public uint StationCategoryId { get; init; }
 }

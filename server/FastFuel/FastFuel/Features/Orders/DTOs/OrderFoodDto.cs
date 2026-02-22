@@ -1,8 +1,8 @@
 namespace FastFuel.Features.Orders.DTOs;
 
-public record OrderFoodDto
+public class OrderFoodDto
 {
-    public required uint FoodId { get; init; }
-    public required uint Quantity { get; init; }
-    public required string? SpecialInstructions { get; init; }
+    public uint FoodId { get; init; }
+    public uint Quantity { get; init; }
+    public string? SpecialInstructions { get; init; }
 }

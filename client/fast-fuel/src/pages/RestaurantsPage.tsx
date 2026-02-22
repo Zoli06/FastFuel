@@ -1,9 +1,9 @@
-import { Restaurants } from '../components/Restaurant Menu/Restaurants';
+import { Restaurants } from '../components/Restaurant/Restaurants';
 import { Footer } from '../components/Footer/Footer';
 import { HeaderGeneral } from '../components/Headers/HeaderGeneral';
 import { apiClient } from '../apiClient.ts';
 
-export const RestaurantPage = () => {
+export const RestaurantsPage = () => {
   const { data, isLoading, error, refetch } = apiClient.useQuery('get', '/api/Restaurant');
 
   if (isLoading) {

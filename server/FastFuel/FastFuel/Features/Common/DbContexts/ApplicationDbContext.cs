@@ -16,19 +16,13 @@ using FastFuel.Features.Shifts.Models;
 using FastFuel.Features.StationCategories.Models;
 using FastFuel.Features.Stations.Models;
 using FastFuel.Features.Themes.Models;
-using FastFuel.Features.Users.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<User, IdentityRole<uint>, uint>(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Allergy> Allergies { get; set; }
-    public DbSet<Customer> Customers { get; set; }
-    public DbSet<Employee> Employees { get; set; }
     public DbSet<FoodIngredient> FoodIngredients { get; set; }
     public DbSet<Food> Foods { get; set; }
     public DbSet<Ingredient> Ingredients { get; set; }
@@ -39,22 +33,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<OrderMenu> OrderMenus { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<Employee> Employees { get; set; }
     public DbSet<StationCategory> StationCategories { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<Shift> Shifts { get; set; }
     public DbSet<Theme> Themes { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-
-        modelBuilder.Entity<User>().UseTptMappingStrategy();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        base.OnConfiguring(optionsBuilder);
         optionsBuilder.UseExceptionProcessor();
     }
 }

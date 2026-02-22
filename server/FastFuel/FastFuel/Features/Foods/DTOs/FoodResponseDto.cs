@@ -2,13 +2,13 @@ using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Foods.DTOs;
 
-public record FoodResponseDto : IIdentifiable
+public class FoodResponseDto : IIdentifiable
 {
-    public required string Name { get; init; }
-    public required uint Price { get; init; }
-    public required string? Description { get; init; }
-    public required Uri? ImageUrl { get; init; }
-    public required List<FoodIngredientDto> Ingredients { get; init; }
-    public required List<uint> MenuIds { get; init; }
-    public required uint Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public uint Price { get; init; }
+    public string? Description { get; init; }
+    public Uri? ImageUrl { get; init; }
+    public List<FoodIngredientDto> Ingredients { get; init; } = [];
+    public List<uint> MenuIds { get; init; } = [];
+    public uint Id { get; init; }
 }

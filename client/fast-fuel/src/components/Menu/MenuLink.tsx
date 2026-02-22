@@ -1,9 +1,15 @@
+import { Link } from 'react-router-dom';
 import './MenuLink.css';
 
-export const MenuLink = ({ text, to }: { text: string; to: string }) => {
+interface MenuLinkProps {
+  text: string;
+  to: string;
+}
+
+export const MenuLink = ({ text, to }: MenuLinkProps) => {
   return (
-    <a href={to} className="menu-link">
+    <Link typeof="button" to={to} className="menu-link">
       {text}
-    </a>
+    </Link>
   );
 };

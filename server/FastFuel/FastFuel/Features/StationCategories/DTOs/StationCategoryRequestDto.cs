@@ -1,8 +1,8 @@
 namespace FastFuel.Features.StationCategories.DTOs;
 
-public record StationCategoryRequestDto
+public class StationCategoryRequestDto
 {
-    public required string Name { get; init; }
-    public required List<uint> IngredientIds { get; init; }
-    public required List<uint> StationIds { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public List<uint> IngredientIds { get; init; } = [];
+    public List<uint> StationIds { get; init; } = [];
 }

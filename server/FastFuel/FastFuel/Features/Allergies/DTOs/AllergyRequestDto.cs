@@ -1,8 +1,8 @@
 namespace FastFuel.Features.Allergies.DTOs;
 
-public record AllergyRequestDto
+public class AllergyRequestDto
 {
-    public required string Name { get; init; }
-    public required string? Message { get; init; }
-    public required List<uint> IngredientIds { get; init; } = [];
+    public string Name { get; init; } = string.Empty;
+    public string? Message { get; init; }
+    public List<uint> IngredientIds { get; init; } = [];
 }

@@ -1,12 +1,13 @@
 namespace FastFuel.Features.Restaurants.DTOs;
 
-public record RestaurantRequestDto
+public class RestaurantRequestDto
 {
-    public required string Name { get; init; }
-    public required string? Description { get; init; }
-    public required double Latitude { get; init; }
-    public required double Longitude { get; init; }
-    public required string Address { get; init; }
-    public required string? Phone { get; init; }
-    public required List<RestaurantOpeningHourDto> OpeningHours { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public double Latitude { get; init; }
+    public double Longitude { get; init; }
+    public string Address { get; init; } = string.Empty;
+    public string? Phone { get; init; }
+    public List<RestaurantOpeningHourDto> OpeningHours { get; init; } = [];
+    public string? Password { get; set; } = null;
 }
