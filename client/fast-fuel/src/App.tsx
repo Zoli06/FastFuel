@@ -2,7 +2,7 @@ import '@mantine/core/styles.css';
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home.tsx';
-import { Login } from './components/Login/Login.tsx';
+import { Login } from './pages/Login.tsx';
 import { Restaurant } from './components/Restaurant/Restaurants.tsx';
 
 export function App() {
