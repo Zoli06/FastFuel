@@ -24,8 +24,8 @@ public class UserController(
     public async Task<Results<
             Ok<UserResponseDto>,
             UnauthorizedHttpResult>>
-        GetCurrentUser()
+        GetCurrentUser(CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<UserRequestDto, UserResponseDto>)this).GetCurrentUserDefault();
+        return await ((IUserController<UserRequestDto, UserResponseDto>)this).GetCurrentUserDefault(cancellationToken);
     }
 }

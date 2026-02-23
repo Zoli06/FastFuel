@@ -24,8 +24,10 @@ public class CustomerController(
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
-    public async Task<Results<Ok<CustomerResponseDto>, UnauthorizedHttpResult>> GetCurrentUser()
+    public async Task<Results<Ok<CustomerResponseDto>, UnauthorizedHttpResult>> GetCurrentUser(
+        CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<CustomerRequestDto, CustomerResponseDto>)this).GetCurrentUserDefault();
+        return await ((IUserController<CustomerRequestDto, CustomerResponseDto>)this).GetCurrentUserDefault(
+            cancellationToken);
     }
 }

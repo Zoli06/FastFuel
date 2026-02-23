@@ -23,28 +23,28 @@ public abstract class CrudService<TEntity, TRequest, TResponse>(
     protected virtual Update<TEntity, TRequest, TResponse> UpdateOperation => new(DbContext, DbSet, Mapper);
     protected virtual Delete<TEntity> DeleteOperation => new(DbContext, DbSet);
 
-    public Task<List<TResponse>> GetAllAsync()
+    public Task<List<TResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return GetAllOperation.ExecuteAsync();
+        return GetAllOperation.ExecuteAsync(cancellationToken);
     }
 
-    public Task<TResponse?> GetByIdAsync(uint id)
+    public Task<TResponse?> GetByIdAsync(uint id, CancellationToken cancellationToken = default)
     {
-        return GetByIdOperation.ExecuteAsync(id);
+        return GetByIdOperation.ExecuteAsync(id, cancellationToken);
     }
 
-    public Task<TResponse> CreateAsync(TRequest requestDto)
+    public Task<TResponse> CreateAsync(TRequest requestDto, CancellationToken cancellationToken = default)
     {
-        return CreateOperation.ExecuteAsync(requestDto);
+        return CreateOperation.ExecuteAsync(requestDto, cancellationToken);
     }
 
-    public Task<bool> UpdateAsync(uint id, TRequest requestDto)
+    public Task<bool> UpdateAsync(uint id, TRequest requestDto, CancellationToken cancellationToken = default)
     {
-        return UpdateOperation.ExecuteAsync(id, requestDto);
+        return UpdateOperation.ExecuteAsync(id, requestDto, cancellationToken);
     }
 
-    public Task<bool> DeleteAsync(uint id)
+    public Task<bool> DeleteAsync(uint id, CancellationToken cancellationToken = default)
     {
-        return DeleteOperation.ExecuteAsync(id);
+        return DeleteOperation.ExecuteAsync(id, cancellationToken);
     }
 }

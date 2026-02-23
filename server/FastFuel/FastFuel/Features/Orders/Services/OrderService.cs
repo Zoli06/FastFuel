@@ -43,13 +43,14 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto)
+        protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto,
+            CancellationToken cancellationToken = default)
         {
-            var entity = await base.CreateEntityAsync(requestDto);
+            var entity = await base.CreateEntityAsync(requestDto, cancellationToken);
 
             var lastOrder = await DbSet
                 .OrderByDescending(o => o.CreatedAt)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
             entity.OrderNumber = GetNextOrderNumber(lastOrder);
 
             return entity;
@@ -62,19 +63,20 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Update<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity)
+        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity,
+            CancellationToken cancellationToken = default)
         {
             EnsurePendingStatus(entity);
-            return base.SaveEntityAsync(id, requestDto, entity);
+            return base.SaveEntityAsync(id, requestDto, entity, cancellationToken);
         }
     }
 
     private class Delete(ApplicationDbContext dbContext, DbSet<Order> dbSet) : Delete<Order>(dbContext, dbSet)
     {
-        protected override Task DeleteEntityAsync(uint id, Order entity)
+        protected override Task DeleteEntityAsync(uint id, Order entity, CancellationToken cancellationToken = default)
         {
             EnsurePendingStatus(entity);
-            return base.DeleteEntityAsync(id, entity);
+            return base.DeleteEntityAsync(id, entity, cancellationToken);
         }
     }
 }

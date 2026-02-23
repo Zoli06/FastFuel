@@ -14,29 +14,32 @@ public class Update<TEntity, TRequest, TResponse>(
     protected readonly DbSet<TEntity> DbSet = dbSet;
     protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
 
-    protected virtual async Task<TEntity?> GetEntityAsync(uint id)
+    protected virtual async Task<TEntity?> GetEntityAsync(uint id, CancellationToken cancellationToken = default)
     {
-        return await DbSet.FindAsync(id);
+        return await DbSet.FindAsync(id, cancellationToken);
     }
 
-    protected virtual Task UpdateEntityAsync(uint id, TRequest requestDto, TEntity entity)
+    protected virtual Task UpdateEntityAsync(uint id, TRequest requestDto, TEntity entity,
+        CancellationToken cancellationToken = default)
     {
         Mapper.UpdateEntity(requestDto, entity);
         return Task.CompletedTask;
     }
 
-    protected virtual async Task SaveEntityAsync(uint id, TRequest requestDto, TEntity entity)
+    protected virtual async Task SaveEntityAsync(uint id, TRequest requestDto, TEntity entity,
+        CancellationToken cancellationToken = default)
     {
-        await DbContext.SaveChangesAsync();
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public virtual async Task<bool> ExecuteAsync(uint id, TRequest requestDto)
+    public virtual async Task<bool> ExecuteAsync(uint id, TRequest requestDto,
+        CancellationToken cancellationToken = default)
     {
-        var entity = await GetEntityAsync(id);
+        var entity = await GetEntityAsync(id, cancellationToken);
         if (entity == null)
             return false;
-        await UpdateEntityAsync(id, requestDto, entity);
-        await SaveEntityAsync(id, requestDto, entity);
+        await UpdateEntityAsync(id, requestDto, entity, cancellationToken);
+        await SaveEntityAsync(id, requestDto, entity, cancellationToken);
         return true;
     }
 }
