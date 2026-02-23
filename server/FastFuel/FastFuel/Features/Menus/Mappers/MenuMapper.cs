@@ -32,7 +32,7 @@ public class MenuMapper : IMapper<Menu, MenuRequestDto, MenuResponseDto>
         };
     }
 
-    public void UpdateModel(MenuRequestDto dto, ref Menu model)
+    public void UpdateModel(MenuRequestDto dto, Menu model)
     {
         model.Name = dto.Name;
         model.Price = dto.Price;

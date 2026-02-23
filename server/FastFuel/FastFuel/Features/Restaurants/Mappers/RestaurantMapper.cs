@@ -36,7 +36,7 @@ public class RestaurantMapper : IMapper<Restaurant, RestaurantRequestDto, Restau
         };
     }
 
-    public void UpdateModel(RestaurantRequestDto dto, ref Restaurant model)
+    public void UpdateModel(RestaurantRequestDto dto, Restaurant model)
     {
         model.Name = dto.Name;
         model.Description = dto.Description;

@@ -1,15 +1,13 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using FastFuel.Features.Authentication.Settings;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
-using FastFuel.Features.Customers.Models;
-using FastFuel.Features.Employees.Models;
-using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Roles.Models;
+using FastFuel.Features.Users.Models;
 using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using Scrutor;
 
 namespace FastFuel;
@@ -25,8 +23,8 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Configure JWT and authentication, throws if missing
-        ConfigureJwtAndAuthentication(builder);
+        // Configure authorization and authentication (JWT)
+        ConfigureAuth(builder);
 
         // Configure database
         ConfigureDatabase(builder);
@@ -39,50 +37,20 @@ public static class Program
         // Configure middleware / request pipeline
         ConfigureMiddleware(app);
 
-        // ----------- TESTING ONLY -----------
-        // This will delete and recreate the database on each run
-        using (var scope = app.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await dbContext.Database.EnsureDeletedAsync();
-            await dbContext.Database.EnsureCreatedAsync();
-
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Restaurant>>();
-            await DatabaseSeeder.SeedAsync(dbContext, passwordHasher);
-        }
-        // ----------- END TESTING ONLY -----------
+        // Seed the database with initial data (roles, users, etc.)
+        await SeedDatabaseAsync(app);
 
         await app.RunAsync();
     }
 
-    // Binds JwtSettings and registers authentication
-    private static void ConfigureJwtAndAuthentication(WebApplicationBuilder builder)
+    // Configures JWT authentication and IdentityCore for User management
+    private static void ConfigureAuth(WebApplicationBuilder builder)
     {
-        var jwtSection = builder.Configuration.GetSection("JwtSettings");
-        builder.Services.Configure<JwtSettings>(jwtSection);
-        var jwtSettings = jwtSection.Get<JwtSettings>()
-                          ?? throw new InvalidOperationException("JWT settings are not configured properly.");
-
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = "JwtBearer";
-            options.DefaultChallengeScheme = "JwtBearer";
-        }).AddJwtBearer("JwtBearer", options =>
-        {
-            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings.Issuer,
-                ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = signingKey,
-                ClockSkew = TimeSpan.Zero
-            };
-        });
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        builder.Services.AddAuthorization();
+        builder.Services
+            .AddIdentityApiEndpoints<User>()
+            .AddRoles<Role>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
     }
 
     // Configures the application's EF Core DbContext
@@ -111,11 +79,24 @@ public static class Program
         {
             // Convert UniqueConstraintException from EF into HTTP 409 responses globally
             options.Filters.Add<UniqueConstraintExceptionFilter>();
+            // TODO: Add filter for reference constraint exceptions
         });
+
+        builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApiDocument(config =>
         {
-            config.OperationProcessors.Add(new UnauthorizedHttpResultOperationProcessor());
+            config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
+
+            config.AddSecurity("Bearer", new OpenApiSecurityScheme
+            {
+                Type = OpenApiSecuritySchemeType.Http,
+                In = OpenApiSecurityApiKeyLocation.Header,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+
+            config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
         });
 
         builder.Services.AddCors(options =>
@@ -128,12 +109,13 @@ public static class Program
             });
         });
 
-        builder.Services.AddTransient<IPasswordHasher<Restaurant>, PasswordHasher<Restaurant>>();
-        builder.Services.AddTransient<IPasswordHasher<Customer>, PasswordHasher<Customer>>();
-        builder.Services.AddTransient<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
+        builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
-            .AddClasses(filter => filter.InNamespaces("FastFuel.Features"))
+            .AddClasses(filter => filter
+                .InNamespaces("FastFuel.Features")
+                .Where(t => !typeof(IFilterMetadata).IsAssignableFrom(t)
+                            && !typeof(IFilterFactory).IsAssignableFrom(t)))
             .UsingRegistrationStrategy(RegistrationStrategy.Skip)
             .AsImplementedInterfaces()
             .WithScopedLifetime());
@@ -154,5 +136,24 @@ public static class Program
         app.UseAuthorization();
 
         app.MapControllers();
+    }
+
+    // Seed the database with initial data (roles, users, etc.) on application startup
+    private static async Task SeedDatabaseAsync(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+        if (app.Environment.IsDevelopment())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureCreatedAsync();
+
+            await databaseSeeder.SeedTestAsync();
+        }
+        else
+        {
+            await databaseSeeder.SeedAsync();
+        }
     }
 }

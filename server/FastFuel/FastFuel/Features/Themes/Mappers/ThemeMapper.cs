@@ -31,7 +31,7 @@ public class ThemeMapper : IMapper<Theme, ThemeRequestDto, ThemeResponseDto>
         };
     }
 
-    public void UpdateModel(ThemeRequestDto dto, ref Theme model)
+    public void UpdateModel(ThemeRequestDto dto, Theme model)
     {
         model.Name = dto.Name;
         model.Background = dto.Background;

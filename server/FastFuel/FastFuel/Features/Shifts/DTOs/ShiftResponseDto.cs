@@ -2,10 +2,10 @@ using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Shifts.DTOs;
 
-public class ShiftResponseDto : IIdentifiable
+public record ShiftResponseDto : IIdentifiable
 {
-    public DateTime StartTime { get; init; }
-    public DateTime EndTime { get; init; }
-    public uint EmployeeId { get; init; }
-    public uint Id { get; init; }
+    public required DateTime StartTime { get; init; }
+    public required DateTime EndTime { get; init; }
+    public required uint EmployeeId { get; init; }
+    public required uint Id { get; init; }
 }

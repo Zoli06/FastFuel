@@ -29,7 +29,7 @@ public class StationMapper : IMapper<Station, StationRequestDto, StationResponse
         };
     }
 
-    public void UpdateModel(StationRequestDto dto, ref Station model)
+    public void UpdateModel(StationRequestDto dto, Station model)
     {
         model.Name = dto.Name;
         model.InOperation = dto.InOperation;

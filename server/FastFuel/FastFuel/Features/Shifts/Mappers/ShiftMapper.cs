@@ -27,7 +27,7 @@ public class ShiftMapper : IMapper<Shift, ShiftRequestDto, ShiftResponseDto>
         };
     }
 
-    public void UpdateModel(ShiftRequestDto dto, ref Shift model)
+    public void UpdateModel(ShiftRequestDto dto, Shift model)
     {
         model.StartTime = dto.StartTime;
         model.EndTime = dto.EndTime;

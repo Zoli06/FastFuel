@@ -1,7 +1,7 @@
 namespace FastFuel.Features.Foods.DTOs;
 
-public class FoodIngredientDto
+public record FoodIngredientDto
 {
-    public uint IngredientId { get; init; }
-    public uint Quantity { get; init; }
+    public required uint IngredientId { get; init; }
+    public required uint Quantity { get; init; }
 }

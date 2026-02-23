@@ -36,7 +36,7 @@ public class FoodMapper : IMapper<Food, FoodRequestDto, FoodResponseDto>
         };
     }
 
-    public void UpdateModel(FoodRequestDto dto, ref Food model)
+    public void UpdateModel(FoodRequestDto dto, Food model)
     {
         model.Name = dto.Name;
         model.Price = dto.Price;

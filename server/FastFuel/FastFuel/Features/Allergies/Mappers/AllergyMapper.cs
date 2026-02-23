@@ -34,7 +34,7 @@ public class AllergyMapper(ApplicationDbContext dbContext)
     }
 
 
-    public void UpdateModel(AllergyRequestDto dto, ref Allergy model)
+    public void UpdateModel(AllergyRequestDto dto, Allergy model)
     {
         model.Name = dto.Name;
         model.Message = dto.Message;

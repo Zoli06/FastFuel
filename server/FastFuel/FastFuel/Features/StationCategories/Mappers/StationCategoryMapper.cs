@@ -33,7 +33,7 @@ public class StationCategoryMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public void UpdateModel(StationCategoryRequestDto dto, ref StationCategory model)
+    public void UpdateModel(StationCategoryRequestDto dto, StationCategory model)
     {
         model.Name = dto.Name;
 

@@ -38,7 +38,7 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public void UpdateModel(IngredientRequestDto dto, ref Ingredient model)
+    public void UpdateModel(IngredientRequestDto dto, Ingredient model)
     {
         model.Name = dto.Name;
         model.ImageUrl = dto.ImageUrl;

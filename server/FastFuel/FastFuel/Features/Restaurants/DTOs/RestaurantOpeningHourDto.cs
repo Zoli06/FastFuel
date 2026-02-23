@@ -1,8 +1,8 @@
 namespace FastFuel.Features.Restaurants.DTOs;
 
-public class RestaurantOpeningHourDto
+public record RestaurantOpeningHourDto
 {
-    public DayOfWeek DayOfWeek { get; init; }
-    public TimeOnly OpenTime { get; init; }
-    public TimeOnly CloseTime { get; init; }
+    public required DayOfWeek DayOfWeek { get; init; }
+    public required TimeOnly OpenTime { get; init; }
+    public required TimeOnly CloseTime { get; init; }
 }
