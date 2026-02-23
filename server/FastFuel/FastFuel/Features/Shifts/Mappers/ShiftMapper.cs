@@ -1,23 +1,23 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Shifts.DTOs;
-using FastFuel.Features.Shifts.Models;
+using FastFuel.Features.Shifts.Entities;
 
 namespace FastFuel.Features.Shifts.Mappers;
 
 public class ShiftMapper : IMapper<Shift, ShiftRequestDto, ShiftResponseDto>
 {
-    public ShiftResponseDto ToDto(Shift model)
+    public ShiftResponseDto ToDto(Shift entity)
     {
         return new ShiftResponseDto
         {
-            Id = model.Id,
-            StartTime = model.StartTime,
-            EndTime = model.EndTime,
-            EmployeeId = model.EmployeeId
+            Id = entity.Id,
+            StartTime = entity.StartTime,
+            EndTime = entity.EndTime,
+            EmployeeId = entity.EmployeeId
         };
     }
 
-    public Shift ToModel(ShiftRequestDto dto)
+    public Shift ToEntity(ShiftRequestDto dto)
     {
         return new Shift
         {
@@ -27,10 +27,10 @@ public class ShiftMapper : IMapper<Shift, ShiftRequestDto, ShiftResponseDto>
         };
     }
 
-    public void UpdateModel(ShiftRequestDto dto, Shift model)
+    public void UpdateEntity(ShiftRequestDto dto, Shift entity)
     {
-        model.StartTime = dto.StartTime;
-        model.EndTime = dto.EndTime;
-        model.EmployeeId = dto.EmployeeId;
+        entity.StartTime = dto.StartTime;
+        entity.EndTime = dto.EndTime;
+        entity.EmployeeId = dto.EmployeeId;
     }
 }

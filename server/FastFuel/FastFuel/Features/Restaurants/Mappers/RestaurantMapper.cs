@@ -1,28 +1,28 @@
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.OpeningHours.Models;
+using FastFuel.Features.OpeningHours.Entities;
 using FastFuel.Features.Restaurants.DTOs;
-using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Restaurants.Entities;
 
 namespace FastFuel.Features.Restaurants.Mappers;
 
 public class RestaurantMapper : IMapper<Restaurant, RestaurantRequestDto, RestaurantResponseDto>
 {
-    public RestaurantResponseDto ToDto(Restaurant model)
+    public RestaurantResponseDto ToDto(Restaurant entity)
     {
         return new RestaurantResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            Description = model.Description,
-            Latitude = model.Latitude,
-            Longitude = model.Longitude,
-            Address = model.Address,
-            Phone = model.Phone,
-            OpeningHours = model.OpeningHours.ConvertAll(ToDto)
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Latitude = entity.Latitude,
+            Longitude = entity.Longitude,
+            Address = entity.Address,
+            Phone = entity.Phone,
+            OpeningHours = entity.OpeningHours.ConvertAll(ToDto)
         };
     }
 
-    public Restaurant ToModel(RestaurantRequestDto dto)
+    public Restaurant ToEntity(RestaurantRequestDto dto)
     {
         return new Restaurant
         {
@@ -32,21 +32,21 @@ public class RestaurantMapper : IMapper<Restaurant, RestaurantRequestDto, Restau
             Longitude = dto.Longitude,
             Address = dto.Address,
             Phone = dto.Phone,
-            OpeningHours = dto.OpeningHours.ConvertAll(ToModel)
+            OpeningHours = dto.OpeningHours.ConvertAll(ToEntity)
         };
     }
 
-    public void UpdateModel(RestaurantRequestDto dto, Restaurant model)
+    public void UpdateEntity(RestaurantRequestDto dto, Restaurant entity)
     {
-        model.Name = dto.Name;
-        model.Description = dto.Description;
-        model.Latitude = dto.Latitude;
-        model.Longitude = dto.Longitude;
-        model.Address = dto.Address;
-        model.Phone = dto.Phone;
+        entity.Name = dto.Name;
+        entity.Description = dto.Description;
+        entity.Latitude = dto.Latitude;
+        entity.Longitude = dto.Longitude;
+        entity.Address = dto.Address;
+        entity.Phone = dto.Phone;
 
-        model.OpeningHours.Clear();
-        model.OpeningHours.AddRange(dto.OpeningHours.ConvertAll(ToModel));
+        entity.OpeningHours.Clear();
+        entity.OpeningHours.AddRange(dto.OpeningHours.ConvertAll(ToEntity));
     }
 
     private RestaurantOpeningHourDto ToDto(OpeningHour openingHour)
@@ -59,7 +59,7 @@ public class RestaurantMapper : IMapper<Restaurant, RestaurantRequestDto, Restau
         };
     }
 
-    private OpeningHour ToModel(RestaurantOpeningHourDto dto)
+    private OpeningHour ToEntity(RestaurantOpeningHourDto dto)
     {
         return new OpeningHour
         {

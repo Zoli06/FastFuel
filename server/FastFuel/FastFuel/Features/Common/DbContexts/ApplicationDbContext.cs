@@ -1,23 +1,23 @@
 using EntityFramework.Exceptions.MySQL.Pomelo;
-using FastFuel.Features.Allergies.Models;
-using FastFuel.Features.Customers.Models;
-using FastFuel.Features.Employees.Models;
-using FastFuel.Features.FoodIngredients.Models;
-using FastFuel.Features.Foods.Models;
-using FastFuel.Features.Ingredients.Models;
-using FastFuel.Features.MenuFoods.Models;
-using FastFuel.Features.Menus.Models;
-using FastFuel.Features.OpeningHours.Models;
-using FastFuel.Features.OrderFoods.Models;
-using FastFuel.Features.OrderMenus.Models;
-using FastFuel.Features.Orders.Models;
-using FastFuel.Features.Restaurants.Models;
-using FastFuel.Features.Roles.Models;
-using FastFuel.Features.Shifts.Models;
-using FastFuel.Features.StationCategories.Models;
-using FastFuel.Features.Stations.Models;
-using FastFuel.Features.Themes.Models;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Allergies.Entities;
+using FastFuel.Features.Customers.Entities;
+using FastFuel.Features.Employees.Entities;
+using FastFuel.Features.FoodIngredients.Entities;
+using FastFuel.Features.Foods.Entities;
+using FastFuel.Features.Ingredients.Entities;
+using FastFuel.Features.MenuFoods.Entities;
+using FastFuel.Features.Menus.Entities;
+using FastFuel.Features.OpeningHours.Entities;
+using FastFuel.Features.OrderFoods.Entities;
+using FastFuel.Features.OrderMenus.Entities;
+using FastFuel.Features.Orders.Entities;
+using FastFuel.Features.Restaurants.Entities;
+using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Shifts.Entities;
+using FastFuel.Features.StationCategories.Entities;
+using FastFuel.Features.Stations.Entities;
+using FastFuel.Features.Themes.Entities;
+using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,12 +44,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Shift> Shifts { get; set; }
     public DbSet<Theme> Themes { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        modelBuilder.Entity<User>().UseTptMappingStrategy();
+        builder.Entity<User>().UseTptMappingStrategy();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

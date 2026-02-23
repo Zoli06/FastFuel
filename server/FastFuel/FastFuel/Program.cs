@@ -1,7 +1,7 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
-using FastFuel.Features.Roles.Models;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Users.Entities;
 using FastFuel.NSwag;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;

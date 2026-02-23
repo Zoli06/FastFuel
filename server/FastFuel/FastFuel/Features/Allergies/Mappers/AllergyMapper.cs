@@ -1,5 +1,5 @@
 using FastFuel.Features.Allergies.DTOs;
-using FastFuel.Features.Allergies.Models;
+using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 
@@ -8,18 +8,18 @@ namespace FastFuel.Features.Allergies.Mappers;
 public class AllergyMapper(ApplicationDbContext dbContext)
     : IMapper<Allergy, AllergyRequestDto, AllergyResponseDto>
 {
-    public AllergyResponseDto ToDto(Allergy model)
+    public AllergyResponseDto ToDto(Allergy entity)
     {
         return new AllergyResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            Message = model.Message,
-            IngredientIds = model.Ingredients.ConvertAll(i => i.Id)
+            Id = entity.Id,
+            Name = entity.Name,
+            Message = entity.Message,
+            IngredientIds = entity.Ingredients.ConvertAll(i => i.Id)
         };
     }
 
-    public Allergy ToModel(AllergyRequestDto dto)
+    public Allergy ToEntity(AllergyRequestDto dto)
     {
         return new Allergy
         {
@@ -34,13 +34,13 @@ public class AllergyMapper(ApplicationDbContext dbContext)
     }
 
 
-    public void UpdateModel(AllergyRequestDto dto, Allergy model)
+    public void UpdateEntity(AllergyRequestDto dto, Allergy entity)
     {
-        model.Name = dto.Name;
-        model.Message = dto.Message;
+        entity.Name = dto.Name;
+        entity.Message = dto.Message;
 
-        model.Ingredients.Clear();
-        model.Ingredients.AddRange(dbContext.Ingredients
+        entity.Ingredients.Clear();
+        entity.Ingredients.AddRange(dbContext.Ingredients
             .Where(i => dto.IngredientIds.Contains(i.Id))
             .ToList());
     }

@@ -3,9 +3,9 @@ using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
-using FastFuel.Features.Roles.Models;
+using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.DTOs;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -73,15 +73,15 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         Func<TUser, Task> setDefaultRoles
     ) : Create<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveModelAsync(TUserRequestDto requestDto, TUser model)
+        protected override async Task SaveEntityAsync(TUserRequestDto requestDto, TUser entity)
         {
             if (requestDto.Password is null)
                 throw new ArgumentException("Password is required for user creation.");
 
-            var result = await userManager.CreateAsync(model, requestDto.Password);
+            var result = await userManager.CreateAsync(entity, requestDto.Password);
             if (!result.Succeeded) throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
 
-            await setDefaultRoles(model);
+            await setDefaultRoles(entity);
         }
     }
 
@@ -92,17 +92,17 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         UserManager<User> userManager
     ) : Update<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveModelAsync(uint id, TUserRequestDto requestDto, TUser model)
+        protected override async Task SaveEntityAsync(uint id, TUserRequestDto requestDto, TUser entity)
         {
             if (requestDto.Password != null)
             {
-                var token = await userManager.GeneratePasswordResetTokenAsync(model);
-                var result = await userManager.ResetPasswordAsync(model, token, requestDto.Password);
+                var token = await userManager.GeneratePasswordResetTokenAsync(entity);
+                var result = await userManager.ResetPasswordAsync(entity, token, requestDto.Password);
                 if (!result.Succeeded) throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
             }
             else
             {
-                DbContext.Entry(model).State = EntityState.Modified;
+                DbContext.Entry(entity).State = EntityState.Modified;
                 await DbContext.SaveChangesAsync();
             }
         }

@@ -10,8 +10,8 @@ namespace FastFuel.Features.Common.Controllers;
 [Authorize]
 [ApiController]
 [Route("/api/[controller]")]
-public abstract class CrudController<TModel, TRequest, TResponse>(ICrudService<TRequest, TResponse> service)
-    : ControllerBase where TModel : class, IIdentifiable where TResponse : IIdentifiable
+public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<TRequest, TResponse> service)
+    : ControllerBase where TEntity : class, IIdentifiable where TResponse : IIdentifiable
 {
     [HttpGet]
     [CrudAuthorize(PermissionType.Read)]

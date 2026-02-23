@@ -4,36 +4,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.Services.CrudOperations;
 
-public class Create<TModel, TRequest, TResponse>(
+public class Create<TEntity, TRequest, TResponse>(
     ApplicationDbContext dbContext,
-    DbSet<TModel> dbSet,
-    IMapper<TModel, TRequest, TResponse> mapper)
-    where TModel : class
+    DbSet<TEntity> dbSet,
+    IMapper<TEntity, TRequest, TResponse> mapper)
+    where TEntity : class
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
-    protected readonly DbSet<TModel> DbSet = dbSet;
-    protected readonly IMapper<TModel, TRequest, TResponse> Mapper = mapper;
+    protected readonly DbSet<TEntity> DbSet = dbSet;
+    protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
 
-    protected virtual Task<TModel> CreateModelAsync(TRequest requestDto)
+    protected virtual Task<TEntity> CreateEntityAsync(TRequest requestDto)
     {
-        return Task.FromResult(Mapper.ToModel(requestDto));
+        return Task.FromResult(Mapper.ToEntity(requestDto));
     }
 
-    protected virtual async Task SaveModelAsync(TRequest requestDto, TModel model)
+    protected virtual async Task SaveEntityAsync(TRequest requestDto, TEntity entity)
     {
-        DbSet.Add(model);
+        DbSet.Add(entity);
         await DbContext.SaveChangesAsync();
     }
 
-    protected virtual Task<TResponse> CreateDtoAsync(TRequest requestDto, TModel model)
+    protected virtual Task<TResponse> CreateDtoAsync(TRequest requestDto, TEntity entity)
     {
-        return Task.FromResult(Mapper.ToDto(model));
+        return Task.FromResult(Mapper.ToDto(entity));
     }
 
     public virtual async Task<TResponse> ExecuteAsync(TRequest requestDto)
     {
-        var model = await CreateModelAsync(requestDto);
-        await SaveModelAsync(requestDto, model);
-        return await CreateDtoAsync(requestDto, model);
+        var entity = await CreateEntityAsync(requestDto);
+        await SaveEntityAsync(requestDto, entity);
+        return await CreateDtoAsync(requestDto, entity);
     }
 }

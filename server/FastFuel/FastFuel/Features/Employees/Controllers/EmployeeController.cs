@@ -1,8 +1,8 @@
 using FastFuel.Features.Common.Controllers;
 using FastFuel.Features.Employees.DTOs;
-using FastFuel.Features.Employees.Models;
+using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.Users.Controllers;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Users.Entities;
 using FastFuel.Features.Users.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;

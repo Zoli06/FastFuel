@@ -5,23 +5,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.Services;
 
-public abstract class CrudService<TModel, TRequest, TResponse>(
+public abstract class CrudService<TEntity, TRequest, TResponse>(
     ApplicationDbContext dbContext,
-    IMapper<TModel, TRequest, TResponse> mapper)
+    IMapper<TEntity, TRequest, TResponse> mapper)
     : ICrudService<TRequest, TResponse>
-    where TModel : class, IIdentifiable
+    where TEntity : class, IIdentifiable
     where TRequest : class
     where TResponse : class, IIdentifiable
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
-    protected readonly IMapper<TModel, TRequest, TResponse> Mapper = mapper;
-    protected abstract DbSet<TModel> DbSet { get; }
+    protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
+    protected abstract DbSet<TEntity> DbSet { get; }
 
-    protected virtual GetAll<TModel, TRequest, TResponse> GetAllOperation => new(DbSet, Mapper);
-    protected virtual GetById<TModel, TRequest, TResponse> GetByIdOperation => new(DbSet, Mapper);
-    protected virtual Create<TModel, TRequest, TResponse> CreateOperation => new(DbContext, DbSet, Mapper);
-    protected virtual Update<TModel, TRequest, TResponse> UpdateOperation => new(DbContext, DbSet, Mapper);
-    protected virtual Delete<TModel> DeleteOperation => new(DbContext, DbSet);
+    protected virtual GetAll<TEntity, TRequest, TResponse> GetAllOperation => new(DbSet, Mapper);
+    protected virtual GetById<TEntity, TRequest, TResponse> GetByIdOperation => new(DbSet, Mapper);
+    protected virtual Create<TEntity, TRequest, TResponse> CreateOperation => new(DbContext, DbSet, Mapper);
+    protected virtual Update<TEntity, TRequest, TResponse> UpdateOperation => new(DbContext, DbSet, Mapper);
+    protected virtual Delete<TEntity> DeleteOperation => new(DbContext, DbSet);
 
     public Task<List<TResponse>> GetAllAsync()
     {

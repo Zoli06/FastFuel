@@ -1,29 +1,29 @@
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.FoodIngredients.Models;
+using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.DTOs;
-using FastFuel.Features.Foods.Models;
+using FastFuel.Features.Foods.Entities;
 
 namespace FastFuel.Features.Foods.Mappers;
 
 public class FoodMapper : IMapper<Food, FoodRequestDto, FoodResponseDto>
 {
-    public FoodResponseDto ToDto(Food model)
+    public FoodResponseDto ToDto(Food entity)
     {
         return new FoodResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            Price = model.Price,
-            Description = model.Description,
-            ImageUrl = model.ImageUrl,
-            Ingredients = model.FoodIngredients
+            Id = entity.Id,
+            Name = entity.Name,
+            Price = entity.Price,
+            Description = entity.Description,
+            ImageUrl = entity.ImageUrl,
+            Ingredients = entity.FoodIngredients
                 .ConvertAll(ToDto),
-            MenuIds = model.MenuFoods
+            MenuIds = entity.MenuFoods
                 .ConvertAll(mf => mf.MenuId)
         };
     }
 
-    public Food ToModel(FoodRequestDto dto)
+    public Food ToEntity(FoodRequestDto dto)
     {
         return new Food
         {
@@ -32,32 +32,32 @@ public class FoodMapper : IMapper<Food, FoodRequestDto, FoodResponseDto>
             Description = dto.Description,
             ImageUrl = dto.ImageUrl,
             FoodIngredients = dto.Ingredients
-                .ConvertAll(ToModel)
+                .ConvertAll(ToEntity)
         };
     }
 
-    public void UpdateModel(FoodRequestDto dto, Food model)
+    public void UpdateEntity(FoodRequestDto dto, Food entity)
     {
-        model.Name = dto.Name;
-        model.Price = dto.Price;
-        model.Description = dto.Description;
-        model.ImageUrl = dto.ImageUrl;
+        entity.Name = dto.Name;
+        entity.Price = dto.Price;
+        entity.Description = dto.Description;
+        entity.ImageUrl = dto.ImageUrl;
 
-        model.FoodIngredients.Clear();
-        model.FoodIngredients.AddRange(dto.Ingredients
-            .ConvertAll(ToModel));
+        entity.FoodIngredients.Clear();
+        entity.FoodIngredients.AddRange(dto.Ingredients
+            .ConvertAll(ToEntity));
     }
 
-    private FoodIngredientDto ToDto(FoodIngredient model)
+    private FoodIngredientDto ToDto(FoodIngredient entity)
     {
         return new FoodIngredientDto
         {
-            IngredientId = model.IngredientId,
-            Quantity = model.Quantity
+            IngredientId = entity.IngredientId,
+            Quantity = entity.Quantity
         };
     }
 
-    private FoodIngredient ToModel(FoodIngredientDto dto)
+    private FoodIngredient ToEntity(FoodIngredientDto dto)
     {
         return new FoodIngredient
         {

@@ -1,28 +1,28 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Ingredients.DTOs;
-using FastFuel.Features.Ingredients.Models;
+using FastFuel.Features.Ingredients.Entities;
 
 namespace FastFuel.Features.Ingredients.Mappers;
 
 public class IngredientMapper(ApplicationDbContext dbContext)
     : IMapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
-    public IngredientResponseDto ToDto(Ingredient model)
+    public IngredientResponseDto ToDto(Ingredient entity)
     {
         return new IngredientResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            ImageUrl = model.ImageUrl,
-            AllergyIds = model.Allergies.ConvertAll(allergy => allergy.Id),
-            StationCategoryIds = model.StationCategories.ConvertAll(category => category.Id),
-            FoodIds = model.FoodIngredients.ConvertAll(fi => fi.FoodId),
-            DefaultTimerValue = model.DefaultTimerValue
+            Id = entity.Id,
+            Name = entity.Name,
+            ImageUrl = entity.ImageUrl,
+            AllergyIds = entity.Allergies.ConvertAll(allergy => allergy.Id),
+            StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id),
+            FoodIds = entity.FoodIngredients.ConvertAll(fi => fi.FoodId),
+            DefaultTimerValue = entity.DefaultTimerValue
         };
     }
 
-    public Ingredient ToModel(IngredientRequestDto dto)
+    public Ingredient ToEntity(IngredientRequestDto dto)
     {
         return new Ingredient
         {
@@ -38,20 +38,20 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public void UpdateModel(IngredientRequestDto dto, Ingredient model)
+    public void UpdateEntity(IngredientRequestDto dto, Ingredient entity)
     {
-        model.Name = dto.Name;
-        model.ImageUrl = dto.ImageUrl;
+        entity.Name = dto.Name;
+        entity.ImageUrl = dto.ImageUrl;
 
-        model.Allergies.Clear();
-        model.Allergies.AddRange(dbContext.Allergies
+        entity.Allergies.Clear();
+        entity.Allergies.AddRange(dbContext.Allergies
             .Where(a => dto.AllergyIds.Contains(a.Id))
             .ToList());
 
-        model.StationCategories.Clear();
-        model.StationCategories.AddRange(dbContext.StationCategories
+        entity.StationCategories.Clear();
+        entity.StationCategories.AddRange(dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
             .ToList());
-        model.DefaultTimerValue = dto.DefaultTimerValue;
+        entity.DefaultTimerValue = dto.DefaultTimerValue;
     }
 }
