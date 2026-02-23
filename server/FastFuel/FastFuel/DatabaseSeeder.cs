@@ -1,8 +1,9 @@
 using System.Security.Claims;
 using FastFuel.Features.Allergies.Models;
 using FastFuel.Features.Common.DbContexts;
-using FastFuel.Features.Customers.Models;
-using FastFuel.Features.Employees.Models;
+using FastFuel.Features.Common.Services;
+using FastFuel.Features.Customers.DTOs;
+using FastFuel.Features.Employees.DTOs;
 using FastFuel.Features.FoodIngredients.Models;
 using FastFuel.Features.Foods.Models;
 using FastFuel.Features.Ingredients.Models;
@@ -24,16 +25,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel;
 
+// TODO: Rewrite this to use the services instead of directly accessing the DbContext.
 public class DatabaseSeeder(IServiceProvider serviceProvider)
 {
     private readonly ApplicationDbContext _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+    private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
+        serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();
+
+    private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
+        serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
+
     private readonly IPermissionService _permissionService = serviceProvider.GetRequiredService<IPermissionService>();
     private readonly RoleManager<Role> _roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
     private readonly UserManager<User> _userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
-    // Get services from the DI container
-
-    public async Task SeedAsync()
+    public async Task SeedTestAsync()
     {
         // Two types of stations: french fries and burgers
         var burgerStation = new StationCategory { Name = "Burger Station" };
@@ -212,95 +219,60 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _context.SaveChangesAsync();
     }
 
+    public async Task SeedAsync()
+    {
+        if (await _context.Users.AnyAsync()) return;
+
+        await SeedAdmin();
+    }
+
     private async Task SeedEmployee()
     {
-        var employee = new Employee
+        var employeeDto = new EmployeeRequestDto
         {
-            UserName = "employee1",
+            UserName = "employee",
             Email = "employee@example.com",
-            Name = "Employee One"
+            Name = "Employee User",
+            Password = "Employee123!",
+            ThemeId = null,
+            ShiftIds = [],
+            StationCategoryIds = []
         };
 
-        var permissions = new[]
-        {
-            "Permission:Order:Create",
-            "Permission:Order:Read",
-            "Permission:Order:Update",
-            "Permission:Order:Delete",
-            "Permission:Station:Read",
-            "Permission:StationCategory:Read",
-            "Permission:Menu:Read",
-            "Permission:Food:Read",
-            "Permission:Ingredient:Read",
-            "Permission:Allergy:Read",
-            "Permission:Customer:Read"
-        };
-
-        var result = await _userManager.CreateAsync(employee, "Employee123!");
-        if (!result.Succeeded) return;
-
-        var role = await _roleManager.FindByNameAsync("Employee");
-        if (role == null)
-        {
-            role = new Role { Name = "Employee" };
-            await _roleManager.CreateAsync(role);
-            foreach (var permission in permissions)
-                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
-        }
-
-        await _userManager.AddToRoleAsync(employee, "Employee");
+        await _employeeService.CreateAsync(employeeDto);
     }
 
     private async Task SeedCustomer()
     {
-        var customer = new Customer
+        var customerDto = new CustomerRequestDto
         {
-            UserName = "customer1",
+            UserName = "customer",
             Email = "customer@example.com",
-            Name = "Customer One",
-            Theme = await _context.Themes.FirstOrDefaultAsync()
+            Name = "Customer User",
+            Password = "Customer123!",
+            ThemeId = null
         };
 
-        var permissions = new[]
-        {
-            "Permission:Order:Create",
-            "Permission:Menu:Read",
-            "Permission:Food:Read",
-            "Permission:Ingredient:Read",
-            "Permission:Allergy:Read",
-            "Permission:Restaurant:Read"
-        };
-
-        var result = await _userManager.CreateAsync(customer, "Customer123!");
-        if (!result.Succeeded) return;
-
-        var role = await _roleManager.FindByNameAsync("Customer");
-        if (role == null)
-        {
-            role = new Role { Name = "Customer" };
-            await _roleManager.CreateAsync(role);
-            foreach (var permission in permissions)
-                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
-        }
-
-        await _userManager.AddToRoleAsync(customer, "Customer");
+        await _customerService.CreateAsync(customerDto);
     }
 
     private async Task SeedAdmin()
     {
-        var admin = new Employee
+        var adminDto = new EmployeeRequestDto
         {
             UserName = "admin",
             Email = "admin@example.com",
-            Name = "Admin User"
+            Name = "Admin User",
+            Password = "Admin123!",
+            ThemeId = null,
+            ShiftIds = [],
+            StationCategoryIds = []
         };
 
-        // Get all permissions from the PermissionService
+        await _employeeService.CreateAsync(adminDto);
+
+        var adminUser = await _userManager.FindByNameAsync("admin");
         var allPermissions = _permissionService.GetAllPermissions();
-
-        var result = await _userManager.CreateAsync(admin, "Admin123!");
-        if (!result.Succeeded) return;
-
         var role = await _roleManager.FindByNameAsync("Admin");
         if (role == null)
         {
@@ -310,6 +282,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
                 await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
         }
 
-        await _userManager.AddToRoleAsync(admin, "Admin");
+        await _userManager.AddToRoleAsync(adminUser!, "Admin");
     }
 }

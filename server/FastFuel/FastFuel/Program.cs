@@ -37,19 +37,8 @@ public static class Program
         // Configure middleware / request pipeline
         ConfigureMiddleware(app);
 
-        // ----------- TESTING ONLY -----------
-        // This will delete and recreate the database on each run
-        using (var scope = app.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await dbContext.Database.EnsureDeletedAsync();
-            await dbContext.Database.EnsureCreatedAsync();
-
-
-            var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
-            await databaseSeeder.SeedAsync();
-        }
-        // ----------- END TESTING ONLY -----------
+        // Seed the database with initial data (roles, users, etc.)
+        await SeedDatabaseAsync(app);
 
         await app.RunAsync();
     }
@@ -147,5 +136,24 @@ public static class Program
         app.UseAuthorization();
 
         app.MapControllers();
+    }
+
+    // Seed the database with initial data (roles, users, etc.) on application startup
+    private static async Task SeedDatabaseAsync(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+        if (app.Environment.IsDevelopment())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureCreatedAsync();
+
+            await databaseSeeder.SeedTestAsync();
+        }
+        else
+        {
+            await databaseSeeder.SeedAsync();
+        }
     }
 }
