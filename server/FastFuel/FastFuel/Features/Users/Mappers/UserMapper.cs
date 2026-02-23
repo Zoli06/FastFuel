@@ -1,7 +1,7 @@
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.Roles.Models;
+using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.DTOs;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Users.Mappers;
@@ -31,7 +31,7 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
         };
     }
 
-    public User ToModel(UserRequestDto dto)
+    public User ToEntity(UserRequestDto dto)
     {
         return new User
         {
@@ -42,7 +42,7 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
         };
     }
 
-    public void UpdateModel(UserRequestDto dto, User model)
+    public void UpdateEntity(UserRequestDto dto, User model)
     {
         model.Name = dto.Name;
         model.Email = dto.Email;

@@ -1,5 +1,5 @@
 using FastFuel.Features.Allergies.DTOs;
-using FastFuel.Features.Allergies.Models;
+using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;

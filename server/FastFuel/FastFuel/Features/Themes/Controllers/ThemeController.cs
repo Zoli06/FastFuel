@@ -1,7 +1,7 @@
 using FastFuel.Features.Common.Controllers;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Themes.DTOs;
-using FastFuel.Features.Themes.Models;
+using FastFuel.Features.Themes.Entities;
 
 namespace FastFuel.Features.Themes.Controllers;
 

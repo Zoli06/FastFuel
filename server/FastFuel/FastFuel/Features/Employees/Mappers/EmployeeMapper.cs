@@ -1,10 +1,10 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Employees.DTOs;
-using FastFuel.Features.Employees.Models;
-using FastFuel.Features.Roles.Models;
+using FastFuel.Features.Employees.Entities;
+using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Users.Entities;
 using FastFuel.Features.Users.Mappers;
-using FastFuel.Features.Users.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Employees.Mappers;
@@ -17,9 +17,9 @@ public class EmployeeMapper(
 {
     protected override string UserType => "Employee";
 
-    public EmployeeResponseDto ToDto(Employee model)
+    public EmployeeResponseDto ToDto(Employee entity)
     {
-        var userDto = base.ToDto(model);
+        var userDto = base.ToDto(entity);
         return new EmployeeResponseDto
         {
             Id = userDto.Id,
@@ -29,32 +29,32 @@ public class EmployeeMapper(
             ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
             UserType = userDto.UserType,
-            ShiftIds = model.Shifts.ConvertAll(shift => shift.Id),
-            StationCategoryIds = model.StationCategories.ConvertAll(category => category.Id)
+            ShiftIds = entity.Shifts.ConvertAll(shift => shift.Id),
+            StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id)
         };
     }
 
-    public Employee ToModel(EmployeeRequestDto dto)
+    public Employee ToEntity(EmployeeRequestDto dto)
     {
-        var userModel = base.ToModel(dto);
+        var userEntity = base.ToEntity(dto);
         return new Employee
         {
-            Id = userModel.Id,
-            Name = userModel.Name,
-            Email = userModel.Email,
-            UserName = userModel.UserName,
-            ThemeId = userModel.ThemeId,
+            Id = userEntity.Id,
+            Name = userEntity.Name,
+            Email = userEntity.Email,
+            UserName = userEntity.UserName,
+            ThemeId = userEntity.ThemeId,
             Shifts = dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList(),
             StationCategories = dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList()
         };
     }
 
-    public void UpdateModel(EmployeeRequestDto dto, Employee model)
+    public void UpdateEntity(EmployeeRequestDto dto, Employee entity)
     {
-        User userModel = model;
-        base.UpdateModel(dto, userModel);
-        model.Shifts = dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList();
-        model.StationCategories =
+        User userEntity = entity;
+        base.UpdateEntity(dto, userEntity);
+        entity.Shifts = dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList();
+        entity.StationCategories =
             dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList();
     }
 }

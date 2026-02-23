@@ -1,7 +1,7 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Roles.DTOs;
-using FastFuel.Features.Roles.Models;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Roles.Mappers;
@@ -9,21 +9,21 @@ namespace FastFuel.Features.Roles.Mappers;
 public class RoleMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
     : IMapper<Role, RoleRequestDto, RoleResponseDto>
 {
-    public RoleResponseDto ToDto(Role model)
+    public RoleResponseDto ToDto(Role entity)
     {
         return new RoleResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            Permissions = roleManager.GetClaimsAsync(new Role { Id = model.Id, Name = model.Name }).Result
+            Id = entity.Id,
+            Name = entity.Name,
+            Permissions = roleManager.GetClaimsAsync(new Role { Id = entity.Id, Name = entity.Name }).Result
                 .Where(c => c.Type == "Permission")
                 .Select(c => c.Value)
                 .ToList(),
-            UserIds = userManager.GetUsersInRoleAsync(model.Name).Result.Select(u => u.Id).ToList()
+            UserIds = userManager.GetUsersInRoleAsync(entity.Name).Result.Select(u => u.Id).ToList()
         };
     }
 
-    public Role ToModel(RoleRequestDto dto)
+    public Role ToEntity(RoleRequestDto dto)
     {
         return new Role
         {
@@ -31,8 +31,8 @@ public class RoleMapper(RoleManager<Role> roleManager, UserManager<User> userMan
         };
     }
 
-    public void UpdateModel(RoleRequestDto dto, Role model)
+    public void UpdateEntity(RoleRequestDto dto, Role entity)
     {
-        model.Name = dto.Name;
+        entity.Name = dto.Name;
     }
 }

@@ -1,7 +1,7 @@
 using FastFuel.Features.Common.Controllers;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Shifts.DTOs;
-using FastFuel.Features.Shifts.Models;
+using FastFuel.Features.Shifts.Entities;
 
 namespace FastFuel.Features.Shifts.Controllers;
 

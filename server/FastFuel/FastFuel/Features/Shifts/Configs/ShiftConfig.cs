@@ -1,4 +1,4 @@
-using FastFuel.Features.Shifts.Models;
+using FastFuel.Features.Shifts.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

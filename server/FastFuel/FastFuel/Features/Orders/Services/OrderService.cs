@@ -3,7 +3,7 @@ using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
 using FastFuel.Features.Orders.DTOs;
-using FastFuel.Features.Orders.Models;
+using FastFuel.Features.Orders.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Orders.Services;
@@ -31,9 +31,9 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         return (lastOrder?.OrderNumber ?? 0) + 1;
     }
 
-    private static void EnsurePendingStatus(Order model)
+    private static void EnsurePendingStatus(Order entity)
     {
-        if (model.Status != OrderStatus.Pending)
+        if (entity.Status != OrderStatus.Pending)
             throw new InvalidOperationException("Only pending orders can be modified.");
     }
 
@@ -43,16 +43,16 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task<Order> CreateModelAsync(OrderRequestDto requestDto)
+        protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto)
         {
-            var model = await base.CreateModelAsync(requestDto);
+            var entity = await base.CreateEntityAsync(requestDto);
 
             var lastOrder = await DbSet
                 .OrderByDescending(o => o.CreatedAt)
                 .FirstOrDefaultAsync();
-            model.OrderNumber = GetNextOrderNumber(lastOrder);
+            entity.OrderNumber = GetNextOrderNumber(lastOrder);
 
-            return model;
+            return entity;
         }
     }
 
@@ -62,19 +62,19 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Update<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override Task SaveModelAsync(uint id, OrderRequestDto requestDto, Order model)
+        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity)
         {
-            EnsurePendingStatus(model);
-            return base.SaveModelAsync(id, requestDto, model);
+            EnsurePendingStatus(entity);
+            return base.SaveEntityAsync(id, requestDto, entity);
         }
     }
 
     private class Delete(ApplicationDbContext dbContext, DbSet<Order> dbSet) : Delete<Order>(dbContext, dbSet)
     {
-        protected override Task DeleteModelAsync(uint id, Order model)
+        protected override Task DeleteEntityAsync(uint id, Order entity)
         {
-            EnsurePendingStatus(model);
-            return base.DeleteModelAsync(id, model);
+            EnsurePendingStatus(entity);
+            return base.DeleteEntityAsync(id, entity);
         }
     }
 }

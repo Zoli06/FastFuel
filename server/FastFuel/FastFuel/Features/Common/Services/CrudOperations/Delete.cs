@@ -4,29 +4,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.Services.CrudOperations;
 
-public class Delete<TModel>(ApplicationDbContext dbContext, DbSet<TModel> dbSet)
-    where TModel : class, IIdentifiable
+public class Delete<TEntity>(ApplicationDbContext dbContext, DbSet<TEntity> dbSet)
+    where TEntity : class, IIdentifiable
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
-    protected readonly DbSet<TModel> DbSet = dbSet;
+    protected readonly DbSet<TEntity> DbSet = dbSet;
 
-    protected virtual async Task<TModel?> GetModelAsync(uint id)
+    protected virtual async Task<TEntity?> GetEntityAsync(uint id)
     {
         return await DbSet.FindAsync(id);
     }
 
-    protected virtual async Task DeleteModelAsync(uint id, TModel model)
+    protected virtual async Task DeleteEntityAsync(uint id, TEntity entity)
     {
-        DbSet.Remove(model);
+        DbSet.Remove(entity);
         await DbContext.SaveChangesAsync();
     }
 
     public virtual async Task<bool> ExecuteAsync(uint id)
     {
-        var model = await GetModelAsync(id);
-        if (model == null)
+        var entity = await GetEntityAsync(id);
+        if (entity == null)
             return false;
-        await DeleteModelAsync(id, model);
+        await DeleteEntityAsync(id, entity);
         return true;
     }
 }

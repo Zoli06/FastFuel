@@ -1,5 +1,5 @@
 using FastFuel.Features.Auth.DTOs;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;

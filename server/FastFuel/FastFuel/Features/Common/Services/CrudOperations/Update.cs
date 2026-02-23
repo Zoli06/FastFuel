@@ -4,39 +4,39 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.Services.CrudOperations;
 
-public class Update<TModel, TRequest, TResponse>(
+public class Update<TEntity, TRequest, TResponse>(
     ApplicationDbContext dbContext,
-    DbSet<TModel> dbSet,
-    IMapper<TModel, TRequest, TResponse> mapper)
-    where TModel : class
+    DbSet<TEntity> dbSet,
+    IMapper<TEntity, TRequest, TResponse> mapper)
+    where TEntity : class
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
-    protected readonly DbSet<TModel> DbSet = dbSet;
-    protected readonly IMapper<TModel, TRequest, TResponse> Mapper = mapper;
+    protected readonly DbSet<TEntity> DbSet = dbSet;
+    protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
 
-    protected virtual async Task<TModel?> GetModelAsync(uint id)
+    protected virtual async Task<TEntity?> GetEntityAsync(uint id)
     {
         return await DbSet.FindAsync(id);
     }
 
-    protected virtual Task UpdateModelAsync(uint id, TRequest requestDto, TModel model)
+    protected virtual Task UpdateEntityAsync(uint id, TRequest requestDto, TEntity entity)
     {
-        Mapper.UpdateModel(requestDto, model);
+        Mapper.UpdateEntity(requestDto, entity);
         return Task.CompletedTask;
     }
 
-    protected virtual async Task SaveModelAsync(uint id, TRequest requestDto, TModel model)
+    protected virtual async Task SaveEntityAsync(uint id, TRequest requestDto, TEntity entity)
     {
         await DbContext.SaveChangesAsync();
     }
 
     public virtual async Task<bool> ExecuteAsync(uint id, TRequest requestDto)
     {
-        var model = await GetModelAsync(id);
-        if (model == null)
+        var entity = await GetEntityAsync(id);
+        if (entity == null)
             return false;
-        await UpdateModelAsync(id, requestDto, model);
-        await SaveModelAsync(id, requestDto, model);
+        await UpdateEntityAsync(id, requestDto, entity);
+        await SaveEntityAsync(id, requestDto, entity);
         return true;
     }
 }

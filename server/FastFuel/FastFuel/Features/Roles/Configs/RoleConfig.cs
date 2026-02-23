@@ -1,4 +1,4 @@
-using FastFuel.Features.Roles.Models;
+using FastFuel.Features.Roles.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -4,8 +4,8 @@ using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
 using FastFuel.Features.Roles.DTOs;
-using FastFuel.Features.Roles.Models;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,12 +74,12 @@ public class RoleService(
         UserManager<User> userManager)
         : Create<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveModelAsync(RoleRequestDto requestDto, Role model)
+        protected override async Task SaveEntityAsync(RoleRequestDto requestDto, Role entity)
         {
-            await base.SaveModelAsync(requestDto, model);
+            await base.SaveEntityAsync(requestDto, entity);
 
-            await UpdateRoleClaimsAsync(roleManager, model, requestDto.Permissions);
-            await UpdateRoleUsersAsync(userManager, model, requestDto.UserIds);
+            await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
+            await UpdateRoleUsersAsync(userManager, entity, requestDto.UserIds);
         }
     }
 
@@ -91,12 +91,12 @@ public class RoleService(
         UserManager<User> userManager)
         : Update<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveModelAsync(uint id, RoleRequestDto requestDto, Role model)
+        protected override async Task SaveEntityAsync(uint id, RoleRequestDto requestDto, Role entity)
         {
-            await base.SaveModelAsync(id, requestDto, model);
+            await base.SaveEntityAsync(id, requestDto, entity);
 
-            await UpdateRoleClaimsAsync(roleManager, model, requestDto.Permissions);
-            await UpdateRoleUsersAsync(userManager, model, requestDto.UserIds);
+            await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
+            await UpdateRoleUsersAsync(userManager, entity, requestDto.UserIds);
         }
     }
 }

@@ -1,4 +1,4 @@
-using FastFuel.Features.Allergies.Models;
+using FastFuel.Features.Allergies.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

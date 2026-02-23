@@ -1,24 +1,24 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Stations.DTOs;
-using FastFuel.Features.Stations.Models;
+using FastFuel.Features.Stations.Entities;
 
 namespace FastFuel.Features.Stations.Mappers;
 
 public class StationMapper : IMapper<Station, StationRequestDto, StationResponseDto>
 {
-    public StationResponseDto ToDto(Station model)
+    public StationResponseDto ToDto(Station entity)
     {
         return new StationResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            InOperation = model.InOperation,
-            RestaurantId = model.RestaurantId,
-            StationCategoryId = model.StationCategoryId
+            Id = entity.Id,
+            Name = entity.Name,
+            InOperation = entity.InOperation,
+            RestaurantId = entity.RestaurantId,
+            StationCategoryId = entity.StationCategoryId
         };
     }
 
-    public Station ToModel(StationRequestDto dto)
+    public Station ToEntity(StationRequestDto dto)
     {
         return new Station
         {
@@ -29,11 +29,11 @@ public class StationMapper : IMapper<Station, StationRequestDto, StationResponse
         };
     }
 
-    public void UpdateModel(StationRequestDto dto, Station model)
+    public void UpdateEntity(StationRequestDto dto, Station entity)
     {
-        model.Name = dto.Name;
-        model.InOperation = dto.InOperation;
-        model.RestaurantId = dto.RestaurantId;
-        model.StationCategoryId = dto.StationCategoryId;
+        entity.Name = dto.Name;
+        entity.InOperation = dto.InOperation;
+        entity.RestaurantId = dto.RestaurantId;
+        entity.StationCategoryId = dto.StationCategoryId;
     }
 }

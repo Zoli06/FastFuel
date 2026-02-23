@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using FastFuel.Features.Users.DTOs;
-using FastFuel.Features.Users.Models;
+using FastFuel.Features.Users.Entities;
 using FastFuel.Features.Users.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;

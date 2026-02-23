@@ -2,7 +2,7 @@ using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.StationCategories.DTOs;
-using FastFuel.Features.StationCategories.Models;
+using FastFuel.Features.StationCategories.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.StationCategories.Services;
