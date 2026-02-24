@@ -21,4 +21,14 @@ public class PermissionController(IPermissionService permissionService) : Contro
     {
         return TypedResults.Ok(permissionService.GetAllPermissions());
     }
+
+    [HttpGet("my")]
+    public async Task<Results<
+            Ok<List<string>>,
+            UnauthorizedHttpResult>>
+        GetMyPermissions()
+    {
+        var permissions = await permissionService.GetPermissionsForCurrentUserAsync(User);
+        return TypedResults.Ok(permissions);
+    }
 }
