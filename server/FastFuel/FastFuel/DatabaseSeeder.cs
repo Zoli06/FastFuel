@@ -3,6 +3,7 @@ using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Customers.DTOs;
+using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Employees.DTOs;
 using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.Entities;
@@ -192,7 +193,8 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             Restaurant = restaurant,
             OrderNumber = 1,
             Status = OrderStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Customer = await _context.Users.OfType<Customer>().FirstOrDefaultAsync(c => c.UserName == "customer")
         };
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();

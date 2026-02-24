@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
@@ -8,8 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Orders.Services;
 
-public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
-    : CrudService<Order, OrderRequestDto, OrderResponseDto>(dbContext, mapper)
+public class OrderService(
+    ApplicationDbContext dbContext,
+    IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
+    : CrudService<Order, OrderRequestDto, OrderResponseDto>(dbContext, mapper), IOrderService
 {
     private const int MinOrderNumberBeforeReset = 99;
     private const int MinHoursBeforeReset = 3;
@@ -22,6 +25,23 @@ public class OrderService(ApplicationDbContext dbContext, IMapper<Order, OrderRe
         new Update(DbContext, DbSet, Mapper);
 
     protected override Delete<Order> DeleteOperation => new Delete(DbContext, DbSet);
+
+    public async Task<List<OrderResponseDto>> GetOrdersForCurrentUserAsync(ClaimsPrincipal user,
+        CancellationToken cancellationToken = default)
+    {
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new InvalidOperationException("User ID claim not found.");
+
+        if (!uint.TryParse(userIdClaim.Value, out var userId))
+            throw new InvalidOperationException("Invalid user ID claim value.");
+
+        var orders = await DbSet
+            .Where(o => o.CustomerId == userId)
+            .ToListAsync(cancellationToken);
+
+        return orders.Select(Mapper.ToDto).ToList();
+    }
 
     private static uint GetNextOrderNumber(Order? lastOrder)
     {
