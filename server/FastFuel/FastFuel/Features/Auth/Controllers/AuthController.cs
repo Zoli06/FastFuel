@@ -52,4 +52,11 @@ public class AuthController(
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
         return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }
+
+    [HttpPost("logout")]
+    public async Task<Results<Ok, UnauthorizedHttpResult>> Logout()
+    {
+        await signInManager.SignOutAsync();
+        return TypedResults.Ok();
+    }
 }
