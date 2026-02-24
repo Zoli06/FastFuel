@@ -13,6 +13,7 @@ using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.OpeningHours.Entities;
 using FastFuel.Features.OrderFoods.Entities;
 using FastFuel.Features.OrderMenus.Entities;
+using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.Entities;
 using FastFuel.Features.Permissions.Services;
 using FastFuel.Features.Restaurants.Entities;

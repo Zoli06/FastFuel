@@ -3,6 +3,7 @@ using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -37,10 +38,27 @@ public class OrderService(
             throw new InvalidOperationException("Invalid user ID claim value.");
 
         var orders = await DbSet
+            .Include(o => o.Foods)
+            .Include(o => o.Menus)
             .Where(o => o.CustomerId == userId)
             .ToListAsync(cancellationToken);
 
-        return orders.Select(Mapper.ToDto).ToList();
+        return orders.ConvertAll(Mapper.ToDto);
+    }
+
+    public async Task<List<OrderResponseDto>> GetAllOrdersWithFiltersAsync(IOrderFilterParams filterParams,
+        CancellationToken cancellationToken = default)
+    {
+        var query = DbSet
+            .Include(o => o.Foods)
+            .Include(o => o.Menus)
+            .AsQueryable();
+
+        if (filterParams.Status.HasValue)
+            query = query.Where(o => o.Status == filterParams.Status.Value);
+
+        var orders = await query.ToListAsync(cancellationToken);
+        return orders.ConvertAll(Mapper.ToDto);
     }
 
     private static uint GetNextOrderNumber(Order? lastOrder)

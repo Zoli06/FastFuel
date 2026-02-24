@@ -19,6 +19,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     [CrudAuthorize(PermissionType.Read)]
     public virtual async Task<Results<
             Ok<List<TResponse>>,
+            BadRequest<ProblemDetails>,
             UnauthorizedHttpResult,
             ForbidHttpResult>>
         GetAll(CancellationToken cancellationToken = default)

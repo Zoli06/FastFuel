@@ -8,4 +8,7 @@ public interface IOrderService : ICrudService<OrderRequestDto, OrderResponseDto>
 {
     Task<List<OrderResponseDto>> GetOrdersForCurrentUserAsync(ClaimsPrincipal user,
         CancellationToken cancellationToken = default);
+
+    Task<List<OrderResponseDto>> GetAllOrdersWithFiltersAsync(IOrderFilterParams filterParams,
+        CancellationToken cancellationToken = default);
 }

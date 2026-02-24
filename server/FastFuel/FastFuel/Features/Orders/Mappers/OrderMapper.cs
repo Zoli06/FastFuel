@@ -16,7 +16,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
             CustomerId = entity.CustomerId,
             RestaurantId = entity.RestaurantId,
             OrderNumber = entity.OrderNumber,
-            Status = entity.Status.ToString(),
+            Status = entity.Status,
             CreatedAt = entity.CreatedAt,
             CompletedAt = entity.CompletedAt,
             Menus = entity.Menus.ConvertAll(ToDto),

@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
-using FastFuel.NSwag;
+using FastFuel.NSwag.SwaggerQueryParam;
+using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -80,7 +82,7 @@ public static class Program
             options.Filters.Add<UniqueConstraintExceptionFilter>();
             options.Filters.Add<ReferenceConstraintExceptionFilter>();
             options.Filters.Add<InvalidOperationExceptionFilter>();
-        });
+        }).AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
         builder.Services.AddEndpointsApiExplorer();
 
@@ -88,6 +90,7 @@ public static class Program
         {
             config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
+            config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
 
             config.AddSecurity("Bearer", new OpenApiSecurityScheme
             {

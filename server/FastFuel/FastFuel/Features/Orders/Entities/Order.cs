@@ -2,6 +2,7 @@ using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.OrderFoods.Entities;
 using FastFuel.Features.OrderMenus.Entities;
+using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Restaurants.Entities;
 
 namespace FastFuel.Features.Orders.Entities;
