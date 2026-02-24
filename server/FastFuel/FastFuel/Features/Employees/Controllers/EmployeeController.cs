@@ -20,7 +20,7 @@ public class EmployeeController(
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
-    public async Task<Results<Ok<EmployeeResponseDto>, UnauthorizedHttpResult>> GetCurrentUser(
+    public async Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {
         return await ((IUserController<EmployeeRequestDto, EmployeeResponseDto>)this).GetCurrentUserDefault(

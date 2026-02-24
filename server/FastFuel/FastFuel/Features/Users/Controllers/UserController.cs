@@ -23,6 +23,7 @@ public class UserController(
     [HttpGet("me")]
     public async Task<Results<
             Ok<UserResponseDto>,
+            NotFound,
             UnauthorizedHttpResult>>
         GetCurrentUser(CancellationToken cancellationToken = default)
     {

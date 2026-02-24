@@ -17,6 +17,7 @@ public interface IUserController<TUserRequestDto, TUserResponseDto>
 
     async Task<Results<
             Ok<TUserResponseDto>,
+            NotFound,
             UnauthorizedHttpResult>>
         GetCurrentUserDefault(CancellationToken cancellationToken = default)
     {
@@ -25,11 +26,14 @@ public interface IUserController<TUserRequestDto, TUserResponseDto>
             return TypedResults.Unauthorized();
 
         var userResponseDto = await UserService.GetByIdAsync(user.Id, cancellationToken);
-        return TypedResults.Ok(userResponseDto!);
+        if (userResponseDto == null)
+            return TypedResults.NotFound();
+        return TypedResults.Ok(userResponseDto);
     }
 
     Task<Results<
             Ok<TUserResponseDto>,
+            NotFound,
             UnauthorizedHttpResult>>
         // ReSharper disable once UnusedMemberInSuper.Global
         GetCurrentUser(CancellationToken cancellationToken = default);
