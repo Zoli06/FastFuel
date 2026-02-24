@@ -86,6 +86,7 @@ public static class Program
 
         builder.Services.AddOpenApiDocument(config =>
         {
+            config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
 
             config.AddSecurity("Bearer", new OpenApiSecurityScheme
