@@ -13,6 +13,8 @@ namespace FastFuel.Features.Common.Controllers;
 public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<TRequest, TResponse> service)
     : ControllerBase where TEntity : class, IIdentifiable where TResponse : IIdentifiable
 {
+    protected ICrudService<TRequest, TResponse> Service { get; } = service;
+
     [HttpGet]
     [CrudAuthorize(PermissionType.Read)]
     public virtual async Task<Results<
@@ -21,7 +23,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         GetAll(CancellationToken cancellationToken = default)
     {
-        var dtos = await service.GetAllAsync(cancellationToken);
+        var dtos = await Service.GetAllAsync(cancellationToken);
         return TypedResults.Ok(dtos);
     }
 
@@ -34,7 +36,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         GetById(uint id, CancellationToken cancellationToken = default)
     {
-        var dto = await service.GetByIdAsync(id, cancellationToken);
+        var dto = await Service.GetByIdAsync(id, cancellationToken);
         if (dto == null)
             return TypedResults.NotFound();
         return TypedResults.Ok(dto);
@@ -49,7 +51,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         Create(TRequest requestDto, CancellationToken cancellationToken = default)
     {
-        var responseDto = await service.CreateAsync(requestDto, cancellationToken);
+        var responseDto = await Service.CreateAsync(requestDto, cancellationToken);
         var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
         return TypedResults.Created(location!, responseDto);
     }
@@ -65,7 +67,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         Update(uint id, TRequest requestDto, CancellationToken cancellationToken = default)
     {
-        var success = await service.UpdateAsync(id, requestDto, cancellationToken);
+        var success = await Service.UpdateAsync(id, requestDto, cancellationToken);
         if (!success)
             return TypedResults.NotFound();
         return TypedResults.NoContent();
@@ -81,7 +83,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         Delete(uint id, CancellationToken cancellationToken = default)
     {
-        var success = await service.DeleteAsync(id, cancellationToken);
+        var success = await Service.DeleteAsync(id, cancellationToken);
         if (!success)
             return TypedResults.NotFound();
         return TypedResults.NoContent();

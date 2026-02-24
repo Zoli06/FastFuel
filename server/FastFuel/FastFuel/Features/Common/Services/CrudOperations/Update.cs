@@ -16,7 +16,7 @@ public class Update<TEntity, TRequest, TResponse>(
 
     protected virtual async Task<TEntity?> GetEntityAsync(uint id, CancellationToken cancellationToken = default)
     {
-        return await DbSet.FindAsync(id, cancellationToken);
+        return await DbSet.FindAsync([id], cancellationToken);
     }
 
     protected virtual Task UpdateEntityAsync(uint id, TRequest requestDto, TEntity entity,

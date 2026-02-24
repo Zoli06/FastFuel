@@ -11,7 +11,7 @@ public interface IUserController<TUserRequestDto, TUserResponseDto>
     where TUserRequestDto : UserRequestDto
     where TUserResponseDto : UserResponseDto
 {
-    protected IUserService<TUserRequestDto, TUserResponseDto> Service { get; }
+    protected IUserService<TUserRequestDto, TUserResponseDto> UserService { get; }
     protected UserManager<User> UserManager { get; }
     protected ClaimsPrincipal User { get; }
 
@@ -24,7 +24,7 @@ public interface IUserController<TUserRequestDto, TUserResponseDto>
         if (user == null)
             return TypedResults.Unauthorized();
 
-        var userResponseDto = await Service.GetByIdAsync(user.Id, cancellationToken);
+        var userResponseDto = await UserService.GetByIdAsync(user.Id, cancellationToken);
         return TypedResults.Ok(userResponseDto!);
     }
 

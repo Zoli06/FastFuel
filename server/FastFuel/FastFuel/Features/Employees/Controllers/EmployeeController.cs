@@ -16,7 +16,7 @@ public class EmployeeController(
     : CrudController<Employee, EmployeeRequestDto, EmployeeResponseDto>(service),
         IUserController<EmployeeRequestDto, EmployeeResponseDto>
 {
-    public IUserService<EmployeeRequestDto, EmployeeResponseDto> Service { get; } = service;
+    public IUserService<EmployeeRequestDto, EmployeeResponseDto> UserService { get; } = service;
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]

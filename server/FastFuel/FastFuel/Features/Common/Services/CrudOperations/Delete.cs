@@ -12,7 +12,7 @@ public class Delete<TEntity>(ApplicationDbContext dbContext, DbSet<TEntity> dbSe
 
     protected virtual async Task<TEntity?> GetEntityAsync(uint id, CancellationToken cancellationToken = default)
     {
-        return await DbSet.FindAsync(id, cancellationToken);
+        return await DbSet.FindAsync([id], cancellationToken);
     }
 
     protected virtual async Task DeleteEntityAsync(uint id, TEntity entity,

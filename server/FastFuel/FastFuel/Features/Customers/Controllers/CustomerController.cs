@@ -20,7 +20,7 @@ public class CustomerController(
     : CrudController<Customer, CustomerRequestDto, CustomerResponseDto>(service),
         IUserController<CustomerRequestDto, CustomerResponseDto>
 {
-    public IUserService<CustomerRequestDto, CustomerResponseDto> Service { get; } = service;
+    public IUserService<CustomerRequestDto, CustomerResponseDto> UserService { get; } = service;
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]

@@ -16,7 +16,7 @@ public class UserController(
     UserManager<User> userManager)
     : ControllerBase, IUserController<UserRequestDto, UserResponseDto>
 {
-    public IUserService<UserRequestDto, UserResponseDto> Service { get; } = service;
+    public IUserService<UserRequestDto, UserResponseDto> UserService { get; } = service;
 
     public UserManager<User> UserManager { get; } = userManager;
 

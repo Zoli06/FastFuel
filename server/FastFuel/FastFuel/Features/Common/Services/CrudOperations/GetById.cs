@@ -11,7 +11,7 @@ public class GetById<TEntity, TRequest, TResponse>(DbSet<TEntity> dbSet, IMapper
 
     protected virtual async Task<TEntity?> GetEntityAsync(uint id, CancellationToken cancellationToken = default)
     {
-        return await DbSet.FindAsync(id, cancellationToken);
+        return await DbSet.FindAsync([id], cancellationToken);
     }
 
     protected virtual Task<TResponse> GetDtoAsync(uint id, TEntity entity,

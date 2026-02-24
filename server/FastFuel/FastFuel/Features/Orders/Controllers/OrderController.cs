@@ -15,7 +15,7 @@ public class OrderController(ICrudService<OrderRequestDto, OrderResponseDto> ser
     public async Task<Results<Ok<List<OrderResponseDto>>, UnauthorizedHttpResult>> GetMyOrders(
         CancellationToken cancellationToken = default)
     {
-        var orders = await service.GetAllAsync(cancellationToken);
+        var orders = await Service.GetAllAsync(cancellationToken);
         return TypedResults.Ok(orders);
     }
 }
