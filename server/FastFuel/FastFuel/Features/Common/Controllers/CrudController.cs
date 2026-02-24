@@ -47,6 +47,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     public virtual async Task<Results<
             Created<TResponse>,
             Conflict<ProblemDetails>,
+            BadRequest<ProblemDetails>,
             UnauthorizedHttpResult,
             ForbidHttpResult>>
         Create(TRequest requestDto, CancellationToken cancellationToken = default)

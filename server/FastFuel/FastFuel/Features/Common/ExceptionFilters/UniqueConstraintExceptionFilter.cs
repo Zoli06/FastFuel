@@ -10,28 +10,28 @@ public class UniqueConstraintExceptionFilter : ExceptionFilterAttribute
     {
         // TODO: We can do some logging here
 
-        if (context.Exception is UniqueConstraintException uniqueConstraintException)
+        if (context.Exception is not UniqueConstraintException uniqueConstraintException)
+            return Task.CompletedTask;
+
+        var problem = new ProblemDetails
         {
-            var problem = new ProblemDetails
+            Title = uniqueConstraintException.Message,
+            Detail =
+                $"A record with the same field(s) '{string.Join(", ", uniqueConstraintException.ConstraintProperties)}' already exists",
+            Status = StatusCodes.Status400BadRequest,
+            Extensions =
             {
-                Title = uniqueConstraintException.Message,
-                Detail =
-                    $"A record with the same field(s) '{string.Join(", ", uniqueConstraintException.ConstraintProperties)}' already exists",
-                Status = StatusCodes.Status409Conflict,
-                Extensions =
-                {
-                    { "table", uniqueConstraintException.SchemaQualifiedTableName },
-                    { "entries", uniqueConstraintException.ConstraintProperties }
-                }
-            };
+                { "table", uniqueConstraintException.SchemaQualifiedTableName },
+                { "entries", uniqueConstraintException.ConstraintProperties }
+            }
+        };
 
-            context.Result = new ObjectResult(problem)
-            {
-                StatusCode = StatusCodes.Status409Conflict
-            };
+        context.Result = new ObjectResult(problem)
+        {
+            StatusCode = StatusCodes.Status400BadRequest
+        };
 
-            context.ExceptionHandled = true;
-        }
+        context.ExceptionHandled = true;
 
         return Task.CompletedTask;
     }

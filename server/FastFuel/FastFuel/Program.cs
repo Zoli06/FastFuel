@@ -77,9 +77,9 @@ public static class Program
     {
         builder.Services.AddControllers(options =>
         {
-            // Convert UniqueConstraintException from EF into HTTP 409 responses globally
             options.Filters.Add<UniqueConstraintExceptionFilter>();
-            // TODO: Add filter for reference constraint exceptions
+            options.Filters.Add<ReferenceConstraintExceptionFilter>();
+            options.Filters.Add<InvalidOperationExceptionFilter>();
         });
 
         builder.Services.AddEndpointsApiExplorer();
