@@ -74,10 +74,10 @@ public class RoleService(
         UserManager<User> userManager)
         : Create<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(RoleRequestDto requestDto, Role entity,
+        protected override async Task SaveEntityAsync(RoleRequestDto requestDto, Role entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-            await base.SaveEntityAsync(requestDto, entity, cancellationToken);
+            await base.SaveEntityAsync(requestDto, entity, userId, cancellationToken);
 
             await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
             await UpdateRoleUsersAsync(userManager, entity, requestDto.UserIds);
@@ -92,10 +92,13 @@ public class RoleService(
         UserManager<User> userManager)
         : Update<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(uint id, RoleRequestDto requestDto, Role entity,
+        protected override async Task SaveEntityAsync(
+            uint id, RoleRequestDto requestDto,
+            Role entity,
+            uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-            await base.SaveEntityAsync(id, requestDto, entity, cancellationToken);
+            await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
 
             await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
             await UpdateRoleUsersAsync(userManager, entity, requestDto.UserIds);

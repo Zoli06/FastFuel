@@ -11,19 +11,21 @@ public class GetAll<TEntity, TRequest, TResponse>(
     protected readonly DbSet<TEntity> DbSet = dbSet;
     protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
 
-    protected virtual async Task<List<TEntity>> GetEntitiesAsync(CancellationToken cancellationToken = default)
+    protected virtual async Task<List<TEntity>> GetEntitiesAsync(uint? userId = null,
+        CancellationToken cancellationToken = default)
     {
         return await DbSet.ToListAsync(cancellationToken);
     }
 
-    protected virtual Task<List<TResponse>> GetDtosAsync(List<TEntity> entities,
+    protected virtual Task<List<TResponse>> GetDtosAsync(List<TEntity> entities, uint? userId = null,
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult(entities.ConvertAll(Mapper.ToDto));
     }
 
-    public virtual async Task<List<TResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<List<TResponse>> ExecuteAsync(uint? userId = null,
+        CancellationToken cancellationToken = default)
     {
-        return await GetDtosAsync(await GetEntitiesAsync(cancellationToken), cancellationToken);
+        return await GetDtosAsync(await GetEntitiesAsync(userId, cancellationToken), userId, cancellationToken);
     }
 }

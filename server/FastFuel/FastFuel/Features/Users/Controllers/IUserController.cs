@@ -15,20 +15,29 @@ public interface IUserController<TUserRequestDto, TUserResponseDto>
     protected UserManager<User> UserManager { get; }
     protected ClaimsPrincipal User { get; }
 
+    protected uint? GetUserId(ClaimsPrincipal user)
+    {
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && uint.TryParse(userIdClaim.Value, out var userId))
+            return userId;
+        return null;
+    }
+
     async Task<Results<
             Ok<TUserResponseDto>,
             NotFound,
             UnauthorizedHttpResult>>
         GetCurrentUserDefault(CancellationToken cancellationToken = default)
     {
-        var user = await UserManager.GetUserAsync(User);
-        if (user == null)
+        var userId = GetUserId(User);
+        if (userId == null)
             return TypedResults.Unauthorized();
 
-        var userResponseDto = await UserService.GetByIdAsync(user.Id, cancellationToken);
-        if (userResponseDto == null)
+        var userDto = await UserService.GetByIdAsync(userId.Value, userId, cancellationToken);
+        if (userDto == null)
             return TypedResults.NotFound();
-        return TypedResults.Ok(userResponseDto);
+
+        return TypedResults.Ok(userDto);
     }
 
     Task<Results<

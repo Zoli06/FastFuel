@@ -98,10 +98,10 @@ public class OrderService(
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto,
+        protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-            var entity = await base.CreateEntityAsync(requestDto, cancellationToken);
+            var entity = await base.CreateEntityAsync(requestDto, userId, cancellationToken);
 
             var lastOrder = await DbSet
                 .OrderByDescending(o => o.CreatedAt)
@@ -118,20 +118,21 @@ public class OrderService(
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Update<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity,
+        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
             EnsurePendingStatus(entity);
-            return base.SaveEntityAsync(id, requestDto, entity, cancellationToken);
+            return base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
         }
     }
 
     private class Delete(ApplicationDbContext dbContext, DbSet<Order> dbSet) : Delete<Order>(dbContext, dbSet)
     {
-        protected override Task DeleteEntityAsync(uint id, Order entity, CancellationToken cancellationToken = default)
+        protected override Task DeleteEntityAsync(uint id, Order entity, uint? userId = null,
+            CancellationToken cancellationToken = default)
         {
             EnsurePendingStatus(entity);
-            return base.DeleteEntityAsync(id, entity, cancellationToken);
+            return base.DeleteEntityAsync(id, entity, userId, cancellationToken);
         }
     }
 }

@@ -23,28 +23,30 @@ public abstract class CrudService<TEntity, TRequest, TResponse>(
     protected virtual Update<TEntity, TRequest, TResponse> UpdateOperation => new(DbContext, DbSet, Mapper);
     protected virtual Delete<TEntity> DeleteOperation => new(DbContext, DbSet);
 
-    public Task<List<TResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public Task<List<TResponse>> GetAllAsync(uint? userId = null, CancellationToken cancellationToken = default)
     {
-        return GetAllOperation.ExecuteAsync(cancellationToken);
+        return GetAllOperation.ExecuteAsync(userId, cancellationToken);
     }
 
-    public Task<TResponse?> GetByIdAsync(uint id, CancellationToken cancellationToken = default)
+    public Task<TResponse?> GetByIdAsync(uint id, uint? userId = null, CancellationToken cancellationToken = default)
     {
-        return GetByIdOperation.ExecuteAsync(id, cancellationToken);
+        return GetByIdOperation.ExecuteAsync(id, userId, cancellationToken);
     }
 
-    public Task<TResponse> CreateAsync(TRequest requestDto, CancellationToken cancellationToken = default)
+    public Task<TResponse> CreateAsync(TRequest requestDto, uint? userId = null,
+        CancellationToken cancellationToken = default)
     {
-        return CreateOperation.ExecuteAsync(requestDto, cancellationToken);
+        return CreateOperation.ExecuteAsync(requestDto, userId, cancellationToken);
     }
 
-    public Task<bool> UpdateAsync(uint id, TRequest requestDto, CancellationToken cancellationToken = default)
+    public Task<bool> UpdateAsync(uint id, TRequest requestDto, uint? userId = null,
+        CancellationToken cancellationToken = default)
     {
-        return UpdateOperation.ExecuteAsync(id, requestDto, cancellationToken);
+        return UpdateOperation.ExecuteAsync(id, requestDto, userId, cancellationToken);
     }
 
-    public Task<bool> DeleteAsync(uint id, CancellationToken cancellationToken = default)
+    public Task<bool> DeleteAsync(uint id, uint? userId = null, CancellationToken cancellationToken = default)
     {
-        return DeleteOperation.ExecuteAsync(id, cancellationToken);
+        return DeleteOperation.ExecuteAsync(id, userId, cancellationToken);
     }
 }

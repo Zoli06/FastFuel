@@ -28,7 +28,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
     {
         return new Order
         {
-            CustomerId = dto.CustomerId,
+            //CustomerId = dto.CustomerId,
             RestaurantId = dto.RestaurantId,
             Menus = dto.Menus.ConvertAll(ToEntity),
             Foods = dto.Foods.ConvertAll(ToEntity)
@@ -37,8 +37,8 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
 
     public void UpdateEntity(OrderRequestDto dto, Order entity)
     {
-        if (dto.CustomerId != entity.CustomerId)
-            throw new InvalidOperationException("Cannot change the CustomerId of an order.");
+        // if (dto.CustomerId != entity.CustomerId)
+        //     throw new InvalidOperationException("Cannot change the CustomerId of an order.");
 
         entity.RestaurantId = dto.RestaurantId;
 

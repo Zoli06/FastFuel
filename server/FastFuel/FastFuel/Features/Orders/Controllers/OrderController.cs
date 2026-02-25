@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.Orders.Controllers;
 
-// TODO: Allow staff to update order status and mark as completed
 public class OrderController(IOrderService service, IOrderFilterParamsFactory filterParamsFactory)
     : CrudController<Order, OrderRequestDto, OrderResponseDto>(service)
 {

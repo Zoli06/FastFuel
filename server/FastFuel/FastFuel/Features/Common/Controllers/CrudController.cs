@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FastFuel.Features.Common.Authorization;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
@@ -24,7 +25,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         GetAll(CancellationToken cancellationToken = default)
     {
-        var dtos = await Service.GetAllAsync(cancellationToken);
+        var dtos = await Service.GetAllAsync(GetUserId(User), cancellationToken);
         return TypedResults.Ok(dtos);
     }
 
@@ -37,7 +38,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         GetById(uint id, CancellationToken cancellationToken = default)
     {
-        var dto = await Service.GetByIdAsync(id, cancellationToken);
+        var dto = await Service.GetByIdAsync(id, GetUserId(User), cancellationToken);
         if (dto == null)
             return TypedResults.NotFound();
         return TypedResults.Ok(dto);
@@ -53,7 +54,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         Create(TRequest requestDto, CancellationToken cancellationToken = default)
     {
-        var responseDto = await Service.CreateAsync(requestDto, cancellationToken);
+        var responseDto = await Service.CreateAsync(requestDto, GetUserId(User), cancellationToken);
         var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
         return TypedResults.Created(location!, responseDto);
     }
@@ -69,7 +70,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         Update(uint id, TRequest requestDto, CancellationToken cancellationToken = default)
     {
-        var success = await Service.UpdateAsync(id, requestDto, cancellationToken);
+        var success = await Service.UpdateAsync(id, requestDto, GetUserId(User), cancellationToken);
         if (!success)
             return TypedResults.NotFound();
         return TypedResults.NoContent();
@@ -85,9 +86,17 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
             ForbidHttpResult>>
         Delete(uint id, CancellationToken cancellationToken = default)
     {
-        var success = await Service.DeleteAsync(id, cancellationToken);
+        var success = await Service.DeleteAsync(id, GetUserId(User), cancellationToken);
         if (!success)
             return TypedResults.NotFound();
         return TypedResults.NoContent();
+    }
+
+    protected uint? GetUserId(ClaimsPrincipal user)
+    {
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && uint.TryParse(userIdClaim.Value, out var userId))
+            return userId;
+        return null;
     }
 }

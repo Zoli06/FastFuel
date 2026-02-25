@@ -73,7 +73,7 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         Func<TUser, Task> setDefaultRoles
     ) : Create<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(TUserRequestDto requestDto, TUser entity,
+        protected override async Task SaveEntityAsync(TUserRequestDto requestDto, TUser entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
             if (requestDto.Password is null)
@@ -93,7 +93,11 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         UserManager<User> userManager
     ) : Update<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(uint id, TUserRequestDto requestDto, TUser entity,
+        protected override async Task SaveEntityAsync(
+            uint id,
+            TUserRequestDto requestDto,
+            TUser entity,
+            uint? userId = null,
             CancellationToken cancellationToken = default)
         {
             if (requestDto.Password != null)

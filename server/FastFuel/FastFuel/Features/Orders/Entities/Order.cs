@@ -13,10 +13,10 @@ public class Order : IIdentifiable
     public virtual Restaurant Restaurant { get; init; } = null!;
     public uint OrderNumber { get; set; }
     public OrderStatus Status { get; set; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 
-    public uint? CustomerId { get; init; }
+    public uint? CustomerId { get; set; }
     public virtual Customer? Customer { get; init; }
     public virtual List<OrderFood> Foods { get; init; } = [];
     public virtual List<OrderMenu> Menus { get; init; } = [];
