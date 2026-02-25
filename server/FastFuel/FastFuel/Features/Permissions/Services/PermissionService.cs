@@ -3,6 +3,7 @@ using System.Security.Claims;
 using FastFuel.Features.Common.Authorization;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,28 +15,43 @@ public class PermissionService : IPermissionService
     private readonly RoleManager<Role> _roleManager;
     private readonly UserManager<User> _userManager;
 
-    public PermissionService(UserManager<User> userManager, RoleManager<Role> roleManager)
+    public PermissionService(
+        UserManager<User> userManager,
+        RoleManager<Role> roleManager)
     {
-        var operations = Enum.GetNames<PermissionType>();
+        _userManager = userManager;
+        _roleManager = roleManager;
 
         _permissions = Assembly.GetExecutingAssembly()
             .GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false }
                         && t.IsAssignableTo(typeof(ControllerBase))
-                        && t.GetMethods().Any(m => m.IsDefined(typeof(PermissionAuthorizeAttribute), true)))
-            .Select(t => t.Name.Replace("Controller", ""))
-            .SelectMany(resource => operations.Select(op => $"Permission:{resource}:{op}"))
+                        && t.GetMethods().Any(m => m.IsDefined(typeof(CrudPermissionCheckAttribute), true))
+                        && !t.IsDefined(typeof(AllowAnonymousAttribute), false)
+                        && !t.IsDefined(typeof(SkipPermissionCheckAttribute), false))
+            .SelectMany(t =>
+            {
+                var resource = t.Name.Replace("Controller", "");
+
+                var excludedOperations = t.GetMethods()
+                    .Where(m => m.IsDefined(typeof(AllowAnonymousAttribute), true)
+                                || m.IsDefined(typeof(SkipPermissionCheckAttribute), true))
+                    .Select(m => m.GetCustomAttribute<CrudPermissionCheckAttribute>(true)?.Permission)
+                    .OfType<PermissionType>()
+                    .ToHashSet();
+
+                return Enum.GetValues<PermissionType>()
+                    .Where(op => !excludedOperations.Contains(op))
+                    .Select(op => $"Permission:{resource}:{op}");
+            })
             .OrderBy(p => p)
             .ToList()
             .AsReadOnly();
-
-        _userManager = userManager;
-        _roleManager = roleManager;
     }
 
-    public List<string> GetAllPermissions()
+    public Task<List<string>> GetAllPermissionsAsync(CancellationToken cancellationToken = default)
     {
-        return _permissions.ToList();
+        return Task.FromResult(_permissions.ToList());
     }
 
     public async Task<List<string>> GetPermissionsForCurrentUserAsync(ClaimsPrincipal user)

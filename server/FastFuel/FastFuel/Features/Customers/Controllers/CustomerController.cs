@@ -30,4 +30,13 @@ public class CustomerController(
         return await ((IUserController<CustomerRequestDto, CustomerResponseDto>)this).GetCurrentUserDefault(
             cancellationToken);
     }
+
+    [AllowAnonymous]
+    public override
+        Task<Results<Created<CustomerResponseDto>, Conflict<ProblemDetails>, BadRequest<ProblemDetails>,
+            UnauthorizedHttpResult, ForbidHttpResult>> Create(CustomerRequestDto requestDto,
+            CancellationToken cancellationToken = default)
+    {
+        return base.Create(requestDto, cancellationToken);
+    }
 }

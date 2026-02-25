@@ -12,14 +12,14 @@ namespace FastFuel.Features.Permissions.Controllers;
 public class PermissionController(IPermissionService permissionService) : ControllerBase
 {
     [HttpGet]
-    [CrudAuthorize(PermissionType.Read)]
-    public Results<
+    [CrudPermissionCheck(PermissionType.Read)]
+    public async Task<Results<
             Ok<List<string>>,
             UnauthorizedHttpResult,
-            ForbidHttpResult>
+            ForbidHttpResult>>
         GetAll()
     {
-        return TypedResults.Ok(permissionService.GetAllPermissions());
+        return TypedResults.Ok(await permissionService.GetAllPermissionsAsync());
     }
 
     [HttpGet("my")]

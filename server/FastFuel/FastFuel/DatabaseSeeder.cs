@@ -272,7 +272,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _employeeService.CreateAsync(adminDto);
 
         var adminUser = await _userManager.FindByNameAsync("admin");
-        var allPermissions = _permissionService.GetAllPermissions();
+        var allPermissions = await _permissionService.GetAllPermissionsAsync();
         var role = await _roleManager.FindByNameAsync("Admin");
         if (role == null)
         {

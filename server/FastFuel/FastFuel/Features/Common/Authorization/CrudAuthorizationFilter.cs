@@ -1,4 +1,4 @@
-using System.ComponentModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -8,6 +8,12 @@ public class CrudAuthorizationFilter(PermissionType permission) : IAuthorization
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
+        if (context.ActionDescriptor.EndpointMetadata.OfType<IAllowAnonymous>().Any())
+            return;
+
+        if (context.ActionDescriptor.EndpointMetadata.OfType<SkipPermissionCheckAttribute>().Any())
+            return;
+
         var controllerName = context.RouteData.Values["controller"]?.ToString();
         if (controllerName == null)
         {
@@ -21,7 +27,7 @@ public class CrudAuthorizationFilter(PermissionType permission) : IAuthorization
             PermissionType.Read => Permissions.Read(controllerName),
             PermissionType.Update => Permissions.Update(controllerName),
             PermissionType.Delete => Permissions.Delete(controllerName),
-            _ => throw new InvalidEnumArgumentException(nameof(permission), (int)permission, typeof(PermissionType))
+            _ => throw new ArgumentOutOfRangeException()
         };
 
         var user = context.HttpContext.User;

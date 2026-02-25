@@ -17,7 +17,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     protected ICrudService<TRequest, TResponse> Service { get; } = service;
 
     [HttpGet]
-    [CrudAuthorize(PermissionType.Read)]
+    [CrudPermissionCheck(PermissionType.Read)]
     public virtual async Task<Results<
             Ok<List<TResponse>>,
             BadRequest<ProblemDetails>,
@@ -30,7 +30,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpGet("{id:int}")]
-    [CrudAuthorize(PermissionType.Read)]
+    [CrudPermissionCheck(PermissionType.Read)]
     public virtual async Task<Results<
             Ok<TResponse>,
             NotFound,
@@ -45,7 +45,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpPost]
-    [CrudAuthorize(PermissionType.Create)]
+    [CrudPermissionCheck(PermissionType.Create)]
     public virtual async Task<Results<
             Created<TResponse>,
             Conflict<ProblemDetails>,
@@ -60,7 +60,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpPut("{id:int}")]
-    [CrudAuthorize(PermissionType.Update)]
+    [CrudPermissionCheck(PermissionType.Update)]
     public virtual async Task<Results<
             NoContent,
             NotFound,
@@ -77,7 +77,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpDelete("{id:int}")]
-    [CrudAuthorize(PermissionType.Delete)]
+    [CrudPermissionCheck(PermissionType.Delete)]
     public virtual async Task<Results<
             NoContent,
             NotFound,

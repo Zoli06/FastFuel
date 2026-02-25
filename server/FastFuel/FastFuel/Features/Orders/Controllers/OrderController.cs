@@ -23,7 +23,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [SwaggerQueryParam("status", typeof(OrderStatus))]
-    [CrudAuthorize(PermissionType.Read)]
+    [CrudPermissionCheck(PermissionType.Read)]
     public override async Task<Results<Ok<List<OrderResponseDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult,
         ForbidHttpResult>> GetAll(
         CancellationToken cancellationToken = default)
@@ -42,7 +42,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [HttpPut("{id:int}/status")]
-    [CrudAuthorize(PermissionType.Update)]
+    [CrudPermissionCheck(PermissionType.Update)]
     public async Task<Results<
             NoContent,
             NotFound,
