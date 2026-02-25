@@ -13,5 +13,6 @@ public record OrderResponseDto : IIdentifiable
     public required DateTime? CompletedAt { get; init; }
     public required List<OrderMenuDto> Menus { get; init; }
     public required List<OrderFoodDto> Foods { get; init; }
+    public required uint Price { get; init; }
     public required uint Id { get; init; }
 }

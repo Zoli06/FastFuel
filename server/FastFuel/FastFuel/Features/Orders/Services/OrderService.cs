@@ -92,6 +92,25 @@ public class OrderService(
             throw new InvalidOperationException("Only pending orders can be modified.");
     }
 
+    private static async Task<uint> CalculatePriceAsync(Order entity, ApplicationDbContext dbContext,
+        CancellationToken cancellationToken = default)
+    {
+        var menuIds = entity.Menus.Select(m => m.MenuId).ToList();
+        var foodIds = entity.Foods.Select(f => f.FoodId).ToList();
+
+        var menuPrices = await dbContext.Menus
+            .Where(m => menuIds.Contains(m.Id))
+            .ToDictionaryAsync(m => m.Id, m => m.Price, cancellationToken);
+
+        var foodPrices = await dbContext.Foods
+            .Where(f => foodIds.Contains(f.Id))
+            .ToDictionaryAsync(f => f.Id, f => f.Price, cancellationToken);
+
+        var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * menuPrices.GetValueOrDefault(m.MenuId));
+        var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * foodPrices.GetValueOrDefault(f.FoodId));
+        return menuPrice + foodPrice;
+    }
+
     private class Create(
         ApplicationDbContext dbContext,
         DbSet<Order> dbSet,
@@ -111,6 +130,8 @@ public class OrderService(
             if (await DbContext.Customers.AnyAsync(c => c.Id == userId, cancellationToken))
                 entity.CustomerId = userId;
 
+            entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
+
             return entity;
         }
     }
@@ -121,6 +142,14 @@ public class OrderService(
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Update<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
+        protected override async Task UpdateEntityAsync(uint id, OrderRequestDto requestDto, Order entity,
+            uint? userId = null,
+            CancellationToken cancellationToken = default)
+        {
+            await base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
+            entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
+        }
+
         protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {

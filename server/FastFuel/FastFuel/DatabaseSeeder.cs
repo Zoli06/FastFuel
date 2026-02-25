@@ -200,9 +200,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
 
-        // TODO: save price at order time
-        // This is important because menu and food prices may change over time
-
         // Add a menu and an extra food item to the order
         var orderMenuItem = new OrderMenu
         {
