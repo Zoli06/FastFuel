@@ -82,6 +82,8 @@ public static class Program
             options.Filters.Add<UniqueConstraintExceptionFilter>();
             options.Filters.Add<ReferenceConstraintExceptionFilter>();
             options.Filters.Add<InvalidOperationExceptionFilter>();
+            options.Filters.Add<UnauthorizedAccessExceptionFilter>();
+            options.Filters.Add<KeyNotFoundExceptionFilter>();
         }).AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
         builder.Services.ConfigureHttpJsonOptions(options =>

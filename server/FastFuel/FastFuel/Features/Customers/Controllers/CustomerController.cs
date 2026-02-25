@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.Controllers;
+using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Users.Controllers;
@@ -38,5 +39,20 @@ public class CustomerController(
             CancellationToken cancellationToken = default)
     {
         return base.Create(requestDto, cancellationToken);
+    }
+
+    // Custom permission check in the service to only allow customers to update their own data
+    // Even admins can't update customers
+    // They can delete it though
+    [SkipPermissionCheck]
+    public override Task<Results<
+        NoContent,
+        NotFound,
+        BadRequest<ProblemDetails>,
+        Conflict<ProblemDetails>,
+        UnauthorizedHttpResult,
+        ForbidHttpResult>> Update(uint id, CustomerRequestDto requestDto, CancellationToken cancellationToken = default)
+    {
+        return base.Update(id, requestDto, cancellationToken);
     }
 }
