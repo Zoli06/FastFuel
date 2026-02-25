@@ -4,6 +4,7 @@ using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
 using FastFuel.Features.Orders.Services;
+using FastFuel.Features.Orders.Services.OrderFilter;
 using FastFuel.NSwag.SwaggerQueryParam;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,6 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
         return TypedResults.Ok(orders);
     }
 
-    // I'm sorry...
     [SwaggerQueryParam("status", typeof(OrderStatus))]
     [CrudAuthorize(PermissionType.Read)]
     public override async Task<Results<Ok<List<OrderResponseDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult,
@@ -40,5 +40,26 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
             Title = "Invalid filter parameter",
             Detail = "Some filters were invalid"
         });
+    }
+
+    [HttpPut("{id:int}/status")]
+    [CrudAuthorize(PermissionType.Update)]
+    public async Task<Results<
+            NoContent,
+            NotFound,
+            BadRequest<ProblemDetails>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        UpdateOrderStatus(
+            uint id,
+            [FromBody] OrderStatus orderStatus,
+            CancellationToken cancellationToken = default
+        )
+    {
+        var success = await ((IOrderService)Service).UpdateOrderStatusAsync(id, orderStatus, cancellationToken);
+        if (success)
+            return TypedResults.NoContent();
+
+        return TypedResults.NotFound();
     }
 }

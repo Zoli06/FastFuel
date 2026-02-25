@@ -12,9 +12,9 @@ public class Order : IIdentifiable
     public uint RestaurantId { get; set; }
     public virtual Restaurant Restaurant { get; init; } = null!;
     public uint OrderNumber { get; set; }
-    public OrderStatus Status { get; init; }
+    public OrderStatus Status { get; set; }
     public DateTime CreatedAt { get; init; }
-    public DateTime? CompletedAt { get; init; }
+    public DateTime? CompletedAt { get; set; }
 
     public uint? CustomerId { get; init; }
     public virtual Customer? Customer { get; init; }

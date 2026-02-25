@@ -1,4 +1,4 @@
-namespace FastFuel.Features.Orders.Services;
+namespace FastFuel.Features.Orders.Services.OrderFilter;
 
 public interface IOrderFilterParamsFactory
 {

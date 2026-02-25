@@ -1,6 +1,6 @@
 using FastFuel.Features.Orders.Common;
 
-namespace FastFuel.Features.Orders.Services;
+namespace FastFuel.Features.Orders.Services.OrderFilter;
 
 public interface IOrderFilterParams
 {

@@ -6,6 +6,7 @@ using FastFuel.Features.Common.Services.CrudOperations;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
+using FastFuel.Features.Orders.Services.OrderFilter;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Orders.Services;
@@ -59,6 +60,22 @@ public class OrderService(
 
         var orders = await query.ToListAsync(cancellationToken);
         return orders.ConvertAll(Mapper.ToDto);
+    }
+
+    public async Task<bool> UpdateOrderStatusAsync(uint orderId, OrderStatus newStatus,
+        CancellationToken cancellationToken = default)
+    {
+        var order = await DbSet.FindAsync([orderId], cancellationToken);
+        if (order == null)
+            return false;
+
+        order.Status = newStatus;
+        if (newStatus == OrderStatus.Completed)
+            order.CompletedAt = DateTime.UtcNow;
+
+        await DbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
     }
 
     private static uint GetNextOrderNumber(Order? lastOrder)

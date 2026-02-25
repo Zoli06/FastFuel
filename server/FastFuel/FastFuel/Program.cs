@@ -84,6 +84,11 @@ public static class Program
             options.Filters.Add<InvalidOperationExceptionFilter>();
         }).AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApiDocument(config =>
