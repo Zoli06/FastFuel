@@ -1,4 +1,4 @@
-using FastFuel.Features.Common.Permissions.Crud;
+using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Permissions.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -12,7 +12,7 @@ namespace FastFuel.Features.Permissions.Controllers;
 public class PermissionController(IPermissionService permissionService) : ControllerBase
 {
     [HttpGet]
-    [CrudPermissionCheck(CrudPermissionType.Read)]
+    [PermissionCheck(CrudOperation.Read)]
     public async Task<Results<
             Ok<List<string>>,
             UnauthorizedHttpResult,

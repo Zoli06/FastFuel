@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.Common.Permissions.Crud;
+using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Common.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,7 +17,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     protected ICrudService<TRequest, TResponse> Service { get; } = service;
 
     [HttpGet]
-    [CrudPermissionCheck(CrudPermissionType.Read)]
+    [PermissionCheck(CrudOperation.Read)]
     public virtual async Task<Results<
             Ok<List<TResponse>>,
             BadRequest<ProblemDetails>,
@@ -30,7 +30,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpGet("{id:int}")]
-    [CrudPermissionCheck(CrudPermissionType.Read)]
+    [PermissionCheck(CrudOperation.Read)]
     public virtual async Task<Results<
             Ok<TResponse>,
             NotFound,
@@ -45,7 +45,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpPost]
-    [CrudPermissionCheck(CrudPermissionType.Create)]
+    [PermissionCheck(CrudOperation.Create)]
     public virtual async Task<Results<
             Created<TResponse>,
             Conflict<ProblemDetails>,
@@ -60,7 +60,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpPut("{id:int}")]
-    [CrudPermissionCheck(CrudPermissionType.Update)]
+    [PermissionCheck(CrudOperation.Update)]
     public virtual async Task<Results<
             NoContent,
             NotFound,
@@ -77,7 +77,7 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
     }
 
     [HttpDelete("{id:int}")]
-    [CrudPermissionCheck(CrudPermissionType.Delete)]
+    [PermissionCheck(CrudOperation.Delete)]
     public virtual async Task<Results<
             NoContent,
             NotFound,

@@ -1,5 +1,5 @@
 using FastFuel.Features.Common.Controllers;
-using FastFuel.Features.Common.Permissions.Crud;
+using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
@@ -23,7 +23,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [SwaggerQueryParam("status", typeof(OrderStatus))]
-    [CrudPermissionCheck(CrudPermissionType.Read)]
+    [PermissionCheck(CrudOperation.Read)]
     public override async Task<Results<Ok<List<OrderResponseDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult,
         ForbidHttpResult>> GetAll(
         CancellationToken cancellationToken = default)
@@ -42,7 +42,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [HttpPut("{id:int}/status")]
-    [CrudPermissionCheck(CrudPermissionType.Update)]
+    [PermissionCheck(CrudOperation.Update)]
     public async Task<Results<
             NoContent,
             NotFound,

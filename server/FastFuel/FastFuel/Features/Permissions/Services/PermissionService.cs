@@ -1,54 +1,19 @@
 using System.Reflection;
 using System.Security.Claims;
 using FastFuel.Features.Common.Permissions;
-using FastFuel.Features.Common.Permissions.Crud;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.Permissions.Services;
 
-public class PermissionService : IPermissionService
+public class PermissionService(
+    UserManager<User> userManager,
+    RoleManager<Role> roleManager)
+    : IPermissionService
 {
-    private readonly IReadOnlyList<string> _permissions;
-    private readonly RoleManager<Role> _roleManager;
-    private readonly UserManager<User> _userManager;
-
-    public PermissionService(
-        UserManager<User> userManager,
-        RoleManager<Role> roleManager)
-    {
-        _userManager = userManager;
-        _roleManager = roleManager;
-
-        _permissions = Assembly.GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false }
-                        && t.IsAssignableTo(typeof(ControllerBase))
-                        && t.GetMethods().Any(m => m.IsDefined(typeof(CrudPermissionCheckAttribute), true))
-                        && !t.IsDefined(typeof(AllowAnonymousAttribute), false)
-                        && !t.IsDefined(typeof(SkipPermissionCheckAttribute), false))
-            .SelectMany(t =>
-            {
-                var resource = t.Name.Replace("Controller", "");
-
-                var excludedOperations = t.GetMethods()
-                    .Where(m => m.IsDefined(typeof(AllowAnonymousAttribute), true)
-                                || m.IsDefined(typeof(SkipPermissionCheckAttribute), true))
-                    .Select(m => m.GetCustomAttribute<CrudPermissionCheckAttribute>(true)?.CrudPermission)
-                    .OfType<CrudPermissionType>()
-                    .ToHashSet();
-
-                return Enum.GetValues<CrudPermissionType>()
-                    .Where(op => !excludedOperations.Contains(op))
-                    .Select(op => $"Permission:{resource}:{op}");
-            })
-            .OrderBy(p => p)
-            .ToList()
-            .AsReadOnly();
-    }
+    private readonly IReadOnlyList<string> _permissions = GetAllPermissionNames();
 
     public Task<List<string>> GetAllPermissionsAsync(CancellationToken cancellationToken = default)
     {
@@ -57,18 +22,18 @@ public class PermissionService : IPermissionService
 
     public async Task<List<string>> GetPermissionsForCurrentUserAsync(ClaimsPrincipal user)
     {
-        var appUser = await _userManager.GetUserAsync(user);
+        var appUser = await userManager.GetUserAsync(user);
         if (appUser == null) return [];
 
-        var userClaims = await _userManager.GetClaimsAsync(appUser);
-        var userRoles = await _userManager.GetRolesAsync(appUser);
+        var userClaims = await userManager.GetClaimsAsync(appUser);
+        var userRoles = await userManager.GetRolesAsync(appUser);
 
         var roleClaims = new List<Claim>();
         foreach (var roleName in userRoles)
         {
-            var role = await _roleManager.FindByNameAsync(roleName);
+            var role = await roleManager.FindByNameAsync(roleName);
             if (role != null)
-                roleClaims.AddRange(await _roleManager.GetClaimsAsync(role));
+                roleClaims.AddRange(await roleManager.GetClaimsAsync(role));
         }
 
         return userClaims.Concat(roleClaims)
@@ -77,5 +42,40 @@ public class PermissionService : IPermissionService
             .Distinct()
             .OrderBy(p => p)
             .ToList();
+    }
+
+    private static List<string> GetAllPermissionNames()
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .Where(IsConcreteController)
+            .SelectMany(GetPermissionsForController)
+            .Distinct()
+            .ToList();
+    }
+
+    private static IEnumerable<string> GetPermissionsForController(Type controllerType)
+    {
+        var controllerName = GetControllerName(controllerType);
+
+        return controllerType
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Where(m => m.GetCustomAttribute<SkipPermissionCheckAttribute>() == null
+                        && !m.GetCustomAttributes().OfType<IAllowAnonymous>().Any())
+            .Select(m => m.GetCustomAttribute<PermissionCheckAttribute>())
+            .Where(attr => attr != null)
+            .Select(attr => PermissionParser.ParsePermissionName(controllerName, attr!.Operation));
+    }
+
+    private static bool IsConcreteController(Type type)
+    {
+        return type is { IsAbstract: false, IsInterface: false }
+               && type.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetControllerName(Type type)
+    {
+        const string suffix = "Controller";
+        return type.Name[..^suffix.Length];
     }
 }
