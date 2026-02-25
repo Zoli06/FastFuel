@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace FastFuel.Features.Common.Authorization;
+namespace FastFuel.Features.Common.Permissions.Crud;
 
-public class CrudAuthorizationFilter(PermissionType permission) : IAuthorizationFilter
+public class CrudAuthorizationFilter(CrudPermissionType crudPermission) : IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -21,12 +21,12 @@ public class CrudAuthorizationFilter(PermissionType permission) : IAuthorization
             return;
         }
 
-        var requiredClaim = permission switch
+        var requiredClaim = crudPermission switch
         {
-            PermissionType.Create => Permissions.Create(controllerName),
-            PermissionType.Read => Permissions.Read(controllerName),
-            PermissionType.Update => Permissions.Update(controllerName),
-            PermissionType.Delete => Permissions.Delete(controllerName),
+            CrudPermissionType.Create => CrudPermissions.Create(controllerName),
+            CrudPermissionType.Read => CrudPermissions.Read(controllerName),
+            CrudPermissionType.Update => CrudPermissions.Update(controllerName),
+            CrudPermissionType.Delete => CrudPermissions.Delete(controllerName),
             _ => throw new ArgumentOutOfRangeException()
         };
 

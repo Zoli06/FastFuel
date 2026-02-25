@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Security.Claims;
-using FastFuel.Features.Common.Authorization;
+using FastFuel.Features.Common.Permissions;
+using FastFuel.Features.Common.Permissions.Crud;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -36,11 +37,11 @@ public class PermissionService : IPermissionService
                 var excludedOperations = t.GetMethods()
                     .Where(m => m.IsDefined(typeof(AllowAnonymousAttribute), true)
                                 || m.IsDefined(typeof(SkipPermissionCheckAttribute), true))
-                    .Select(m => m.GetCustomAttribute<CrudPermissionCheckAttribute>(true)?.Permission)
-                    .OfType<PermissionType>()
+                    .Select(m => m.GetCustomAttribute<CrudPermissionCheckAttribute>(true)?.CrudPermission)
+                    .OfType<CrudPermissionType>()
                     .ToHashSet();
 
-                return Enum.GetValues<PermissionType>()
+                return Enum.GetValues<CrudPermissionType>()
                     .Where(op => !excludedOperations.Contains(op))
                     .Select(op => $"Permission:{resource}:{op}");
             })

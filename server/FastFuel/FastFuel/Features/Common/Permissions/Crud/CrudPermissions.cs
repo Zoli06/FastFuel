@@ -1,6 +1,6 @@
-namespace FastFuel.Features.Common.Authorization;
+namespace FastFuel.Features.Common.Permissions.Crud;
 
-public static class Permissions
+public static class CrudPermissions
 {
     public static string Create(string resource)
     {
