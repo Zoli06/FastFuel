@@ -19,8 +19,8 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     public async Task<Results<Ok<List<OrderResponseDto>>, UnauthorizedHttpResult>> GetMyOrders(
         CancellationToken cancellationToken = default)
     {
-        var orders = await Service.GetAllAsync(cancellationToken);
-        return TypedResults.Ok(orders);
+        return TypedResults.Ok(
+            await ((IOrderService)Service).GetOrdersForCurrentUserAsync(User, cancellationToken));
     }
 
     [SwaggerQueryParam("status", typeof(OrderStatus))]
