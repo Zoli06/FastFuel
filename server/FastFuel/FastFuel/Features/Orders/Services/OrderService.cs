@@ -108,6 +108,9 @@ public class OrderService(
                 .FirstOrDefaultAsync(cancellationToken);
             entity.OrderNumber = GetNextOrderNumber(lastOrder);
 
+            if (await DbContext.Customers.AnyAsync(c => c.Id == userId, cancellationToken))
+                entity.CustomerId = userId;
+
             return entity;
         }
     }
