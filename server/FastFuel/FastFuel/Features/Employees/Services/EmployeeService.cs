@@ -33,7 +33,8 @@ public class EmployeeService(
             "Permission:Order:Delete",
             "Permission:Station:Read",
             "Permission:StationCategory:Read",
-            "Permission:Customer:Read"
+            "Permission:Customer:Read",
+            "Permission:Station:ViewTasks"
         ])
     ];
 }
