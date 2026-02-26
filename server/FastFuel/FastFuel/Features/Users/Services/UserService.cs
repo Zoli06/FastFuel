@@ -46,7 +46,7 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         {
             if (!await roleManager.RoleExistsAsync(roleName))
             {
-                var role = new Role { Name = roleName };
+                var role = new Role { Name = roleName, IsDefault = true };
                 var roleResult = await roleManager.CreateAsync(role);
                 if (!roleResult.Succeeded)
                     throw new Exception(string.Join("; ", roleResult.Errors.Select(e => e.Description)));

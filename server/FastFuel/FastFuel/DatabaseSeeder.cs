@@ -276,7 +276,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var role = await _roleManager.FindByNameAsync("Admin");
         if (role == null)
         {
-            role = new Role { Name = "Admin" };
+            role = new Role { Name = "Admin", IsDefault = true };
             await _roleManager.CreateAsync(role);
             foreach (var permission in allPermissions)
                 await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
