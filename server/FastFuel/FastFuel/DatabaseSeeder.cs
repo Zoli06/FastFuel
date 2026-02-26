@@ -3,6 +3,7 @@ using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Customers.DTOs;
+using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Employees.DTOs;
 using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.Entities;
@@ -12,6 +13,7 @@ using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.OpeningHours.Entities;
 using FastFuel.Features.OrderFoods.Entities;
 using FastFuel.Features.OrderMenus.Entities;
+using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.Entities;
 using FastFuel.Features.Permissions.Services;
 using FastFuel.Features.Restaurants.Entities;
@@ -192,13 +194,11 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             Restaurant = restaurant,
             OrderNumber = 1,
             Status = OrderStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Customer = await _context.Users.OfType<Customer>().FirstOrDefaultAsync(c => c.UserName == "customer")
         };
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
-
-        // TODO: save price at order time
-        // This is important because menu and food prices may change over time
 
         // Add a menu and an extra food item to the order
         var orderMenuItem = new OrderMenu
@@ -272,11 +272,11 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _employeeService.CreateAsync(adminDto);
 
         var adminUser = await _userManager.FindByNameAsync("admin");
-        var allPermissions = _permissionService.GetAllPermissions();
+        var allPermissions = await _permissionService.GetAllPermissionsAsync();
         var role = await _roleManager.FindByNameAsync("Admin");
         if (role == null)
         {
-            role = new Role { Name = "Admin" };
+            role = new Role { Name = "Admin", IsDefault = true };
             await _roleManager.CreateAsync(role);
             foreach (var permission in allPermissions)
                 await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));

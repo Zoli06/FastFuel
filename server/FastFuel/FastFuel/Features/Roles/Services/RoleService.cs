@@ -26,6 +26,9 @@ public class RoleService(
     protected override Update<Role, RoleRequestDto, RoleResponseDto> UpdateOperation =>
         new Update(DbContext, DbSet, Mapper, roleManager, userManager);
 
+    protected override Delete<Role> DeleteOperation =>
+        new Delete(DbContext, DbSet);
+
     private static async Task UpdateRoleClaimsAsync(RoleManager<Role> roleManager, Role role,
         List<string> newPermissions)
     {
@@ -74,9 +77,10 @@ public class RoleService(
         UserManager<User> userManager)
         : Create<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(RoleRequestDto requestDto, Role entity)
+        protected override async Task SaveEntityAsync(RoleRequestDto requestDto, Role entity, uint? userId = null,
+            CancellationToken cancellationToken = default)
         {
-            await base.SaveEntityAsync(requestDto, entity);
+            await base.SaveEntityAsync(requestDto, entity, userId, cancellationToken);
 
             await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
             await UpdateRoleUsersAsync(userManager, entity, requestDto.UserIds);
@@ -91,12 +95,34 @@ public class RoleService(
         UserManager<User> userManager)
         : Update<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(uint id, RoleRequestDto requestDto, Role entity)
+        protected override async Task SaveEntityAsync(
+            uint id, RoleRequestDto requestDto,
+            Role entity,
+            uint? userId = null,
+            CancellationToken cancellationToken = default)
         {
-            await base.SaveEntityAsync(id, requestDto, entity);
+            if (entity.IsDefault)
+                throw new InvalidOperationException(
+                    $"The default role '{entity.Name}' is immutable and its permissions cannot be modified.");
+
+            await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
 
             await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
             await UpdateRoleUsersAsync(userManager, entity, requestDto.UserIds);
+        }
+    }
+
+    private class Delete(ApplicationDbContext dbContext, DbSet<Role> dbSet)
+        : Delete<Role>(dbContext, dbSet)
+    {
+        protected override async Task DeleteEntityAsync(uint id, Role entity, uint? userId = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (entity.IsDefault)
+                throw new InvalidOperationException(
+                    $"The default role '{entity.Name}' is immutable and cannot be deleted.");
+
+            await base.DeleteEntityAsync(id, entity, userId, cancellationToken);
         }
     }
 }

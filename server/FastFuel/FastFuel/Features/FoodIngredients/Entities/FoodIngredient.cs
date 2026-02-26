@@ -10,4 +10,5 @@ public class FoodIngredient
     public uint IngredientId { get; set; }
     public virtual Ingredient Ingredient { get; set; } = null!;
     public uint Quantity { get; set; }
+    public string Unit { get; set; } = string.Empty;
 }

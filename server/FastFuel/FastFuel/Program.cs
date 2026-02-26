@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.ExceptionFilters;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
-using FastFuel.NSwag;
+using FastFuel.NSwag.SwaggerQueryParam;
+using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -77,16 +79,25 @@ public static class Program
     {
         builder.Services.AddControllers(options =>
         {
-            // Convert UniqueConstraintException from EF into HTTP 409 responses globally
             options.Filters.Add<UniqueConstraintExceptionFilter>();
-            // TODO: Add filter for reference constraint exceptions
+            options.Filters.Add<ReferenceConstraintExceptionFilter>();
+            options.Filters.Add<InvalidOperationExceptionFilter>();
+            options.Filters.Add<UnauthorizedAccessExceptionFilter>();
+            options.Filters.Add<KeyNotFoundExceptionFilter>();
+        }).AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApiDocument(config =>
         {
+            config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
+            config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
 
             config.AddSecurity("Bearer", new OpenApiSecurityScheme
             {

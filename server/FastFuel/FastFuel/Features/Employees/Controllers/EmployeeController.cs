@@ -16,12 +16,14 @@ public class EmployeeController(
     : CrudController<Employee, EmployeeRequestDto, EmployeeResponseDto>(service),
         IUserController<EmployeeRequestDto, EmployeeResponseDto>
 {
-    public IUserService<EmployeeRequestDto, EmployeeResponseDto> Service { get; } = service;
+    public IUserService<EmployeeRequestDto, EmployeeResponseDto> UserService { get; } = service;
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
-    public async Task<Results<Ok<EmployeeResponseDto>, UnauthorizedHttpResult>> GetCurrentUser()
+    public async Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
+        CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<EmployeeRequestDto, EmployeeResponseDto>)this).GetCurrentUserDefault();
+        return await ((IUserController<EmployeeRequestDto, EmployeeResponseDto>)this).GetCurrentUserDefault(
+            cancellationToken);
     }
 }
