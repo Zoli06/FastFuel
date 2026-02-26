@@ -9,5 +9,6 @@ public class FoodIngredientConfig : IEntityTypeConfiguration<FoodIngredient>
     public void Configure(EntityTypeBuilder<FoodIngredient> builder)
     {
         builder.HasKey(fi => new { fi.FoodId, fi.IngredientId });
+        builder.Property(fi => fi.Unit).HasMaxLength(50);
     }
 }
