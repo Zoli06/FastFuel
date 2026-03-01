@@ -1,16 +1,16 @@
 import { Container, Title, Text, Button, Stack, Center, Box } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 
 export type ErrorPageProps = {
   title?: string;
   message?: string;
-  onRetry?: () => void;
 };
 
 export const ErrorPage = ({
   title = 'An Error Occurred',
   message = 'Please try refreshing the page or head back to the home screen.',
-  onRetry,
 }: ErrorPageProps) => {
+  const navigate = useNavigate();
   return (
     <Box h="100vh" w="100vw" bg="gray.0">
       <Center h="100%">
@@ -38,11 +38,9 @@ export const ErrorPage = ({
                 Refresh Page
               </Button>
 
-              {onRetry && (
-                <Button variant="light" color="gray" size="md" onClick={onRetry}>
-                  Go Back
-                </Button>
-              )}
+              <Button variant="light" color="gray" size="md" onClick={() => navigate(-1)}>
+                Go Back
+              </Button>
             </Stack>
           </Stack>
         </Container>
