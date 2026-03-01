@@ -9,6 +9,7 @@ import { useEditorState } from '../GenericEditor/useEditorState.ts';
 
 export type EntityManagerProps<TData extends { id: number | string }, TForm extends FormValues> = {
   title: string;
+  entityName: string;
   data: TData[];
   columns: ColumnDefinition<TData>[];
   fields: FieldOrFieldset<TForm>[];
@@ -23,6 +24,7 @@ export type EntityManagerProps<TData extends { id: number | string }, TForm exte
 
 export const EntityManager = <TData extends { id: number | string }, TForm extends FormValues>({
   title,
+  entityName,
   data,
   columns,
   fields,
@@ -41,7 +43,7 @@ export const EntityManager = <TData extends { id: number | string }, TForm exten
     close();
   };
 
-  const editorProps =
+  const editorModeAndData =
     mode === 'edit' ? { mode: 'edit' as const, data: editingItem } : { mode: 'create' as const };
 
   return (
@@ -67,11 +69,13 @@ export const EntityManager = <TData extends { id: number | string }, TForm exten
       </Container>
 
       <GenericEditor<TForm, TData>
-        {...editorProps}
+        {...editorModeAndData}
         opened={opened}
         onClose={close}
         title={
-          mode === 'create' ? (createTitle ?? `Create ${title}`) : (editTitle ?? `Edit ${title}`)
+          mode === 'create'
+            ? (createTitle ?? `Create ${entityName}`)
+            : (editTitle ?? `Edit ${entityName}`)
         }
         fields={fields}
         getInitialValues={getInitialValues}

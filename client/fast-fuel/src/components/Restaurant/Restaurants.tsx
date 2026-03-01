@@ -160,6 +160,7 @@ export const Restaurants = ({ restaurants, refetchRestaurants }: RestaurantsProp
   return (
     <EntityManager<RestaurantDto, RestaurantFormValues>
       title="Restaurants"
+      entityName="restaurant"
       data={restaurants}
       columns={tableColumns}
       fields={editorFields}
