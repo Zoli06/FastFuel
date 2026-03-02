@@ -1,9 +1,8 @@
-import './Restaurants.css';
-import { Button, Container, Flex } from '@mantine/core';
+import { Box, Button, Container, Flex, Title } from '@mantine/core';
 import { RestaurantTable } from './Restaurant Table/RestaurantTable';
 import type { components } from '../../types/api';
 import { useState } from 'react';
-import { RestaurantEditor } from './Restaurant Table/RestaurantEditor.tsx';
+import { RestaurantEditor } from './Restaurant Table/RestaurantEditor';
 
 export type RestaurantsProps = {
   restaurants: components['schemas']['RestaurantResponseDto'][];
@@ -37,21 +36,39 @@ export const Restaurants = ({ restaurants, refetchRestaurants }: RestaurantsProp
 
   return (
     <>
-      <Container className="restaurant">
-        <Flex className="restaurant-header">
-          <h2>Restaurants</h2>
-          <Button className="add-restaurant-button" onClick={openRestaurantEditorCreate}>
+      <Container mt={20} mx="auto" bg="beige" p={15} bd="1px solid black">
+        {/* Header */}
+        <Flex
+          justify="space-between"
+          align="center"
+          w="100%"
+          pb="xs"
+          style={{ borderBottom: '1px solid black' }}
+        >
+          <Title order={2}>Restaurants</Title>
+
+          <Button onClick={openRestaurantEditorCreate} bg="gray" c="black" bd="1px solid black">
             Add Restaurant
           </Button>
         </Flex>
-        <Container className="restaurant-list">
+
+        {/* List */}
+        <Box
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+          }}
+          px={20}
+          py={10}
+        >
           <RestaurantTable
             restaurants={restaurants}
             openRestaurantEditor={openRestaurantEditorEdit}
             refetchRestaurants={refetchRestaurants}
           />
-        </Container>
+        </Box>
       </Container>
+
       <RestaurantEditor
         mode={isAdding ? 'create' : 'edit'}
         restaurant={editingRestaurant}

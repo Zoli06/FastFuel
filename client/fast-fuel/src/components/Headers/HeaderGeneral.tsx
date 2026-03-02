@@ -1,5 +1,4 @@
-import './HeaderGeneral.css';
-import { Button, Flex } from '@mantine/core';
+import { Button, Center, Flex, Text } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
@@ -30,10 +29,11 @@ export const HeaderGeneral = ({
             Home
           </Button>
         </Flex>
-        {/* Center Section */}
-        <h1 className="general-header" style={{ margin: 0, whiteSpace: 'nowrap' }}>
-          {title}
-        </h1>
+        <Center>
+          <Text fz="4rem" style={{ WebkitTextStroke: '1.5px red' }}>
+            {title}
+          </Text>
+        </Center>
 
         {/* Right Section */}
         <Flex flex={1} justify="flex-end">

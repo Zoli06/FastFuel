@@ -1,5 +1,5 @@
+import { UnstyledButton } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import './MenuLink.css';
 
 interface MenuLinkProps {
   text: string;
@@ -8,8 +8,8 @@ interface MenuLinkProps {
 
 export const MenuLink = ({ text, to }: MenuLinkProps) => {
   return (
-    <Link typeof="button" to={to} className="menu-link">
+    <UnstyledButton component={Link} to={to} p="xs" px="sm" fw="bold" fz="3rem" c="darkred">
       {text}
-    </Link>
+    </UnstyledButton>
   );
 };
