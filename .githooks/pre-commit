@@ -83,7 +83,7 @@ if [ "$AFFECTS_FRONTEND" -eq 1 ]; then
   i=$((i+1))
 
   run_check $i "Frontend code formatting" "client/fast-fuel" \
-    "npm run prettier:check" \
+    "npm run format:check" \
     "npm run format" &
   i=$((i+1))
 
