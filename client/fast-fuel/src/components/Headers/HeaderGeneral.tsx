@@ -30,7 +30,7 @@ export const HeaderGeneral = ({
           </Button>
         </Flex>
         <Center>
-          <Text fz="4rem" style={{ WebkitTextStroke: '1.5px red' }}>
+          <Text fz="4rem">
             {title}
           </Text>
         </Center>
