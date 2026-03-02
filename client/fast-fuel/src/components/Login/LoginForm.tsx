@@ -1,15 +1,14 @@
-import { Container, Button, Stack, Paper, TextInput } from '@mantine/core';
+import { Button, Stack, TextInput } from '@mantine/core';
+import { Main } from '../Main/Main.tsx';
 
-export const Loginform = () => {
+export const LoginForm = () => {
   return (
-    <Container size="xs">
-      <Paper p="xl" withBorder bg="var(--mantine-color-gray-0)">
-        <Stack gap="md">
-          <TextInput label="Username" placeholder="Enter username" />
-          <TextInput label="Password" type="password" placeholder="Enter password" />
-          <Button fullWidth>Login</Button>
-        </Stack>
-      </Paper>
-    </Container>
+    <Main>
+      <Stack gap="md">
+        <TextInput label="Username" placeholder="Enter username" />
+        <TextInput label="Password" type="password" placeholder="Enter password" />
+        <Button fullWidth>Login</Button>
+      </Stack>
+    </Main>
   );
 };
