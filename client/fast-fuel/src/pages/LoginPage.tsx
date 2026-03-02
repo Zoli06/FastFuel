@@ -1,4 +1,4 @@
-import { Loginform } from '../components/Login/LoginForm.tsx';
+import { LoginForm } from '../components/Login/LoginForm.tsx';
 import { HeaderGeneral } from '../components/Headers/HeaderGeneral.tsx';
 
 export const LoginPage = () => {
@@ -6,7 +6,7 @@ export const LoginPage = () => {
     <div>
       <HeaderGeneral title={'Login'} />
 
-      <Loginform />
+      <LoginForm />
     </div>
   );
 };

@@ -1,11 +1,12 @@
-import { Button, Container, Divider, Flex, Paper, Title } from '@mantine/core';
+import { Button, Container, Divider, Flex, Title } from '@mantine/core';
 import type { UseFormInput } from '@mantine/form';
 
-import { GenericTable } from '../GenericTable/GenericTable.tsx';
 import type { ColumnDefinition } from '../GenericTable/GenericTable.tsx';
-import { GenericEditor } from '../GenericEditor';
+import { GenericTable } from '../GenericTable/GenericTable.tsx';
 import type { FieldOrFieldset, FormValues } from '../GenericEditor';
+import { GenericEditor } from '../GenericEditor';
 import { useEditorState } from '../GenericEditor/useEditorState.ts';
+import { Main } from '../Main/Main.tsx';
 
 export type EntityManagerProps<TData extends { id: number | string }, TForm extends FormValues> = {
   title: string;
@@ -48,25 +49,23 @@ export const EntityManager = <TData extends { id: number | string }, TForm exten
 
   return (
     <>
-      <Container className="entity-manager">
-        <Paper shadow="xs" p="xl" bg="beige" withBorder>
-          <Flex justify="space-between" align="center">
-            <Title>{title}</Title>
-            <Button onClick={openCreate} color="green">
-              {addButtonLabel ?? `Add ${title}`}
-            </Button>
-          </Flex>
-          <Divider my="md" color="black" />
-          <Container>
-            <GenericTable<TData>
-              data={data}
-              columns={columns}
-              onEdit={openEdit}
-              onDelete={onDelete}
-            />
-          </Container>
-        </Paper>
-      </Container>
+      <Main>
+        <Flex justify="space-between" align="center">
+          <Title>{title}</Title>
+          <Button onClick={openCreate} color="green">
+            {addButtonLabel ?? `Add ${title}`}
+          </Button>
+        </Flex>
+        <Divider my="md" color="black" />
+        <Container>
+          <GenericTable<TData>
+            data={data}
+            columns={columns}
+            onEdit={openEdit}
+            onDelete={onDelete}
+          />
+        </Container>
+      </Main>
 
       <GenericEditor<TForm, TData>
         {...editorModeAndData}

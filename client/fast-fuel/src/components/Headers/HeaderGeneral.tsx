@@ -30,9 +30,7 @@ export const HeaderGeneral = ({
           </Button>
         </Flex>
         <Center>
-          <Text fz="4rem">
-            {title}
-          </Text>
+          <Text fz="4rem">{title}</Text>
         </Center>
 
         {/* Right Section */}

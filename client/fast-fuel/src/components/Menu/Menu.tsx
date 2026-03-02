@@ -1,9 +1,10 @@
-import { Box, Center, SimpleGrid } from '@mantine/core';
+import { Center, SimpleGrid } from '@mantine/core';
 import { MenuLink } from './MenuLink';
+import { Main } from '../Main/Main.tsx';
 
 export const Menu = () => {
   return (
-    <Box p="md" mx="auto" w="fit-content" bg="beige" bd="1px solid black">
+    <Main>
       <SimpleGrid cols={3} spacing="md" verticalSpacing="sm">
         {[
           { text: 'Allergies', to: '/allergies' },
@@ -18,6 +19,6 @@ export const Menu = () => {
           <Center key={index}>{link.text && <MenuLink text={link.text} to={link.to} />}</Center>
         ))}
       </SimpleGrid>
-    </Box>
+    </Main>
   );
 };
