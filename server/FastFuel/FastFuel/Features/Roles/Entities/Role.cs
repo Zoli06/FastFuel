@@ -10,4 +10,6 @@ public class Role : IdentityRole<uint>, IIdentifiable
         get => base.Name ?? string.Empty;
         set => base.Name = value;
     }
+
+    public bool IsDefault { get; set; }
 }

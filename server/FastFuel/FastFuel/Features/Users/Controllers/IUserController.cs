@@ -11,26 +11,39 @@ public interface IUserController<TUserRequestDto, TUserResponseDto>
     where TUserRequestDto : UserRequestDto
     where TUserResponseDto : UserResponseDto
 {
-    protected IUserService<TUserRequestDto, TUserResponseDto> Service { get; }
+    protected IUserService<TUserRequestDto, TUserResponseDto> UserService { get; }
     protected UserManager<User> UserManager { get; }
     protected ClaimsPrincipal User { get; }
 
+    protected uint? GetUserId(ClaimsPrincipal user)
+    {
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && uint.TryParse(userIdClaim.Value, out var userId))
+            return userId;
+        return null;
+    }
+
     async Task<Results<
             Ok<TUserResponseDto>,
+            NotFound,
             UnauthorizedHttpResult>>
-        GetCurrentUserDefault()
+        GetCurrentUserDefault(CancellationToken cancellationToken = default)
     {
-        var user = await UserManager.GetUserAsync(User);
-        if (user == null)
+        var userId = GetUserId(User);
+        if (userId == null)
             return TypedResults.Unauthorized();
 
-        var userResponseDto = await Service.GetByIdAsync(user.Id);
-        return TypedResults.Ok(userResponseDto!);
+        var userDto = await UserService.GetByIdAsync(userId.Value, userId, cancellationToken);
+        if (userDto == null)
+            return TypedResults.NotFound();
+
+        return TypedResults.Ok(userDto);
     }
 
     Task<Results<
             Ok<TUserResponseDto>,
+            NotFound,
             UnauthorizedHttpResult>>
         // ReSharper disable once UnusedMemberInSuper.Global
-        GetCurrentUser();
+        GetCurrentUser(CancellationToken cancellationToken = default);
 }

@@ -46,7 +46,7 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         {
             if (!await roleManager.RoleExistsAsync(roleName))
             {
-                var role = new Role { Name = roleName };
+                var role = new Role { Name = roleName, IsDefault = true };
                 var roleResult = await roleManager.CreateAsync(role);
                 if (!roleResult.Succeeded)
                     throw new Exception(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
@@ -73,7 +73,8 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         Func<TUser, Task> setDefaultRoles
     ) : Create<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(TUserRequestDto requestDto, TUser entity)
+        protected override async Task SaveEntityAsync(TUserRequestDto requestDto, TUser entity, uint? userId = null,
+            CancellationToken cancellationToken = default)
         {
             if (requestDto.Password is null)
                 throw new ArgumentException("Password is required for user creation.");
@@ -92,7 +93,12 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
         UserManager<User> userManager
     ) : Update<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
-        protected override async Task SaveEntityAsync(uint id, TUserRequestDto requestDto, TUser entity)
+        protected override async Task SaveEntityAsync(
+            uint id,
+            TUserRequestDto requestDto,
+            TUser entity,
+            uint? userId = null,
+            CancellationToken cancellationToken = default)
         {
             if (requestDto.Password != null)
             {
@@ -103,7 +109,7 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
             else
             {
                 DbContext.Entry(entity).State = EntityState.Modified;
-                await DbContext.SaveChangesAsync();
+                await DbContext.SaveChangesAsync(cancellationToken);
             }
         }
     }

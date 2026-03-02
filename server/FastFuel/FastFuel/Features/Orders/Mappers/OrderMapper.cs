@@ -16,9 +16,10 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
             CustomerId = entity.CustomerId,
             RestaurantId = entity.RestaurantId,
             OrderNumber = entity.OrderNumber,
-            Status = entity.Status.ToString(),
+            Status = entity.Status,
             CreatedAt = entity.CreatedAt,
             CompletedAt = entity.CompletedAt,
+            Price = entity.Price,
             Menus = entity.Menus.ConvertAll(ToDto),
             Foods = entity.Foods.ConvertAll(ToDto)
         };
@@ -28,7 +29,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
     {
         return new Order
         {
-            CustomerId = dto.CustomerId,
+            Price = 0, // Price will be calculated later in the service layer
             RestaurantId = dto.RestaurantId,
             Menus = dto.Menus.ConvertAll(ToEntity),
             Foods = dto.Foods.ConvertAll(ToEntity)
@@ -37,9 +38,6 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
 
     public void UpdateEntity(OrderRequestDto dto, Order entity)
     {
-        if (dto.CustomerId != entity.CustomerId)
-            throw new InvalidOperationException("Cannot change the CustomerId of an order.");
-
         entity.RestaurantId = dto.RestaurantId;
 
         entity.Menus.Clear();

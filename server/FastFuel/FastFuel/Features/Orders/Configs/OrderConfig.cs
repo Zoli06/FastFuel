@@ -1,3 +1,4 @@
+using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

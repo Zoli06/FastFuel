@@ -5,7 +5,7 @@ using NSwag;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
 
-namespace FastFuel.NSwag;
+namespace FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
 
 /// <summary>
 ///     Adds response entries for every result type in the return signature that:

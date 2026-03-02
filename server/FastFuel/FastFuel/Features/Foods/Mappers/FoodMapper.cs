@@ -53,7 +53,8 @@ public class FoodMapper : IMapper<Food, FoodRequestDto, FoodResponseDto>
         return new FoodIngredientDto
         {
             IngredientId = entity.IngredientId,
-            Quantity = entity.Quantity
+            Quantity = entity.Quantity,
+            Unit = entity.Unit
         };
     }
 
@@ -62,7 +63,8 @@ public class FoodMapper : IMapper<Food, FoodRequestDto, FoodResponseDto>
         return new FoodIngredient
         {
             IngredientId = dto.IngredientId,
-            Quantity = dto.Quantity
+            Quantity = dto.Quantity,
+            Unit = dto.Unit
         };
     }
 }

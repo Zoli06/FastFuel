@@ -16,16 +16,17 @@ public class UserController(
     UserManager<User> userManager)
     : ControllerBase, IUserController<UserRequestDto, UserResponseDto>
 {
-    public IUserService<UserRequestDto, UserResponseDto> Service { get; } = service;
+    public IUserService<UserRequestDto, UserResponseDto> UserService { get; } = service;
 
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
     public async Task<Results<
             Ok<UserResponseDto>,
+            NotFound,
             UnauthorizedHttpResult>>
-        GetCurrentUser()
+        GetCurrentUser(CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<UserRequestDto, UserResponseDto>)this).GetCurrentUserDefault();
+        return await ((IUserController<UserRequestDto, UserResponseDto>)this).GetCurrentUserDefault(cancellationToken);
     }
 }
