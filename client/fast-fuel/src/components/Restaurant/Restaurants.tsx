@@ -61,15 +61,16 @@ const tableColumns: ColumnDefinition<RestaurantDto>[] = [
 ];
 
 const editorFields: FieldOrFieldset<RestaurantFormValues>[] = [
-  { type: 'text', key: 'name', label: 'Name', required: true },
-  { type: 'text', key: 'description', label: 'Description', nullable: true },
-  { type: 'text', key: 'phone', label: 'Phone', nullable: true },
+  { type: 'text', key: 'name', label: 'Name', required: true, initialValue: '' },
+  { type: 'text', key: 'description', label: 'Description', nullable: true, initialValue: '' },
+  { type: 'text', key: 'phone', label: 'Phone', nullable: true, initialValue: '' },
   {
     type: 'password',
     key: 'password',
     label: 'Password',
     required: (mode) => mode === 'create',
     nullable: (mode) => mode === 'edit',
+    initialValue: '',
   },
   {
     type: 'fieldset',
@@ -90,7 +91,9 @@ const editorFields: FieldOrFieldset<RestaurantFormValues>[] = [
           />
         ),
       },
-      { type: 'text', key: 'address', label: 'Address', required: true },
+      { type: 'number', key: 'latitude', label: 'Latitude', required: true, initialValue: 0 },
+      { type: 'number', key: 'longitude', label: 'Longitude', required: true, initialValue: 0 },
+      { type: 'text', key: 'address', label: 'Address', required: true, initialValue: '' },
     ],
   },
   {
@@ -103,35 +106,38 @@ const editorFields: FieldOrFieldset<RestaurantFormValues>[] = [
         label: 'Opening Hours',
         defaultItem: defaultOpeningHour,
         addButtonLabel: 'Add Opening Hour',
+        initialValue: defaultOpeningHours,
         itemFields: [
           {
             type: 'select',
             key: 'dayOfWeek',
             label: 'Day of Week',
             required: true,
+            initialValue: 'Monday',
             selectProps: {
               data: daysOfWeekOptions,
               allowDeselect: false,
             },
           },
-          { type: 'time', key: 'openTime', label: 'Open Time (HH:mm)', required: true },
-          { type: 'time', key: 'closeTime', label: 'Close Time (HH:mm)', required: true },
+          {
+            type: 'time',
+            key: 'openTime',
+            label: 'Open Time (HH:mm)',
+            required: true,
+            initialValue: '09:00',
+          },
+          {
+            type: 'time',
+            key: 'closeTime',
+            label: 'Close Time (HH:mm)',
+            required: true,
+            initialValue: '17:00',
+          },
         ],
       },
     ],
   },
 ];
-
-const getInitialValues = (restaurant: RestaurantDto | null): RestaurantFormValues => ({
-  name: restaurant?.name ?? '',
-  description: restaurant?.description ?? '',
-  latitude: restaurant?.latitude ?? 0,
-  longitude: restaurant?.longitude ?? 0,
-  address: restaurant?.address ?? '',
-  phone: restaurant?.phone ?? '',
-  openingHours: restaurant?.openingHours ?? defaultOpeningHours,
-  password: '',
-});
 
 export const Restaurants = ({ restaurants, refetchRestaurants }: RestaurantsProps) => {
   const { mutate: createRestaurant } = apiClient.useMutation('post', '/api/Restaurant', {
@@ -149,7 +155,7 @@ export const Restaurants = ({ restaurants, refetchRestaurants }: RestaurantsProp
     mode: 'create' | 'edit',
     item: RestaurantDto | null,
   ) => {
-    const body = values as components['schemas']['RestaurantRequestDto'];
+    const body = values;
     if (mode === 'create') {
       createRestaurant({ body });
     } else {
@@ -164,7 +170,6 @@ export const Restaurants = ({ restaurants, refetchRestaurants }: RestaurantsProp
       data={restaurants}
       columns={tableColumns}
       fields={editorFields}
-      getInitialValues={getInitialValues}
       validate={{
         openingHours: (value) => {
           const seenDays = new Set();

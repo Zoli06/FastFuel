@@ -1,4 +1,23 @@
-import type { FieldOrFieldset, FormValues } from './types.ts';
+import type { FieldDefinition, FieldOrFieldset, FormValues } from './types.ts';
+
+export function buildInitialValues<T extends FormValues>(fields: FieldOrFieldset<T>[]): T {
+  const values: Record<string, unknown> = {};
+
+  const processField = (f: FieldDefinition<T>) => {
+    if (f.type === 'custom') return;
+    values[f.key] = f.initialValue;
+  };
+
+  for (const f of fields) {
+    if (f.type === 'fieldset') {
+      for (const sub of f.fields) processField(sub);
+    } else {
+      processField(f);
+    }
+  }
+
+  return values as T;
+}
 
 export function collectNullableKeys<T extends FormValues>(
   fields: FieldOrFieldset<T>[],
