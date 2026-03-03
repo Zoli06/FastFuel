@@ -91,8 +91,6 @@ const editorFields: FieldOrFieldset<RestaurantFormValues>[] = [
           />
         ),
       },
-      { type: 'number', key: 'latitude', label: 'Latitude', required: true, initialValue: 0 },
-      { type: 'number', key: 'longitude', label: 'Longitude', required: true, initialValue: 0 },
       { type: 'text', key: 'address', label: 'Address', required: true, initialValue: '' },
     ],
   },
