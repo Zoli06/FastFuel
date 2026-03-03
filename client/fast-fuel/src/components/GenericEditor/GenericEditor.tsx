@@ -11,11 +11,11 @@ export type {
   FieldOrFieldset,
 } from './types.ts';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button, Fieldset, Group, Modal } from '@mantine/core';
 import { Form, useForm, type UseFormInput } from '@mantine/form';
 import type { FieldOrFieldset, FormValues } from './types.ts';
-import { collectNullableKeys, convertNullables } from './helpers.ts';
+import { buildInitialValues, collectNullableKeys, convertNullables } from './helpers.ts';
 import { renderField } from './renderFields.tsx';
 
 type GenericEditorPropsCreate = { mode: 'create' };
@@ -29,7 +29,6 @@ export type GenericEditorProps<TForm extends FormValues, TData = TForm> = (
   onClose: () => void;
   title: string;
   fields: FieldOrFieldset<TForm>[];
-  getInitialValues: (data: TData | null) => TForm;
   validate?: UseFormInput<TForm>['validate'];
   onSubmit: (values: TForm, mode: 'create' | 'edit') => void;
 };
@@ -37,25 +36,24 @@ export type GenericEditorProps<TForm extends FormValues, TData = TForm> = (
 export const GenericEditor = <TForm extends FormValues, TData = TForm>(
   props: GenericEditorProps<TForm, TData>,
 ) => {
-  const { mode, opened, onClose, title, fields, getInitialValues, validate, onSubmit } = props;
-  const data = 'data' in props ? (props as GenericEditorPropsEdit<TData>).data : null;
+  const { mode, opened, onClose, title, fields, validate, onSubmit } = props;
+  const data = mode === 'edit' ? (props as GenericEditorPropsEdit<TData>).data : null;
 
-  const nullableKeys = collectNullableKeys(fields);
+  const nullableKeys = useMemo(() => collectNullableKeys(fields), [fields]);
+  const initialValues = useMemo(() => buildInitialValues(fields), [fields]);
 
   const form = useForm<TForm>({
     mode: 'controlled',
-    initialValues: getInitialValues(data),
+    initialValues,
     validate,
   });
 
   useEffect(() => {
     if (!opened) return;
 
-    if (mode === 'edit') {
-      form.setValues(getInitialValues(data));
-    } else {
-      form.reset();
-    }
+    const values = { ...initialValues, ...(data || {}) };
+    form.reset();
+    form.setValues(values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, data, opened]);
 
@@ -69,6 +67,8 @@ export const GenericEditor = <TForm extends FormValues, TData = TForm>(
     }
     return renderField(item, form, mode);
   };
+
+  if (!opened) return null;
 
   return (
     <Modal opened={opened} onClose={onClose} title={title}>

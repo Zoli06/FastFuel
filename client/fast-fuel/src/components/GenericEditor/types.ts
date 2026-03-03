@@ -12,16 +12,24 @@ type BaseField<T extends FormValues> = {
   nullable?: boolean | ((mode: 'create' | 'edit') => boolean);
 };
 
-export type TextField<T extends FormValues> = BaseField<T> & { type: 'text' };
-export type NumberField<T extends FormValues> = BaseField<T> & { type: 'number' };
-export type PasswordField<T extends FormValues> = BaseField<T> & { type: 'password' };
-export type TimeField<T extends FormValues> = BaseField<T> & { type: 'time' };
+export type TextField<T extends FormValues> = BaseField<T> & { type: 'text'; initialValue: string };
+export type NumberField<T extends FormValues> = BaseField<T> & {
+  type: 'number';
+  initialValue: number;
+};
+export type PasswordField<T extends FormValues> = BaseField<T> & {
+  type: 'password';
+  initialValue: string;
+};
+export type TimeField<T extends FormValues> = BaseField<T> & { type: 'time'; initialValue: string };
 export type SelectField<T extends FormValues> = BaseField<T> & {
   type: 'select';
+  initialValue: string;
   selectProps?: SelectProps;
 };
 export type NumericSelectField<T extends FormValues> = BaseField<T> & {
   type: 'numericSelect';
+  initialValue: number;
   selectProps?: NumericSelectProps;
 };
 export type CustomField<T extends FormValues> = {
@@ -34,6 +42,7 @@ export type ListField<T extends FormValues, Item extends FormValues = FormValues
   type: 'list';
   defaultItem: Item;
   addButtonLabel?: string;
+  initialValue: Item[];
   itemFields: ListItemField<Item>[];
 };
 

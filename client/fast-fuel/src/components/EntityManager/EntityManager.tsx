@@ -14,7 +14,6 @@ export type EntityManagerProps<TData extends { id: number | string }, TForm exte
   data: TData[];
   columns: ColumnDefinition<TData>[];
   fields: FieldOrFieldset<TForm>[];
-  getInitialValues: (data: TData | null) => TForm;
   validate?: UseFormInput<TForm>['validate'];
   onSubmit: (values: TForm, mode: 'create' | 'edit', item: TData | null) => void;
   onDelete?: (item: TData) => void;
@@ -29,7 +28,6 @@ export const EntityManager = <TData extends { id: number | string }, TForm exten
   data,
   columns,
   fields,
-  getInitialValues,
   validate,
   onSubmit,
   onDelete,
@@ -77,7 +75,6 @@ export const EntityManager = <TData extends { id: number | string }, TForm exten
             : (editTitle ?? `Edit ${entityName}`)
         }
         fields={fields}
-        getInitialValues={getInitialValues}
         validate={validate}
         onSubmit={handleSubmit}
       />
