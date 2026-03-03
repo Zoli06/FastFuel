@@ -4,22 +4,31 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run generate:api & vite",
+    "dev:no-api": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "prettier:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test:ts": "tsc --noEmit",
-    "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api.d.ts"
+    "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api.d.ts --properties-required-by-default"
   },
   "dependencies": {
     "@mantine/core": "^8.3.4",
+    "@mantine/dates": "^8.3.14",
+    "@mantine/form": "^8.3.15",
     "@mantine/hooks": "^8.3.4",
+    "@tabler/icons-react": "^3.36.1",
+    "@types/leaflet": "^1.9.21",
+    "dayjs": "^1.11.19",
+    "leaflet": "^1.9.4",
     "openapi-fetch": "^0.15.0",
     "openapi-react-query": "^0.5.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.13.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {

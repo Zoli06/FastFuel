@@ -1,9 +1,8 @@
 namespace FastFuel.Features.Orders.DTOs;
 
-public class OrderRequestDto
+public record OrderRequestDto
 {
-    public uint CustomerId { get; init; } //TODO: check if the logined CustomerId is same as the one we got
-    public uint RestaurantId { get; init; }
-    public List<OrderMenuDto> Menus { get; init; } = [];
-    public List<OrderFoodDto> Foods { get; init; } = [];
+    public required uint RestaurantId { get; init; }
+    public required List<OrderMenuDto> Menus { get; init; }
+    public required List<OrderFoodDto> Foods { get; init; }
 }

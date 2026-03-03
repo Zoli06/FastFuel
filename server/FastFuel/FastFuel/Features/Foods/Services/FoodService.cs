@@ -2,7 +2,7 @@ using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Foods.DTOs;
-using FastFuel.Features.Foods.Models;
+using FastFuel.Features.Foods.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Foods.Services;

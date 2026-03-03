@@ -1,39 +1,50 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Customers.DTOs;
-using FastFuel.Features.Customers.Models;
+using FastFuel.Features.Customers.Entities;
+using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Users.Entities;
+using FastFuel.Features.Users.Mappers;
+using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Customers.Mappers;
 
-public class CustomerMapper : IMapper<Customer, CustomerRequestDto, CustomerResponseDto>
+public class CustomerMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
+    : UserMapper(roleManager, userManager), IMapper<Customer, CustomerRequestDto, CustomerResponseDto>
 {
-    public CustomerResponseDto ToDto(Customer model)
+    protected override string UserType => "Customer";
+
+    public CustomerResponseDto ToDto(Customer entity)
     {
+        var userDto = base.ToDto(entity);
         return new CustomerResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            Email = model.Email,
-            Username = model.Username,
-            ThemeId = model.Theme.Id
+            Id = userDto.Id,
+            Name = userDto.Name,
+            Email = userDto.Email,
+            UserName = userDto.UserName,
+            ThemeId = userDto.ThemeId,
+            RoleIds = userDto.RoleIds,
+            UserType = userDto.UserType,
+            OrderIds = entity.Orders.ConvertAll(order => order.Id)
         };
     }
 
-    public Customer ToModel(CustomerRequestDto dto)
+    public Customer ToEntity(CustomerRequestDto dto)
     {
+        var userEntity = base.ToEntity(dto);
         return new Customer
         {
-            Name = dto.Name,
-            Email = dto.Email,
-            Username = dto.Username,
-            ThemeId = dto.ThemeId
+            Id = userEntity.Id,
+            Name = userEntity.Name,
+            Email = userEntity.Email,
+            UserName = userEntity.UserName,
+            ThemeId = userEntity.ThemeId
         };
     }
 
-    public void UpdateModel(CustomerRequestDto dto, ref Customer model)
+    public void UpdateEntity(CustomerRequestDto dto, Customer entity)
     {
-        model.Name = dto.Name;
-        model.ThemeId = dto.ThemeId;
-        model.Username = dto.Username;
-        model.Email = dto.Email;
+        User userEntity = entity;
+        base.UpdateEntity(dto, userEntity);
     }
 }

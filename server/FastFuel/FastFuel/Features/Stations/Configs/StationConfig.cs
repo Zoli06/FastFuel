@@ -1,4 +1,4 @@
-using FastFuel.Features.Stations.Models;
+using FastFuel.Features.Stations.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

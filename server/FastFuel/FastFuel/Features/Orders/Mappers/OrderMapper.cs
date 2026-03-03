@@ -1,47 +1,50 @@
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.OrderFoods.Models;
-using FastFuel.Features.OrderMenus.Models;
+using FastFuel.Features.OrderFoods.Entities;
+using FastFuel.Features.OrderMenus.Entities;
 using FastFuel.Features.Orders.DTOs;
-using FastFuel.Features.Orders.Models;
+using FastFuel.Features.Orders.Entities;
 
 namespace FastFuel.Features.Orders.Mappers;
 
 public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
 {
-    public OrderResponseDto ToDto(Order model)
+    public OrderResponseDto ToDto(Order entity)
     {
         return new OrderResponseDto
         {
-            Id = model.Id,
-            RestaurantId = model.RestaurantId,
-            OrderNumber = model.OrderNumber,
-            Status = model.Status.ToString(),
-            CreatedAt = model.CreatedAt,
-            CompletedAt = model.CompletedAt,
-            Menus = model.Menus.ConvertAll(ToDto),
-            Foods = model.Foods.ConvertAll(ToDto)
+            Id = entity.Id,
+            CustomerId = entity.CustomerId,
+            RestaurantId = entity.RestaurantId,
+            OrderNumber = entity.OrderNumber,
+            Status = entity.Status,
+            CreatedAt = entity.CreatedAt,
+            CompletedAt = entity.CompletedAt,
+            Price = entity.Price,
+            Menus = entity.Menus.ConvertAll(ToDto),
+            Foods = entity.Foods.ConvertAll(ToDto)
         };
     }
 
-    public Order ToModel(OrderRequestDto dto)
+    public Order ToEntity(OrderRequestDto dto)
     {
         return new Order
         {
+            Price = 0, // Price will be calculated later in the service layer
             RestaurantId = dto.RestaurantId,
-            Menus = dto.Menus.ConvertAll(ToModel),
-            Foods = dto.Foods.ConvertAll(ToModel)
+            Menus = dto.Menus.ConvertAll(ToEntity),
+            Foods = dto.Foods.ConvertAll(ToEntity)
         };
     }
 
-    public void UpdateModel(OrderRequestDto dto, ref Order model)
+    public void UpdateEntity(OrderRequestDto dto, Order entity)
     {
-        model.RestaurantId = dto.RestaurantId;
+        entity.RestaurantId = dto.RestaurantId;
 
-        model.Menus.Clear();
-        model.Menus.AddRange(dto.Menus.ConvertAll(ToModel));
+        entity.Menus.Clear();
+        entity.Menus.AddRange(dto.Menus.ConvertAll(ToEntity));
 
-        model.Foods.Clear();
-        model.Foods.AddRange(dto.Foods.ConvertAll(ToModel));
+        entity.Foods.Clear();
+        entity.Foods.AddRange(dto.Foods.ConvertAll(ToEntity));
     }
 
     private OrderFoodDto ToDto(OrderFood orderFood)
@@ -64,7 +67,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
         };
     }
 
-    private OrderFood ToModel(OrderFoodDto dto)
+    private OrderFood ToEntity(OrderFoodDto dto)
     {
         return new OrderFood
         {
@@ -74,7 +77,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
         };
     }
 
-    private OrderMenu ToModel(OrderMenuDto dto)
+    private OrderMenu ToEntity(OrderMenuDto dto)
     {
         return new OrderMenu
         {

@@ -1,25 +1,25 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.StationCategories.DTOs;
-using FastFuel.Features.StationCategories.Models;
+using FastFuel.Features.StationCategories.Entities;
 
 namespace FastFuel.Features.StationCategories.Mappers;
 
 public class StationCategoryMapper(ApplicationDbContext dbContext)
     : IMapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>
 {
-    public StationCategoryResponseDto ToDto(StationCategory model)
+    public StationCategoryResponseDto ToDto(StationCategory entity)
     {
         return new StationCategoryResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            IngredientIds = model.Ingredients.ConvertAll(ingredient => ingredient.Id),
-            StationIds = model.Stations.ConvertAll(station => station.Id)
+            Id = entity.Id,
+            Name = entity.Name,
+            IngredientIds = entity.Ingredients.ConvertAll(ingredient => ingredient.Id),
+            StationIds = entity.Stations.ConvertAll(station => station.Id)
         };
     }
 
-    public StationCategory ToModel(StationCategoryRequestDto dto)
+    public StationCategory ToEntity(StationCategoryRequestDto dto)
     {
         return new StationCategory
         {
@@ -33,17 +33,17 @@ public class StationCategoryMapper(ApplicationDbContext dbContext)
         };
     }
 
-    public void UpdateModel(StationCategoryRequestDto dto, ref StationCategory model)
+    public void UpdateEntity(StationCategoryRequestDto dto, StationCategory entity)
     {
-        model.Name = dto.Name;
+        entity.Name = dto.Name;
 
-        model.Ingredients.Clear();
-        model.Ingredients.AddRange(dbContext.Ingredients
+        entity.Ingredients.Clear();
+        entity.Ingredients.AddRange(dbContext.Ingredients
             .Where(ingredient => dto.IngredientIds.Contains(ingredient.Id))
             .ToList());
 
-        model.Stations.Clear();
-        model.Stations.AddRange(dbContext.Stations
+        entity.Stations.Clear();
+        entity.Stations.AddRange(dbContext.Stations
             .Where(station => dto.StationIds.Contains(station.Id))
             .ToList());
     }

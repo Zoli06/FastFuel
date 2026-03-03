@@ -1,158 +1,52 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Common.Services.CrudOperations;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.Services;
 
-public abstract class CrudService<TModel, TRequest, TResponse>(
+public abstract class CrudService<TEntity, TRequest, TResponse>(
     ApplicationDbContext dbContext,
-    IMapper<TModel, TRequest, TResponse> mapper)
-    : ICrudService<TRequest, TResponse> where TModel : class, IIdentifiable where TResponse : IIdentifiable
+    IMapper<TEntity, TRequest, TResponse> mapper)
+    : ICrudService<TRequest, TResponse>
+    where TEntity : class, IIdentifiable
+    where TRequest : class
+    where TResponse : class, IIdentifiable
 {
     protected readonly ApplicationDbContext DbContext = dbContext;
-    protected abstract DbSet<TModel> DbSet { get; }
+    protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
+    protected abstract DbSet<TEntity> DbSet { get; }
 
-    public virtual async Task<List<TResponse>> GetAllAsync()
+    protected virtual GetAll<TEntity, TRequest, TResponse> GetAllOperation => new(DbSet, Mapper);
+    protected virtual GetById<TEntity, TRequest, TResponse> GetByIdOperation => new(DbSet, Mapper);
+    protected virtual Create<TEntity, TRequest, TResponse> CreateOperation => new(DbContext, DbSet, Mapper);
+    protected virtual Update<TEntity, TRequest, TResponse> UpdateOperation => new(DbContext, DbSet, Mapper);
+    protected virtual Delete<TEntity> DeleteOperation => new(DbContext, DbSet);
+
+    public Task<List<TResponse>> GetAllAsync(uint? userId = null, CancellationToken cancellationToken = default)
     {
-        await OnBeforeGetAllAsync();
-        var models = await DbSet.ToListAsync();
-        await OnAfterGetAllAsync(models);
-        var dtos = models.ConvertAll(mapper.ToDto);
-        var finalDtos = await OnTransformGetAllResultAsync(dtos);
-        return finalDtos;
+        return GetAllOperation.ExecuteAsync(userId, cancellationToken);
     }
 
-    public virtual async Task<TResponse?> GetByIdAsync(uint id)
+    public Task<TResponse?> GetByIdAsync(uint id, uint? userId = null, CancellationToken cancellationToken = default)
     {
-        await OnBeforeGetByIdAsync(id);
-        var model = await DbSet.FindAsync(id);
-        if (model == null)
-            return default;
-        await OnAfterGetByIdAsync(model);
-        var dto = mapper.ToDto(model);
-        var finalDto = await OnTransformGetByIdResultAsync(dto);
-        return finalDto;
+        return GetByIdOperation.ExecuteAsync(id, userId, cancellationToken);
     }
 
-    public virtual async Task<TResponse> CreateAsync(TRequest requestDto)
+    public Task<TResponse> CreateAsync(TRequest requestDto, uint? userId = null,
+        CancellationToken cancellationToken = default)
     {
-        await OnBeforeCreateAsync(requestDto);
-        var model = mapper.ToModel(requestDto);
-        await OnBeforeCreateModelAsync(model);
-        DbSet.Add(model);
-        await DbContext.SaveChangesAsync();
-        await OnAfterCreateAsync(model);
-        var responseDto = mapper.ToDto(model);
-        var finalDto = await OnTransformCreateResultAsync(responseDto);
-        return finalDto;
+        return CreateOperation.ExecuteAsync(requestDto, userId, cancellationToken);
     }
 
-    public virtual async Task<bool> DeleteAsync(uint id)
+    public Task<bool> UpdateAsync(uint id, TRequest requestDto, uint? userId = null,
+        CancellationToken cancellationToken = default)
     {
-        await OnBeforeDeleteAsync(id);
-        var model = await DbSet.FindAsync(id);
-        if (model == null)
-            return false;
-        await OnBeforeDeleteModelAsync(model);
-        DbSet.Remove(model);
-        await DbContext.SaveChangesAsync();
-        await OnAfterDeleteAsync(model);
-        return true;
+        return UpdateOperation.ExecuteAsync(id, requestDto, userId, cancellationToken);
     }
 
-    public virtual async Task<bool> UpdateAsync(uint id, TRequest requestDto)
+    public Task<bool> DeleteAsync(uint id, uint? userId = null, CancellationToken cancellationToken = default)
     {
-        await OnBeforeUpdateAsync(id, requestDto);
-        var model = await DbSet
-            .FirstOrDefaultAsync(a => a.Id == id);
-
-        if (model == null)
-            return false;
-
-        mapper.UpdateModel(requestDto, ref model);
-        await OnBeforeUpdateModelAsync(model);
-        await DbContext.SaveChangesAsync();
-        await OnAfterUpdateAsync(model);
-        return true;
-    }
-
-    protected virtual Task OnBeforeGetAllAsync()
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnAfterGetAllAsync(List<TModel> models)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task<List<TResponse>> OnTransformGetAllResultAsync(List<TResponse> dtos)
-    {
-        return Task.FromResult(dtos);
-    }
-
-    protected virtual Task OnBeforeGetByIdAsync(uint id)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnAfterGetByIdAsync(TModel model)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task<TResponse> OnTransformGetByIdResultAsync(TResponse dto)
-    {
-        return Task.FromResult(dto);
-    }
-
-    protected virtual Task OnBeforeCreateAsync(TRequest requestDto)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnBeforeCreateModelAsync(TModel model)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnAfterCreateAsync(TModel model)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task<TResponse> OnTransformCreateResultAsync(TResponse dto)
-    {
-        return Task.FromResult(dto);
-    }
-
-    protected virtual Task OnBeforeUpdateAsync(uint id, TRequest requestDto)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnBeforeUpdateModelAsync(TModel model)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnAfterUpdateAsync(TModel model)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnBeforeDeleteAsync(uint id)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnBeforeDeleteModelAsync(TModel model)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task OnAfterDeleteAsync(TModel model)
-    {
-        return Task.CompletedTask;
+        return DeleteOperation.ExecuteAsync(id, userId, cancellationToken);
     }
 }

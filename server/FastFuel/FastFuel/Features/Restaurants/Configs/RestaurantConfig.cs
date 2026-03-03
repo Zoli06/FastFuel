@@ -1,4 +1,4 @@
-using FastFuel.Features.Restaurants.Models;
+using FastFuel.Features.Restaurants.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +14,5 @@ public class RestaurantConfig : IEntityTypeConfiguration<Restaurant>
         builder.Property(r => r.Description).HasMaxLength(600);
         builder.Property(r => r.Address).HasMaxLength(200);
         builder.Property(r => r.Phone).HasMaxLength(15);
-        builder.Property(r => r.PasswordHash).HasMaxLength(256);
     }
 }

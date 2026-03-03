@@ -1,4 +1,4 @@
-using FastFuel.Features.Themes.Models;
+using FastFuel.Features.Themes.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

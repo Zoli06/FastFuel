@@ -4,10 +4,28 @@ FAILED=0
 TMP_DIR="$(mktemp -d)"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔍 PRE-COMMIT QUALITY CHECKS (PARALLEL)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔍 PRE-COMMIT QUALITY CHECKS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+
+# ──────────────
+# Detect staged files
+# ──────────────
+
+STAGED_FILES=$(git diff --cached --name-only)
+
+AFFECTS_BACKEND=0
+AFFECTS_FRONTEND=0
+
+echo "$STAGED_FILES" | grep -q "^server/FastFuel/" && AFFECTS_BACKEND=1
+echo "$STAGED_FILES" | grep -q "^client/fast-fuel/" && AFFECTS_FRONTEND=1
+
+if [ "$AFFECTS_BACKEND" -eq 0 ] && [ "$AFFECTS_FRONTEND" -eq 0 ]; then
+  echo "ℹ️  No relevant staged files detected. Skipping checks."
+  rm -rf "$TMP_DIR"
+  exit 0
+fi
 
 run_check() {
   IDX="$1"
@@ -46,30 +64,34 @@ run_check() {
 
 i=0
 
-run_check $i "Backend compiler errors and warnings" "server/FastFuel" \
-  "dotnet build -warnaserror" \
-  "" &
-i=$((i+1))
+if [ "$AFFECTS_BACKEND" -eq 1 ]; then
+  run_check $i "Backend compiler errors and warnings" "server/FastFuel" \
+    "dotnet build -warnaserror" \
+    "" &
+  i=$((i+1))
 
-run_check $i "Backend code formatting" "server/FastFuel" \
-  "dotnet format --verify-no-changes" \
-  "dotnet format" &
-i=$((i+1))
+  run_check $i "Backend code formatting" "server/FastFuel" \
+    "dotnet format --verify-no-changes" \
+    "dotnet format" &
+  i=$((i+1))
+fi
 
-run_check $i "Frontend linter errors and warnings" "client/fast-fuel" \
-  "npm run lint" \
-  "npm run lint -- --fix" &
-i=$((i+1))
+if [ "$AFFECTS_FRONTEND" -eq 1 ]; then
+  run_check $i "Frontend linter errors and warnings" "client/fast-fuel" \
+    "npm run lint" \
+    "npm run lint -- --fix" &
+  i=$((i+1))
 
-run_check $i "Frontend code formatting" "client/fast-fuel" \
-  "npm run prettier:check" \
-  "npm run format" &
-i=$((i+1))
+  run_check $i "Frontend code formatting" "client/fast-fuel" \
+    "npm run format:check" \
+    "npm run format" &
+  i=$((i+1))
 
-run_check $i "Frontend type errors" "client/fast-fuel" \
-  "npm run test:ts" \
-  "" &
-i=$((i+1))
+  run_check $i "Frontend type errors" "client/fast-fuel" \
+    "npm run test:ts" \
+    "" &
+  i=$((i+1))
+fi
 
 # ──────────────
 # Wait for all

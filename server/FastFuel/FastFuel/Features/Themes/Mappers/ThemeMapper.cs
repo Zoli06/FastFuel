@@ -1,25 +1,25 @@
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Themes.DTOs;
-using FastFuel.Features.Themes.Models;
+using FastFuel.Features.Themes.Entities;
 
 namespace FastFuel.Features.Themes.Mappers;
 
 public class ThemeMapper : IMapper<Theme, ThemeRequestDto, ThemeResponseDto>
 {
-    public ThemeResponseDto ToDto(Theme model)
+    public ThemeResponseDto ToDto(Theme entity)
     {
         return new ThemeResponseDto
         {
-            Id = model.Id,
-            Name = model.Name,
-            Background = model.Background,
-            Footer = model.Footer,
-            ButtonPrimary = model.ButtonPrimary,
-            ButtonSecondary = model.ButtonSecondary
+            Id = entity.Id,
+            Name = entity.Name,
+            Background = entity.Background,
+            Footer = entity.Footer,
+            ButtonPrimary = entity.ButtonPrimary,
+            ButtonSecondary = entity.ButtonSecondary
         };
     }
 
-    public Theme ToModel(ThemeRequestDto dto)
+    public Theme ToEntity(ThemeRequestDto dto)
     {
         return new Theme
         {
@@ -31,12 +31,12 @@ public class ThemeMapper : IMapper<Theme, ThemeRequestDto, ThemeResponseDto>
         };
     }
 
-    public void UpdateModel(ThemeRequestDto dto, ref Theme model)
+    public void UpdateEntity(ThemeRequestDto dto, Theme entity)
     {
-        model.Name = dto.Name;
-        model.Background = dto.Background;
-        model.Footer = dto.Footer;
-        model.ButtonPrimary = dto.ButtonPrimary;
-        model.ButtonSecondary = dto.ButtonSecondary;
+        entity.Name = dto.Name;
+        entity.Background = dto.Background;
+        entity.Footer = dto.Footer;
+        entity.ButtonPrimary = dto.ButtonPrimary;
+        entity.ButtonSecondary = dto.ButtonSecondary;
     }
 }

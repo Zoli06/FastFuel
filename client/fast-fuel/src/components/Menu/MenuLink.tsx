@@ -1,9 +1,15 @@
-import './MenuLink.css';
+import { UnstyledButton } from '@mantine/core';
+import { Link } from 'react-router-dom';
 
-export const MenuLink = ({ text, to }: { text: string; to: string }) => {
+interface MenuLinkProps {
+  text: string;
+  to: string;
+}
+
+export const MenuLink = ({ text, to }: MenuLinkProps) => {
   return (
-    <a href={to} className="menu-link">
+    <UnstyledButton component={Link} to={to} p="xs" px="sm" fw="bold" fz="3rem" c="darkred">
       {text}
-    </a>
+    </UnstyledButton>
   );
 };

@@ -4,6 +4,8 @@ import './index.css';
 import { App } from './App.tsx';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 
 const queryClient = new QueryClient();
 
