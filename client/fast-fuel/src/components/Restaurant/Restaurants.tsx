@@ -23,7 +23,7 @@ type RestaurantFormValues = {
   password: string;
 };
 
-const daysOfWeekOptions: string[] = [
+const daysOfWeekOptions: components['schemas']['RestaurantOpeningHourDto']['dayOfWeek'][] = [
   'Monday',
   'Tuesday',
   'Wednesday',
@@ -166,8 +166,8 @@ export const Restaurants = ({ restaurants, refetchRestaurants }: RestaurantsProp
       title="Restaurants"
       entityName="restaurant"
       data={restaurants}
-      columns={tableColumns}
-      fields={editorFields}
+      tableColumns={tableColumns}
+      editorFields={editorFields}
       validate={{
         openingHours: (value) => {
           const seenDays = new Set();

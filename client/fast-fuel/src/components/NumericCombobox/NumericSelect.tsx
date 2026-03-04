@@ -1,18 +1,5 @@
 import { type ComboboxItem, Select, type SelectProps } from '@mantine/core';
-
-interface NumericComboboxNumberItem {
-  value: number;
-  disabled?: boolean;
-}
-
-interface NumericComboboxItem extends NumericComboboxNumberItem {
-  label: string;
-}
-
-interface NumericComboboxItemGroup<T = NumericComboboxItem | number> {
-  group: string;
-  items: T[];
-}
+import type { NumericComboboxItem, NumericComboboxItemGroup } from './types';
 
 export type NumericSelectProps = Omit<
   SelectProps,
