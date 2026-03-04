@@ -91,8 +91,8 @@ export const Allergies = ({ allergies, refetchAllergies }: AllergyProps) => {
       title="Allergies"
       entityName="allergies"
       data={allergies}
-      columns={tableColumns}
-      fields={editorFields}
+      tableColumns={tableColumns}
+      editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteAllergy({ params: { path: { id: r.id } } })}
     />
