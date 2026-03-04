@@ -6,6 +6,7 @@ import type { FieldOrFieldset } from '../GenericEditor';
 
 export type AllergyProps = {
   allergies: components['schemas']['AllergyResponseDto'][];
+  ingredients: components['schemas']['IngredientResponseDto'][];
   refetchAllergies: () => void;
 };
 
@@ -18,9 +19,7 @@ type AllergyFormValues = {
   id: number;
 };
 
-export const Allergies = ({ allergies, refetchAllergies }: AllergyProps) => {
-  const { data: ingredients } = apiClient.useQuery('get', '/api/Ingredient');
-
+export const Allergies = ({ allergies, refetchAllergies, ingredients }: AllergyProps) => {
   const ingredientOptions = (ingredients ?? []).map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
