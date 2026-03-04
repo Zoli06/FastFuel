@@ -7,6 +7,7 @@ import { ErrorPage } from './ErrorPage.tsx';
 
 export const AllergiesPage = () => {
   const { data, isLoading, error, refetch } = apiClient.useQuery('get', '/api/Allergy');
+  const { data: ingredients } = apiClient.useQuery('get', '/api/Ingredient');
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -20,7 +21,11 @@ export const AllergiesPage = () => {
     <>
       <HeaderGeneral title="Allergies" />
 
-      <Allergies allergies={data || []} refetchAllergies={refetch} />
+      <Allergies
+        allergies={data || []}
+        refetchAllergies={refetch}
+        ingredients={ingredients || []}
+      />
 
       <Footer />
     </>
