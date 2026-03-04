@@ -1,8 +1,16 @@
 import type { ReactNode } from 'react';
-import { Button, Divider, NumberInput, PasswordInput, Select, TextInput } from '@mantine/core';
+import {
+  Button,
+  Divider,
+  MultiSelect,
+  NumberInput,
+  PasswordInput,
+  Select,
+  TextInput,
+} from '@mantine/core';
 import { type UseFormReturnType } from '@mantine/form';
 import { TimePicker } from '@mantine/dates';
-import { NumericSelect } from '../NumericSelect/NumericSelect.tsx';
+import { NumericSelect, NumericMultiSelect } from '../NumericCombobox';
 import type { FieldDefinition, FormValues, ListField } from './types.ts';
 
 export function renderField<TForm extends FormValues>(
@@ -81,6 +89,28 @@ export function renderField<TForm extends FormValues>(
         />
       );
     }
+
+    case 'multiselect':
+      return (
+        <MultiSelect
+          {...field.selectProps}
+          {...form.getInputProps(field.key)}
+          key={field.key}
+          label={field.label}
+          required={getRequired(field.required ?? false)}
+        />
+      );
+
+    case 'numericMultiSelect':
+      return (
+        <NumericMultiSelect
+          {...field.selectProps}
+          {...form.getInputProps(field.key)}
+          key={field.key}
+          label={field.label}
+          required={getRequired(field.required ?? false)}
+        />
+      );
 
     case 'custom':
       return <span key={field.key}>{field.render(form)}</span>;
