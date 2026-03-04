@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import type { UseFormReturnType } from '@mantine/form';
-import type { NumericSelectProps } from '../NumericSelect/NumericSelect.tsx';
-import type { SelectProps } from '@mantine/core';
+import type { NumericSelectProps } from '../NumericCombobox';
+import type { NumericMultiSelectProps } from '../NumericCombobox';
+import type { MultiSelectProps, SelectProps } from '@mantine/core';
 
 export type FormValues = Record<string, unknown>;
 
@@ -32,6 +33,16 @@ export type NumericSelectField<T extends FormValues> = BaseField<T> & {
   initialValue: number;
   selectProps?: NumericSelectProps;
 };
+export type MultiSelectField<T extends FormValues> = BaseField<T> & {
+  type: 'multiselect';
+  initialValue: string[];
+  selectProps?: Omit<MultiSelectProps, 'value' | 'onChange' | 'error'>;
+};
+export type NumericMultiSelectField<T extends FormValues> = BaseField<T> & {
+  type: 'numericMultiSelect';
+  initialValue: number[];
+  selectProps?: NumericMultiSelectProps;
+};
 export type CustomField<T extends FormValues> = {
   type: 'custom';
   key: string;
@@ -52,6 +63,8 @@ export type ListItemField<Item extends FormValues = FormValues> =
   | TimeField<Item>
   | SelectField<Item>
   | NumericSelectField<Item>
+  | MultiSelectField<Item>
+  | NumericMultiSelectField<Item>
   | CustomField<Item>;
 
 // A field or fieldset that groups several fields
@@ -66,5 +79,7 @@ export type FieldDefinition<T extends FormValues> =
   | TimeField<T>
   | SelectField<T>
   | NumericSelectField<T>
+  | MultiSelectField<T>
+  | NumericMultiSelectField<T>
   | CustomField<T>
   | ListField<T>;

@@ -4,6 +4,7 @@ export type {
   PasswordField,
   TimeField,
   NumericSelectField,
+  NumericMultiSelectField,
   CustomField,
   ListField,
   ListItemField,
