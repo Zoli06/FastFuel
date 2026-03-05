@@ -51,7 +51,7 @@ export type CustomField<T extends FormValues> = {
 
 export type ListField<T extends FormValues, Item extends FormValues = FormValues> = BaseField<T> & {
   type: 'list';
-  defaultItem: Item;
+  defaultItem?: Item;
   addButtonLabel?: string;
   initialValue: Item[];
   itemFields: ListItemField<Item>[];

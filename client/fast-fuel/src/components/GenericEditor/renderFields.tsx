@@ -129,6 +129,18 @@ function renderListField<TForm extends FormValues>(
   mode: 'create' | 'edit',
 ): ReactNode {
   const items = form.values[field.key] as FormValues[];
+  const buildDefaultListItem = (): FormValues => {
+    if (field.defaultItem) return field.defaultItem as FormValues;
+
+    const fallback: FormValues = {};
+    for (const itemField of field.itemFields) {
+      if ('initialValue' in itemField) {
+        fallback[itemField.key] = itemField.initialValue;
+      }
+    }
+    return fallback;
+  };
+
   return (
     <div key={field.key}>
       {items.map((_item, index) => (
@@ -151,7 +163,7 @@ function renderListField<TForm extends FormValues>(
         onClick={() => {
           (
             form as { insertListItem: (key: string, item: unknown, index?: number) => void }
-          ).insertListItem(field.key, field.defaultItem);
+          ).insertListItem(field.key, buildDefaultListItem());
         }}
       >
         {field.addButtonLabel ?? 'Add'}
