@@ -5,6 +5,7 @@ import { HomePage } from './pages/HomePage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
 import { RestaurantsPage } from './pages/RestaurantsPage.tsx';
 import { AllergiesPage } from './pages/AllergiesPage.tsx';
+import { FoodsPage } from './pages/FoodsPage.tsx';
 
 export function App() {
   return (
@@ -21,6 +22,8 @@ export function App() {
           <Route path="/home" element={<HomePage />} />
 
           <Route path="/allergies" element={<AllergiesPage />} />
+
+          <Route path="/foods" element={<FoodsPage />} />
         </Routes>
       </div>
     </BrowserRouter>
