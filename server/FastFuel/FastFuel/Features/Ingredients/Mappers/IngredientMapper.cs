@@ -18,7 +18,7 @@ public class IngredientMapper(ApplicationDbContext dbContext)
             AllergyIds = entity.Allergies.ConvertAll(allergy => allergy.Id),
             StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id),
             FoodIds = entity.FoodIngredients.ConvertAll(fi => fi.FoodId),
-            DefaultTimerValue = entity.DefaultTimerValue
+            DefaultTimerValueSeconds = (uint)entity.DefaultTimerValue.TotalSeconds
         };
     }
 
@@ -34,7 +34,7 @@ public class IngredientMapper(ApplicationDbContext dbContext)
             StationCategories = dbContext.StationCategories
                 .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
                 .ToList(),
-            DefaultTimerValue = dto.DefaultTimerValue
+            DefaultTimerValue = TimeSpan.FromSeconds(dto.DefaultTimerValueSeconds)
         };
     }
 
@@ -52,6 +52,6 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         entity.StationCategories.AddRange(dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
             .ToList());
-        entity.DefaultTimerValue = dto.DefaultTimerValue;
+        entity.DefaultTimerValue = TimeSpan.FromSeconds(dto.DefaultTimerValueSeconds);
     }
 }
