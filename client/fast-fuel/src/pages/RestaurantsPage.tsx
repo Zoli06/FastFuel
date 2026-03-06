@@ -1,4 +1,4 @@
-import { Restaurants } from '../components/Restaurant/Restaurants';
+import { Restaurants } from '../components/Restaurants/Restaurants';
 import { Footer } from '../components/Footer/Footer';
 import { HeaderGeneral } from '../components/Headers/HeaderGeneral';
 import { apiClient } from '../apiClient.ts';
