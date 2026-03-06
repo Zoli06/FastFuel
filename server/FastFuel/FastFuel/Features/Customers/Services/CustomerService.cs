@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services.CrudOperations;
 using FastFuel.Features.Customers.DTOs;
@@ -39,10 +40,10 @@ public class CustomerService(
             CancellationToken cancellationToken = default)
         {
             var customer = await base.GetEntityAsync(id, userId, cancellationToken)
-                           ?? throw new KeyNotFoundException($"Customer with ID {id} not found.");
+                           ?? throw new ResourceNotFoundAppException(nameof(Customer), id);
 
             if (userId.HasValue && customer.Id != userId.Value)
-                throw new UnauthorizedAccessException("You do not have permission to update this customer.");
+                throw new UnauthorizedAppException("You do not have permission to update this customer.");
 
             return customer;
         }

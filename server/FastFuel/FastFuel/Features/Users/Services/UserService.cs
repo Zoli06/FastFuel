@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
@@ -77,7 +78,7 @@ public abstract class UserService<TUser, TUserRequestDto, TUserResponseDto>(
             CancellationToken cancellationToken = default)
         {
             if (requestDto.Password is null)
-                throw new ArgumentException("Password is required for user creation.");
+                throw new MissingRequiredFieldAppException("Password");
 
             var result = await userManager.CreateAsync(entity, requestDto.Password);
             if (!result.Succeeded) throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));

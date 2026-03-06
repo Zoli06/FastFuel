@@ -42,6 +42,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [HttpPut("{id:int}/status")]
+    // seperate permission
     [PermissionCheck(CrudOperation.Update)]
     public async Task<Results<
             NoContent,
