@@ -2,6 +2,8 @@ import { apiClient } from '../apiClient.ts';
 import { LoadingScreen } from './LoadingPage.tsx';
 import { ErrorPage } from './ErrorPage.tsx';
 import { Ingredients } from '../components/Ingredients/Ingredients.tsx';
+import { HeaderGeneral } from '../components/Headers/HeaderGeneral.tsx';
+import { Footer } from '../components/Footer/Footer.tsx';
 
 export const IngredientsPage = () => {
   const {
@@ -30,11 +32,17 @@ export const IngredientsPage = () => {
   }
 
   return (
-    <Ingredients
-      ingredients={ingredients || []}
-      refetchIngredients={refetchIngredients}
-      allergies={allergies || []}
-      stationCategories={stationCategories || []}
-    />
+    <>
+      <HeaderGeneral title="Ingredients" />
+
+      <Ingredients
+        ingredients={ingredients || []}
+        refetchIngredients={refetchIngredients}
+        allergies={allergies || []}
+        stationCategories={stationCategories || []}
+      />
+
+      <Footer />
+    </>
   );
 };
