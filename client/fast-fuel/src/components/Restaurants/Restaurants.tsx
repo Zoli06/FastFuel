@@ -81,8 +81,8 @@ const editorFields: FieldOrFieldset<RestaurantFormValues>[] = [
         key: 'location-picker',
         render: (form) => (
           <LocationPicker
-            lat={form.values.latitude}
-            lng={form.values.longitude}
+            lat={form.values.latitude || 47}
+            lng={form.values.longitude || 19}
             onLocationChange={({ lat, lng, address }) => {
               form.setFieldValue('latitude', lat);
               form.setFieldValue('longitude', lng);

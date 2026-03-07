@@ -9,8 +9,6 @@ export type LocationPickerProps = {
   onLocationChange: (data: { lat: number; lng: number; address: string | null }) => void;
 };
 
-const defaultCenter: [number, number] = [47.0, 19.0];
-
 const markerIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -20,13 +18,10 @@ const markerIcon = L.icon({
 });
 
 export function LocationPicker({ lat, lng, onLocationChange }: LocationPickerProps) {
-  const initialPosition: [number, number] = lat === 0 && lng === 0 ? defaultCenter : [lat, lng];
-  const [position, setPosition] = useState<[number, number]>(initialPosition);
+  const [position, setPosition] = useState<[number, number]>([lat, lng]);
   const [markerInstance, setMarkerInstance] = useState<L.Marker | null>(null);
 
-  // update local position when props change (e.g., editing a restaurant)
   useEffect(() => {
-    if (lat === 0 && lng === 0) return;
     setPosition([lat, lng]);
   }, [lat, lng]);
 
