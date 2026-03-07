@@ -52,7 +52,12 @@ export const GenericEditor = <TForm extends FormValues, TData = TForm>(
   useEffect(() => {
     if (!opened) return;
 
-    const values = { ...initialValues, ...(data || {}) };
+    const values = { ...initialValues };
+    if (data) {
+      for (const [k, v] of Object.entries(data)) {
+        values[k as keyof TForm] = (v ?? initialValues[k as keyof TForm]) as TForm[keyof TForm];
+      }
+    }
     form.reset();
     form.setValues(values);
     // eslint-disable-next-line react-hooks/exhaustive-deps

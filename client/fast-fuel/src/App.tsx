@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage.tsx';
 import { RestaurantsPage } from './pages/RestaurantsPage.tsx';
 import { AllergiesPage } from './pages/AllergiesPage.tsx';
 import { FoodsPage } from './pages/FoodsPage.tsx';
+import { IngredientsPage } from './pages/IngredientsPage.tsx';
 
 export function App() {
   return (
@@ -24,6 +25,8 @@ export function App() {
           <Route path="/allergies" element={<AllergiesPage />} />
 
           <Route path="/foods" element={<FoodsPage />} />
+
+          <Route path="/ingredients" element={<IngredientsPage />} />
         </Routes>
       </div>
     </BrowserRouter>
