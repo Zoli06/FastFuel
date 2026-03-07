@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.Customers.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CustomerController(

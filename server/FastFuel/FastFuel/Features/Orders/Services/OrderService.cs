@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
@@ -33,10 +34,10 @@ public class OrderService(
     {
         var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
-            throw new InvalidOperationException("User ID claim not found.");
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(user));
 
         if (!uint.TryParse(userIdClaim.Value, out var userId))
-            throw new InvalidOperationException("Invalid user ID claim value.");
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(userIdClaim));
 
         var orders = await DbSet
             .Include(o => o.Foods)
@@ -89,7 +90,7 @@ public class OrderService(
     private static void EnsurePendingStatus(Order entity)
     {
         if (entity.Status != OrderStatus.Pending)
-            throw new InvalidOperationException("Only pending orders can be modified.");
+            throw new UnauthorizedAppException("Only pending orders can be modified.");
     }
 
     private static async Task<uint> CalculatePriceAsync(Order entity, ApplicationDbContext dbContext,

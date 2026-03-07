@@ -1,10 +1,11 @@
 using System.Text.Json.Serialization;
 using FastFuel.Features.Common.DbContexts;
-using FastFuel.Features.Common.ExceptionFilters;
+using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
 using FastFuel.NSwag.SwaggerQueryParam;
 using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,9 @@ public static class Program
 
         // Configure other application services (controllers, OpenAPI, CORS, DI)
         ConfigureAppServices(builder);
+
+        // Configure global exception handlers
+        AddExceptionHandler(builder);
 
         var app = builder.Build();
 
@@ -77,19 +81,11 @@ public static class Program
     // Registers controllers, OpenAPI, CORS, password hasher and scans feature services
     private static void ConfigureAppServices(WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers(options =>
-        {
-            options.Filters.Add<UniqueConstraintExceptionFilter>();
-            options.Filters.Add<ReferenceConstraintExceptionFilter>();
-            options.Filters.Add<InvalidOperationExceptionFilter>();
-            options.Filters.Add<UnauthorizedAccessExceptionFilter>();
-            options.Filters.Add<KeyNotFoundExceptionFilter>();
-        }).AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+        builder.Services.AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         builder.Services.ConfigureHttpJsonOptions(options =>
-        {
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        });
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         builder.Services.AddEndpointsApiExplorer();
 
@@ -125,20 +121,30 @@ public static class Program
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter
                 .InNamespaces("FastFuel.Features")
+                // TODO: switch to an opt-in approach
                 .Where(t => !typeof(IFilterMetadata).IsAssignableFrom(t)
-                            && !typeof(IFilterFactory).IsAssignableFrom(t)))
+                            && !typeof(IFilterFactory).IsAssignableFrom(t)
+                            && !typeof(IExceptionHandler).IsAssignableFrom(t)
+                            && !typeof(Exception).IsAssignableFrom(t)))
             .UsingRegistrationStrategy(RegistrationStrategy.Skip)
             .AsImplementedInterfaces()
             .WithScopedLifetime());
     }
 
+    private static void AddExceptionHandler(WebApplicationBuilder builder)
+    {
+        builder.Services.AddProblemDetails();
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    }
+
     // Configure middleware pipeline (CORS, Dev tools, Authentication, Authorization, Controllers)
     private static void ConfigureMiddleware(WebApplication app)
     {
+        app.UseExceptionHandler();
+
         app.UseCors("AllowAll");
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
             app.UseOpenApi();
             app.UseSwaggerUi();
         }

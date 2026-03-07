@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
@@ -102,7 +103,7 @@ public class RoleService(
             CancellationToken cancellationToken = default)
         {
             if (entity.IsDefault)
-                throw new InvalidOperationException(
+                throw new UnauthorizedAppException(
                     $"The default role '{entity.Name}' is immutable and its permissions cannot be modified.");
 
             await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
@@ -119,7 +120,7 @@ public class RoleService(
             CancellationToken cancellationToken = default)
         {
             if (entity.IsDefault)
-                throw new InvalidOperationException(
+                throw new UnauthorizedAppException(
                     $"The default role '{entity.Name}' is immutable and cannot be deleted.");
 
             await base.DeleteEntityAsync(id, entity, userId, cancellationToken);
