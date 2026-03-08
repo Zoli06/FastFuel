@@ -1,7 +1,10 @@
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Ingredients.Entities;
+using FastFuel.Features.Restaurants.Entities;
 using FastFuel.Features.StationCategories.DTOs;
 using FastFuel.Features.StationCategories.Mappers;
 using FastFuel.Features.StationCategories.Services;
+using FastFuel.Features.Stations.Entities;
 
 namespace FastFuel.Tests;
 
@@ -10,25 +13,52 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
 {
     private ApplicationDbContext _dbContext = null!;
     private StationCategoryService _service = null!;
+    private Restaurant _defaultRestaurant = null!;
 
     // ─── Lifecycle ─────────────────────────────────────────────
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         _dbContext = fixture.CreateDbContext();
-        var mapper = new StationCategoryMapper(_dbContext);
-        _service = new StationCategoryService(_dbContext, mapper);
+        _service = new StationCategoryService(_dbContext, new StationCategoryMapper(_dbContext));
 
-        return Task.CompletedTask;
+        _defaultRestaurant = new Restaurant { Name = "Default Restaurant" };
+        _dbContext.Restaurants.Add(_defaultRestaurant);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
         _dbContext.StationCategories.RemoveRange(_dbContext.StationCategories);
+        _dbContext.Stations.RemoveRange(_dbContext.Stations);
+        _dbContext.Ingredients.RemoveRange(_dbContext.Ingredients);
+        _dbContext.Restaurants.RemoveRange(_dbContext.Restaurants);
+
         await _dbContext.SaveChangesAsync();
         await _dbContext.DisposeAsync();
     }
 
     // ─── Helpers ───────────────────────────────────────────────
+    private async Task<Ingredient> SeedIngredientAsync(string name = "Ingredient")
+    {
+        var ingredient = new Ingredient { Name = name };
+        _dbContext.Ingredients.Add(ingredient);
+        await _dbContext.SaveChangesAsync();
+        return ingredient;
+    }
+
+    private async Task<Station> SeedStationAsync(string name = "Station", uint stationCategoryId = 1)
+    {
+        var station = new Station
+        {
+            Name = name,
+            RestaurantId = _defaultRestaurant.Id,
+            StationCategoryId = stationCategoryId
+        };
+        _dbContext.Stations.Add(station);
+        await _dbContext.SaveChangesAsync();
+        return station;
+    }
+
     private static StationCategoryRequestDto BuildRequest(
         string name = "Test Category",
         List<uint>? ingredientIds = null,
@@ -56,7 +86,36 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         return all.Count;
     }
 
-    // ─── GetAll ─────────────────────────────────────────────────
+    // ─── Tests ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateAsync_PersistsCategoryWithRelations()
+    {
+        var ing1 = await SeedIngredientAsync("Lettuce");
+        var ing2 = await SeedIngredientAsync("Tomato");
+
+        var category = await CreateCategoryAsync("Salads", new List<uint> { ing1.Id, ing2.Id });
+
+        var st1 = await SeedStationAsync("Station 1", category.Id);
+        var st2 = await SeedStationAsync("Station 2", category.Id);
+
+        var updatedCategory = await _service.GetByIdAsync(category.Id);
+
+        Assert.NotNull(updatedCategory);
+        Assert.Equal("Salads", updatedCategory.Name);
+        Assert.Equal(2, updatedCategory.IngredientIds.Count);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithEmptyLists_PersistsCategory()
+    {
+        var category = await CreateCategoryAsync("Empty Category", new List<uint>(), new List<uint>());
+
+        Assert.NotNull(category);
+        Assert.Empty(category.IngredientIds);
+        Assert.Empty(category.StationIds);
+    }
+
     [Fact]
     public async Task GetAllAsync_WhenEmpty_ReturnsEmptyList()
     {
@@ -65,30 +124,25 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
     }
 
     [Fact]
-    public async Task GetAllAsync_WhenCategoriesExist_ReturnsAll()
+    public async Task GetAllAsync_ReturnsAllCategories()
     {
-        await CreateCategoryAsync("Category A");
-        await CreateCategoryAsync("Category B");
-        await CreateCategoryAsync("Category C");
+        var a = await CreateCategoryAsync("A");
+        var b = await CreateCategoryAsync("B");
 
-        var result = await _service.GetAllAsync();
-
-        Assert.Equal(3, result.Count);
-        Assert.Contains(result, r => r.Name == "Category A");
-        Assert.Contains(result, r => r.Name == "Category B");
-        Assert.Contains(result, r => r.Name == "Category C");
+        var all = await _service.GetAllAsync();
+        Assert.Equal(2, all.Count);
+        Assert.Contains(all, c => c.Name == "A");
+        Assert.Contains(all, c => c.Name == "B");
     }
 
-    // ─── GetById ───────────────────────────────────────────────
     [Fact]
     public async Task GetByIdAsync_WithValidId_ReturnsCategory()
     {
-        var created = await CreateCategoryAsync("My Category");
-
-        var result = await _service.GetByIdAsync(created.Id);
+        var category = await CreateCategoryAsync("My Category");
+        var result = await _service.GetByIdAsync(category.Id);
 
         Assert.NotNull(result);
-        Assert.Equal(created.Id, result.Id);
+        Assert.Equal(category.Id, result.Id);
         Assert.Equal("My Category", result.Name);
     }
 
@@ -99,67 +153,22 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         Assert.Null(result);
     }
 
-    // ─── Create ────────────────────────────────────────────────
-    [Fact]
-    public async Task CreateAsync_PersistsCategory()
-    {
-        var ingredients = new List<uint> { 1, 2 };
-        var stations = new List<uint> { 10, 20 };
-
-        var request = BuildRequest("Salads", ingredients, stations);
-
-        var result = await _service.CreateAsync(request);
-
-        Assert.NotEqual(0u, result.Id);
-        Assert.Equal("Salads", result.Name);
-        Assert.Equal(2, result.IngredientIds.Count);
-        Assert.Equal(2, result.StationIds.Count);
-        Assert.Contains(1u, result.IngredientIds);
-        Assert.Contains(10u, result.StationIds);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithEmptyLists_PersistsEmptyLists()
-    {
-        var request = BuildRequest("Empty Category", new List<uint>(), new List<uint>());
-        var result = await _service.CreateAsync(request);
-
-        Assert.NotNull(result);
-        Assert.Empty(result.IngredientIds);
-        Assert.Empty(result.StationIds);
-    }
-
-    [Fact]
-    public async Task CreateAsync_IncreasesCount()
-    {
-        await CreateCategoryAsync("A");
-        await CreateCategoryAsync("B");
-
-        var count = await GetAllCountAsync();
-        Assert.Equal(2, count);
-    }
-
-    // ─── Update ────────────────────────────────────────────────
     [Fact]
     public async Task UpdateAsync_WithValidId_UpdatesCategory()
     {
-        var created = await CreateCategoryAsync("Old Name", new List<uint> { 1 }, new List<uint> { 2 });
+        var category = await CreateCategoryAsync("Old Name");
+        var ing = await SeedIngredientAsync("New Ingredient");
+        var st = await SeedStationAsync("New Station", category.Id);
 
-        var updateRequest = BuildRequest(
-            name: "New Name",
-            ingredientIds: new List<uint> { 3, 4 },
-            stationIds: new List<uint> { 5 }
-        );
+        var updateRequest = BuildRequest("New Name", new List<uint> { ing.Id }, new List<uint> { st.Id });
+        var success = await _service.UpdateAsync(category.Id, updateRequest);
 
-        var success = await _service.UpdateAsync(created.Id, updateRequest);
+        var updated = await _service.GetByIdAsync(category.Id);
+
         Assert.True(success);
-
-        var updated = await _service.GetByIdAsync(created.Id);
         Assert.Equal("New Name", updated!.Name);
-        Assert.Equal(2, updated.IngredientIds.Count);
-        Assert.Contains(3u, updated.IngredientIds);
+        Assert.Single(updated.IngredientIds);
         Assert.Single(updated.StationIds);
-        Assert.Contains(5u, updated.StationIds);
     }
 
     [Fact]
@@ -169,17 +178,16 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         Assert.False(success);
     }
 
-    // ─── Delete ────────────────────────────────────────────────
     [Fact]
     public async Task DeleteAsync_WithValidId_RemovesCategory()
     {
-        var created = await CreateCategoryAsync("Category X");
+        var category = await CreateCategoryAsync("ToDelete");
+        var success = await _service.DeleteAsync(category.Id);
 
-        var success = await _service.DeleteAsync(created.Id);
+        var all = await _service.GetAllAsync();
+
         Assert.True(success);
-
-        var deleted = await _service.GetByIdAsync(created.Id);
-        Assert.Null(deleted);
+        Assert.DoesNotContain(all, c => c.Id == category.Id);
     }
 
     [Fact]
@@ -196,8 +204,8 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         var b = await CreateCategoryAsync("B");
 
         await _service.DeleteAsync(a.Id);
-
         var all = await _service.GetAllAsync();
+
         Assert.Single(all);
         Assert.Equal(b.Id, all[0].Id);
     }

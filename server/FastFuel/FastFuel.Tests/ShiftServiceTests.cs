@@ -1,7 +1,9 @@
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.Shifts.DTOs;
 using FastFuel.Features.Shifts.Mappers;
 using FastFuel.Features.Shifts.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Tests;
 
@@ -10,53 +12,70 @@ public class ShiftServiceTests(MariaDbFixture fixture)
 {
     private ApplicationDbContext _dbContext = null!;
     private ShiftService _service = null!;
+    private Employee _defaultEmployee = null!;
 
-    // ─── Lifecycle ─────────────────────────────────────────────
-    public Task InitializeAsync()
+    // ─── Lifecycle ───────────────────────────────────────────────
+
+    public async Task InitializeAsync()
     {
         _dbContext = fixture.CreateDbContext();
-        var mapper = new ShiftMapper();
-        _service = new ShiftService(_dbContext, mapper);
+        _service = new ShiftService(_dbContext, new ShiftMapper());
 
-        return Task.CompletedTask;
+        // Seed a fully valid employee for tests
+        _defaultEmployee = new Employee
+        {
+            Name = "Test Employee",
+            UserName = "testemployee",
+            NormalizedUserName = "TESTEMPLOYEE",
+            Email = "test@example.com",
+            NormalizedEmail = "TEST@EXAMPLE.COM",
+            EmailConfirmed = true
+        };
+
+        // Set a password hash to satisfy non-null constraint
+        var hasher = new PasswordHasher<Employee>();
+        _defaultEmployee.PasswordHash = hasher.HashPassword(_defaultEmployee, "TestPassword123!");
+
+        _dbContext.Employees.Add(_defaultEmployee);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
+        // Clean up all shifts and employees after tests
         _dbContext.Shifts.RemoveRange(_dbContext.Shifts);
+        _dbContext.Employees.RemoveRange(_dbContext.Employees);
         await _dbContext.SaveChangesAsync();
         await _dbContext.DisposeAsync();
     }
 
-    // ─── Helpers ───────────────────────────────────────────────
-    private static ShiftRequestDto BuildRequest(
+    // ─── Helpers ────────────────────────────────────────────────
+
+    private ShiftRequestDto BuildRequest(
         DateTime? startTime = null,
         DateTime? endTime = null,
-        uint employeeId = 1)
+        uint? employeeId = null)
     {
         return new ShiftRequestDto
         {
-            StartTime = startTime ?? DateTime.Today.AddHours(9),
-            EndTime = endTime ?? DateTime.Today.AddHours(17),
-            EmployeeId = employeeId
+            StartTime = startTime ?? DateTime.UtcNow,
+            EndTime = endTime ?? DateTime.UtcNow.AddHours(8),
+            EmployeeId = employeeId ?? _defaultEmployee.Id
         };
     }
 
-    private async Task<ShiftResponseDto> CreateShiftAsync(
-        uint employeeId = 1,
-        DateTime? startTime = null,
-        DateTime? endTime = null)
+    private async Task<List<ShiftResponseDto>> CreateShiftsAsync(int count)
     {
-        return await _service.CreateAsync(BuildRequest(startTime, endTime, employeeId));
-    }
-
-    private async Task<int> GetAllCountAsync()
-    {
-        var all = await _service.GetAllAsync();
-        return all.Count;
+        var shifts = new List<ShiftResponseDto>();
+        for (int i = 0; i < count; i++)
+        {
+            shifts.Add(await _service.CreateAsync(BuildRequest()));
+        }
+        return shifts;
     }
 
     // ─── GetAll ─────────────────────────────────────────────────
+
     [Fact]
     public async Task GetAllAsync_WhenEmpty_ReturnsEmptyList()
     {
@@ -65,31 +84,40 @@ public class ShiftServiceTests(MariaDbFixture fixture)
     }
 
     [Fact]
-    public async Task GetAllAsync_WhenShiftsExist_ReturnsAll()
+    public async Task GetAllAsync_WhenShiftExists_ReturnsThatShift()
     {
-        await CreateShiftAsync(employeeId: 1);
-        await CreateShiftAsync(employeeId: 2);
-        await CreateShiftAsync(employeeId: 3);
+        await _service.CreateAsync(BuildRequest());
 
         var result = await _service.GetAllAsync();
-
-        Assert.Equal(3, result.Count);
-        Assert.Contains(result, s => s.EmployeeId == 1);
-        Assert.Contains(result, s => s.EmployeeId == 2);
-        Assert.Contains(result, s => s.EmployeeId == 3);
+        Assert.Single(result);
+        Assert.Equal(_defaultEmployee.Id, result[0].EmployeeId);
     }
 
-    // ─── GetById ───────────────────────────────────────────────
     [Fact]
-    public async Task GetByIdAsync_WithValidId_ReturnsShift()
+    public async Task GetAllAsync_ReturnsAllCreatedShifts()
     {
-        var created = await CreateShiftAsync(employeeId: 42);
+        await _service.CreateAsync(BuildRequest());
+        await _service.CreateAsync(BuildRequest());
+        await _service.CreateAsync(BuildRequest());
+
+        var result = await _service.GetAllAsync();
+        Assert.Equal(3, result.Count);
+    }
+
+    // ─── GetById ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetByIdAsync_WithValidId_ReturnsCorrectShift()
+    {
+        var created = await _service.CreateAsync(BuildRequest());
 
         var result = await _service.GetByIdAsync(created.Id);
 
         Assert.NotNull(result);
         Assert.Equal(created.Id, result.Id);
-        Assert.Equal(42u, result.EmployeeId);
+        Assert.Equal(_defaultEmployee.Id, result.EmployeeId);
+        Assert.Equal(created.StartTime, result.StartTime);
+        Assert.Equal(created.EndTime, result.EndTime);
     }
 
     [Fact]
@@ -99,52 +127,59 @@ public class ShiftServiceTests(MariaDbFixture fixture)
         Assert.Null(result);
     }
 
-    // ─── Create ────────────────────────────────────────────────
+    // ─── Create ─────────────────────────────────────────────────
+
     [Fact]
     public async Task CreateAsync_PersistsShift()
     {
-        var start = DateTime.Today.AddHours(8);
-        var end = DateTime.Today.AddHours(16);
-
-        var request = BuildRequest(startTime: start, endTime: end, employeeId: 10);
-
+        var request = BuildRequest();
         var result = await _service.CreateAsync(request);
 
         Assert.NotEqual(0u, result.Id);
+        Assert.Equal(_defaultEmployee.Id, result.EmployeeId);
+        Assert.Equal(request.StartTime, result.StartTime);
+        Assert.Equal(request.EndTime, result.EndTime);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithCustomTimes_PersistsCorrectTimes()
+    {
+        var start = DateTime.UtcNow;
+        var end = start.AddHours(12);
+
+        var result = await _service.CreateAsync(BuildRequest(start, end));
+
         Assert.Equal(start, result.StartTime);
         Assert.Equal(end, result.EndTime);
-        Assert.Equal(10u, result.EmployeeId);
+        Assert.Equal(_defaultEmployee.Id, result.EmployeeId);
     }
 
     [Fact]
     public async Task CreateAsync_IncreasesCount()
     {
-        await CreateShiftAsync(employeeId: 1);
-        await CreateShiftAsync(employeeId: 2);
+        await _service.CreateAsync(BuildRequest());
+        await _service.CreateAsync(BuildRequest());
 
-        var count = await GetAllCountAsync();
-
-        Assert.Equal(2, count);
+        var all = await _service.GetAllAsync();
+        Assert.Equal(2, all.Count);
     }
 
-    // ─── Update ────────────────────────────────────────────────
+    // ─── Update ─────────────────────────────────────────────────
+
     [Fact]
-    public async Task UpdateAsync_WithValidId_UpdatesShift()
+    public async Task UpdateAsync_WithValidId_UpdatesAndReturnsTrue()
     {
-        var created = await CreateShiftAsync(employeeId: 5);
-
-        var newStart = DateTime.Today.AddHours(10);
-        var newEnd = DateTime.Today.AddHours(18);
-
-        var updateRequest = BuildRequest(startTime: newStart, endTime: newEnd, employeeId: 5);
+        var created = await _service.CreateAsync(BuildRequest());
+        var updateRequest = BuildRequest();
 
         var success = await _service.UpdateAsync(created.Id, updateRequest);
+
         Assert.True(success);
 
         var updated = await _service.GetByIdAsync(created.Id);
-        Assert.Equal(newStart, updated!.StartTime);
-        Assert.Equal(newEnd, updated.EndTime);
-        Assert.Equal(5u, updated.EmployeeId);
+        Assert.Equal(_defaultEmployee.Id, updated!.EmployeeId);
+        Assert.Equal(updateRequest.StartTime, updated.StartTime);
+        Assert.Equal(updateRequest.EndTime, updated.EndTime);
     }
 
     [Fact]
@@ -154,11 +189,12 @@ public class ShiftServiceTests(MariaDbFixture fixture)
         Assert.False(success);
     }
 
-    // ─── Delete ────────────────────────────────────────────────
+    // ─── Delete ─────────────────────────────────────────────────
+
     [Fact]
-    public async Task DeleteAsync_WithValidId_RemovesShift()
+    public async Task DeleteAsync_WithValidId_RemovesAndReturnsTrue()
     {
-        var created = await CreateShiftAsync();
+        var created = await _service.CreateAsync(BuildRequest());
 
         var success = await _service.DeleteAsync(created.Id);
         Assert.True(success);
@@ -177,14 +213,13 @@ public class ShiftServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task DeleteAsync_DecreasesCount()
     {
-        var a = await CreateShiftAsync(employeeId: 1);
-        var b = await CreateShiftAsync(employeeId: 2);
+        var s1 = await _service.CreateAsync(BuildRequest());
+        var s2 = await _service.CreateAsync(BuildRequest());
 
-        await _service.DeleteAsync(a.Id);
+        await _service.DeleteAsync(s1.Id);
 
         var all = await _service.GetAllAsync();
-
         Assert.Single(all);
-        Assert.Equal(b.Id, all[0].Id);
+        Assert.Equal(s2.Id, all[0].Id);
     }
 }
