@@ -36,7 +36,7 @@ public class FoodServiceTests(MariaDbFixture fixture)
         string name = "TestFood",
         uint price = 1000,
         string? description = "Test description",
-        Uri imageUrl = null,
+        Uri? imageUrl = null,
         List<uint>? ingredientIds = null,
         List<uint>? menuIds = null)
     {

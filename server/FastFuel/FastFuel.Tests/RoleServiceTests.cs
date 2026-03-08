@@ -7,6 +7,9 @@ using FastFuel.Features.Users.Entities;
 using FastFuel.Tests;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Xunit;
 
 public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 {
@@ -38,17 +41,34 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             _userManager
         );
 
-        await Task.CompletedTask;
+        // Ensure clean DB
+        await CleanupDatabaseAsync();
     }
 
     public async Task DisposeAsync()
     {
+        await CleanupDatabaseAsync();
         await _dbContext.DisposeAsync();
     }
 
+    private async Task CleanupDatabaseAsync()
+    {
+        _dbContext.Users.RemoveRange(_dbContext.Users);
+        _dbContext.Roles.RemoveRange(_dbContext.Roles);
+        await _dbContext.SaveChangesAsync();
+    }
+
     // -------------------------
-    // Identity helpers
+    // Identity Helpers
     // -------------------------
+
+    private class DummyLogger<T> : ILogger<T>
+    {
+        public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
+        public bool IsEnabled(LogLevel logLevel) => false;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
+        private class NullScope : IDisposable { public static readonly NullScope Instance = new NullScope(); public void Dispose() { } }
+    }
 
     private UserManager<User> CreateUserManager()
     {
@@ -56,14 +76,14 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         return new UserManager<User>(
             store,
-            null,
+            Options.Create(new IdentityOptions()),
             new PasswordHasher<User>(),
-            new List<IUserValidator<User>>(),
-            new List<IPasswordValidator<User>>(),
+            new List<IUserValidator<User>> { new UserValidator<User>() },
+            new List<IPasswordValidator<User>> { new PasswordValidator<User>() },
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(),
-            null,
-            null
+            new DummyServiceProvider(),
+            new DummyLogger<UserManager<User>>()
         );
     }
 
@@ -73,12 +93,14 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         return new RoleManager<Role>(
             store,
-            new List<IRoleValidator<Role>>(),
+            new List<IRoleValidator<Role>> { new RoleValidator<Role>() },
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(),
-            null
+            new DummyLogger<RoleManager<Role>>()
         );
     }
+
+    private class DummyServiceProvider : IServiceProvider { public object? GetService(Type serviceType) => null; }
 
     // -------------------------
     // Helpers
@@ -92,13 +114,13 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         return new RoleRequestDto
         {
             Name = name,
-            Permissions = permissions ?? [],
-            UserIds = userIds ?? []
+            Permissions = permissions ?? new List<string>(),
+            UserIds = userIds ?? new List<uint>()
         };
     }
 
     // -------------------------
-    // Create
+    // Tests
     // -------------------------
 
     [Fact]
@@ -117,7 +139,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     {
         var request = BuildRequest(
             "Cashier",
-            ["Permission:Order:Read", "Permission:Order:Create"]
+            new List<string> { "Permission:Order:Read", "Permission:Order:Create" }
         );
 
         var result = await _service.CreateAsync(request);
@@ -130,20 +152,16 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         Assert.Contains(claims, c => c.Value == "Permission:Order:Create");
     }
 
-    // -------------------------
-    // Update
-    // -------------------------
-
     [Fact]
     public async Task UpdateRole_ShouldUpdatePermissions()
     {
         var created = await _service.CreateAsync(
-            BuildRequest("Supervisor", ["Permission:A"])
+            BuildRequest("Supervisor", new List<string> { "Permission:A" })
         );
 
         var updateRequest = BuildRequest(
             "Supervisor",
-            ["Permission:B"]
+            new List<string> { "Permission:B" }
         );
 
         await _service.UpdateAsync(created.Id, updateRequest);
@@ -167,16 +185,12 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         _dbContext.Roles.Add(role);
         await _dbContext.SaveChangesAsync();
 
-        var request = BuildRequest("DefaultRole", ["Permission:Test"]);
+        var request = BuildRequest("DefaultRole", new List<string> { "Permission:Test" });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _service.UpdateAsync(role.Id, request)
         );
     }
-
-    // -------------------------
-    // Delete
-    // -------------------------
 
     [Fact]
     public async Task DeleteRole_ShouldRemoveRole()

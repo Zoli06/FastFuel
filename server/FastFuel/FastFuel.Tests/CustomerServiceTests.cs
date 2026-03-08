@@ -39,23 +39,27 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             roleManager
         );
 
-        await Task.CompletedTask;
+        // Ensure database is clean before each test
+        await CleanupDatabaseAsync();
     }
 
     public async Task DisposeAsync()
     {
-        // Cleanup database
-        _dbContext.Customers.RemoveRange(_dbContext.Customers);
-        _dbContext.Users.RemoveRange(_dbContext.Users);
-        _dbContext.Roles.RemoveRange(_dbContext.Roles);
-
-        await _dbContext.SaveChangesAsync();
+        await CleanupDatabaseAsync();
         await _dbContext.DisposeAsync();
     }
 
-    // -------------------------
-    // Identity helpers
-    // -------------------------
+    private async Task CleanupDatabaseAsync()
+    {
+        _dbContext.Customers.RemoveRange(_dbContext.Customers);
+        _dbContext.Users.RemoveRange(_dbContext.Users);
+        _dbContext.Roles.RemoveRange(_dbContext.Roles);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    // ----------------------------------------------------
+    // Identity Helpers
+    // ----------------------------------------------------
 
     private class DummyServiceProvider : IServiceProvider
     {
@@ -105,21 +109,34 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         );
     }
 
-    // -------------------------
+    // ----------------------------------------------------
+    // Test Helpers
+    // ----------------------------------------------------
+
+    private static CustomerRequestDto BuildRequest(
+        string name = "Test Customer",
+        string email = "test@test.com",
+        string username = "testuser",
+        string password = "Password123!")
+    {
+        return new CustomerRequestDto
+        {
+            Name = name,
+            Email = email,
+            UserName = username,
+            Password = password,
+            ThemeId = null
+        };
+    }
+
+    // ----------------------------------------------------
     // Tests
-    // -------------------------
+    // ----------------------------------------------------
 
     [Fact]
     public async Task CreateCustomer_ShouldCreateCustomer()
     {
-        var request = new CustomerRequestDto
-        {
-            Name = "Test Customer",
-            Email = "test@test.com",
-            UserName = "TestUser",
-            Password = "Password123!",
-            ThemeId = null
-        };
+        var request = BuildRequest();
 
         var result = await _service.CreateAsync(request);
 
@@ -131,26 +148,12 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     [Fact]
     public async Task CreateCustomer_ShouldFailWithDuplicateEmail()
     {
-        var request1 = new CustomerRequestDto
-        {
-            Name = "Customer 1",
-            UserName = "User1",
-            Email = "dup@test.com",
-            Password = "Password123!",
-            ThemeId = null
-        };
-        var request2 = new CustomerRequestDto
-        {
-            Name = "Customer 2",
-            UserName = "User2",
-            Email = "dup@test.com",
-            Password = "Password123!",
-            ThemeId = null
-        };
+        var request1 = BuildRequest("Customer 1", "dup@test.com", "User1");
+        var request2 = BuildRequest("Customer 2", "dup@test.com", "User2");
 
         await _service.CreateAsync(request1);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        await Assert.ThrowsAsync<EntityFramework.Exceptions.Common.UniqueConstraintException>(async () =>
         {
             await _service.CreateAsync(request2);
         });
@@ -159,20 +162,16 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     [Fact]
     public async Task GetAllCustomers_ShouldReturnCreatedCustomer()
     {
-        var request = new CustomerRequestDto
-        {
-            Name = "All Test",
-            UserName = "AllUser",
-            Email = "all@test.com",
-            Password = "Password123!",
-            ThemeId = null
-        };
+        // Ensure database is empty before test
+        await CleanupDatabaseAsync();
+
+        var request = BuildRequest("All Test", "all@test.com", "AllUser");
 
         await _service.CreateAsync(request);
 
         var allCustomers = await _service.GetAllAsync();
 
-        Assert.Single(allCustomers);
+        Assert.Single(allCustomers); // Only 1 customer should exist
         Assert.Equal("all@test.com", allCustomers[0].Email);
     }
 }

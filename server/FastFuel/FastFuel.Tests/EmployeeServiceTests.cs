@@ -8,6 +8,8 @@ using FastFuel.Tests;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 {
@@ -28,6 +30,16 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         var userManager = CreateUserManager();
         var roleManager = CreateRoleManager();
 
+        // Seed required role if your service uses it
+        if (!await roleManager.RoleExistsAsync("Employee"))
+        {
+            await roleManager.CreateAsync(new Role
+            {
+                Name = "Employee",
+                NormalizedName = "EMPLOYEE"
+            });
+        }
+
         var mapper = new EmployeeMapper(_dbContext, roleManager, userManager);
 
         _service = new EmployeeService(
@@ -36,8 +48,6 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             userManager,
             roleManager
         );
-
-        await Task.CompletedTask;
     }
 
     public async Task DisposeAsync()
@@ -53,16 +63,20 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     {
         var store = new UserStore<User, Role, ApplicationDbContext, uint>(_dbContext);
 
+        var options = new OptionsWrapper<IdentityOptions>(new IdentityOptions());
+
+        var logger = new LoggerFactory().CreateLogger<UserManager<User>>();
+
         return new UserManager<User>(
             store,
-            null,
+            options,
             new PasswordHasher<User>(),
-            new List<IUserValidator<User>>(),
-            new List<IPasswordValidator<User>>(),
+            new List<IUserValidator<User>> { new UserValidator<User>() },
+            new List<IPasswordValidator<User>> { new PasswordValidator<User>() },
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(),
             null,
-            null
+            logger
         );
     }
 
@@ -70,12 +84,14 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     {
         var store = new RoleStore<Role, ApplicationDbContext, uint>(_dbContext);
 
+        var logger = new LoggerFactory().CreateLogger<RoleManager<Role>>();
+
         return new RoleManager<Role>(
             store,
-            new List<IRoleValidator<Role>>(),
+            new List<IRoleValidator<Role>> { new RoleValidator<Role>() },
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(),
-            null
+            logger
         );
     }
 
@@ -93,8 +109,8 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             Email = "employee@test.com",
             Password = "Password123!",
             ThemeId = null,
-            ShiftIds = [],
-            StationCategoryIds = []
+            ShiftIds = new List<uint>(),
+            StationCategoryIds = new List<uint>()
         };
 
         var result = await _service.CreateAsync(request);
