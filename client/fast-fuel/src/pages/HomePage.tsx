@@ -1,18 +1,18 @@
 import { Footer } from '../components/Footer/Footer';
-import { Menu } from '../components/Menu/Menu';
-import { HeaderGeneral } from '../components/Headers/HeaderGeneral.tsx';
+import { HomeMenu } from '../components/HomeMenu/HomeMenu.tsx';
+import { Header } from '../components/Header/Header.tsx';
 
 export const HomePage = () => {
   return (
     <>
-      <HeaderGeneral
+      <Header
         title={'Fast Fuel'}
         hideLeftButton={true}
         rightButtonText={'Login'}
         rightButtonNavigateTo={'/login'}
       />
 
-      <Menu />
+      <HomeMenu />
 
       <Footer />
     </>

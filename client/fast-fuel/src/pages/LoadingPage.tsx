@@ -1,6 +1,6 @@
 import { Center, Loader, Text, Stack, Box } from '@mantine/core';
 
-export const LoadingScreen = () => {
+export const LoadingPage = () => {
   return (
     <Box pos="relative" h="100vh" w="100vw">
       <Center h="100%">
