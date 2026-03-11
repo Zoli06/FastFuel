@@ -168,21 +168,20 @@ public static class Program
     {
         using var scope = app.Services.CreateScope();
 
-        var roleInitializer = scope.ServiceProvider.GetRequiredService<IDefaultRoleInitializer>();
-        await roleInitializer.InitializeAsync();
-
-        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
         if (app.Environment.IsDevelopment())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
+        }
 
+        var roleInitializer = scope.ServiceProvider.GetRequiredService<IDefaultRoleInitializer>();
+        await roleInitializer.InitializeAsync();
+
+        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+        if (app.Environment.IsDevelopment())
             await databaseSeeder.SeedTestAsync();
-        }
         else
-        {
             await databaseSeeder.SeedAsync();
-        }
     }
 }
