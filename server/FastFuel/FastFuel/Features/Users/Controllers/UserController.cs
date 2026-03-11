@@ -14,19 +14,16 @@ namespace FastFuel.Features.Users.Controllers;
 public class UserController(
     IUserService<UserRequestDto, UserResponseDto> service,
     UserManager<User> userManager)
-    : ControllerBase, IUserController<UserRequestDto, UserResponseDto>
+    : ControllerBase
 {
     public IUserService<UserRequestDto, UserResponseDto> UserService { get; } = service;
 
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
-    public async Task<Results<
-            Ok<UserResponseDto>,
-            NotFound,
-            UnauthorizedHttpResult>>
+    public Task<Results<Ok<UserResponseDto>, NotFound, UnauthorizedHttpResult>>
         GetCurrentUser(CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<UserRequestDto, UserResponseDto>)this).GetCurrentUserDefault(cancellationToken);
+        return UserControllerHelper.GetCurrentUser(UserService, User, cancellationToken);
     }
 }

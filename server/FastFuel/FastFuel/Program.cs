@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
 using FastFuel.NSwag.SwaggerQueryParam;
 using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
@@ -87,9 +88,6 @@ public static class Program
         builder.Services.AddControllers()
             .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-        builder.Services.ConfigureHttpJsonOptions(options =>
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApiDocument(config =>
@@ -120,6 +118,7 @@ public static class Program
         });
 
         builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.AddScoped<IDefaultRoleInitializer, DefaultRoleInitializer>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter
@@ -148,8 +147,8 @@ public static class Program
         app.UseCors(options =>
         {
             options.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+                .AllowAnyMethod()
+                .AllowAnyHeader();
         });
 
         if (app.Environment.IsDevelopment())
@@ -168,6 +167,10 @@ public static class Program
     private static async Task SeedDatabaseAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+
+        var roleInitializer = scope.ServiceProvider.GetRequiredService<IDefaultRoleInitializer>();
+        await roleInitializer.InitializeAsync();
+
         var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
         if (app.Environment.IsDevelopment())
         {

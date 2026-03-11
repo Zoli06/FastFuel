@@ -1,10 +1,9 @@
-using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
-using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -15,8 +14,7 @@ namespace FastFuel.Features.Users.Services;
 public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
     ApplicationDbContext dbContext,
     IMapper<TUser, TUserRequestDto, TUserResponseDto> mapper,
-    UserManager<User> userManager,
-    RoleManager<Role> roleManager)
+    UserManager<User> userManager)
     : CrudService<TUser, TUserRequestDto, TUserResponseDto>(dbContext, mapper),
         IUserService<TUserRequestDto, TUserResponseDto>
     where TUser : User
@@ -29,38 +27,13 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
     protected override Update<TUser, TUserRequestDto, TUserResponseDto> UpdateOperation =>
         new Update(DbContext, DbSet, Mapper, userManager);
 
-    protected virtual IReadOnlyList<(string RoleName, string[] Permissions)> DefaultRoles =>
-    [
-        ("User",
-        [
-            "Permission:Menu:Read",
-            "Permission:Food:Read",
-            "Permission:Ingredient:Read",
-            "Permission:Allergy:Read",
-            "Permission:Restaurant:Read"
-        ])
-    ];
+    protected virtual DefaultRole[] DefaultRoles => [DefaultRole.User];
 
     private async Task SetDefaultRoles(TUser user)
     {
-        foreach (var (roleName, permissions) in DefaultRoles)
+        foreach (var role in DefaultRoles)
         {
-            if (!await roleManager.RoleExistsAsync(roleName))
-            {
-                var role = new Role { Name = roleName, IsDefault = true };
-                var roleResult = await roleManager.CreateAsync(role);
-                if (!roleResult.Succeeded)
-                    throw new ValidationAppException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
-
-                foreach (var permission in permissions)
-                {
-                    var claimResult = await roleManager.AddClaimAsync(role, new Claim("Permission", permission));
-                    if (!claimResult.Succeeded)
-                        throw new ValidationAppException(string.Join("; ", claimResult.Errors.Select(e => e.Description)));
-                }
-            }
-
-            var userResult = await userManager.AddToRoleAsync(user, roleName);
+            var userResult = await userManager.AddToRoleAsync(user, role.ToRoleName());
             if (!userResult.Succeeded)
                 throw new ValidationAppException(string.Join("; ", userResult.Errors.Select(e => e.Description)));
         }
@@ -81,7 +54,7 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
                 throw new MissingRequiredFieldAppException("Password");
 
             var result = await userManager.CreateAsync(entity, requestDto.Password);
-            if (!result.Succeeded) throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
+            if (!result.Succeeded) throw new ValidationAppException(string.Join("; ", result.Errors.Select(e => e.Description)));
 
             await setDefaultRoles(entity);
         }
@@ -105,7 +78,8 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(entity);
                 var result = await userManager.ResetPasswordAsync(entity, token, requestDto.Password);
-                if (!result.Succeeded) throw new ValidationAppException(string.Join("; ", result.Errors.Select(e => e.Description)));
+                if (!result.Succeeded)
+                    throw new ValidationAppException(string.Join("; ", result.Errors.Select(e => e.Description)));
             }
 
             await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);

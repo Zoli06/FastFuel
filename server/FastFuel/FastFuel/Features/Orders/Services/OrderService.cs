@@ -120,6 +120,28 @@ public class OrderService(
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
+        private static readonly SemaphoreSlim OrderCreationLock = new(1, 1);
+
+        public override async Task<OrderResponseDto> ExecuteAsync(OrderRequestDto requestDto, uint? userId = null,
+            CancellationToken cancellationToken = default)
+        {
+            await OrderCreationLock.WaitAsync(cancellationToken);
+            try
+            {
+                await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+
+                var entity = await CreateEntityAsync(requestDto, userId, cancellationToken);
+                await SaveEntityAsync(requestDto, entity, userId, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return await CreateDtoAsync(requestDto, entity, userId, cancellationToken);
+            }
+            finally
+            {
+                OrderCreationLock.Release();
+            }
+        }
+
         protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto, uint? userId = null,
             CancellationToken cancellationToken = default)
         {

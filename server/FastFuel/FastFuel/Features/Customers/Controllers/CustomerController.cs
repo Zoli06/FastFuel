@@ -17,18 +17,16 @@ namespace FastFuel.Features.Customers.Controllers;
 public class CustomerController(
     IUserService<CustomerRequestDto, CustomerResponseDto> service,
     UserManager<User> userManager)
-    : CrudController<Customer, CustomerRequestDto, CustomerResponseDto>(service),
-        IUserController<CustomerRequestDto, CustomerResponseDto>
+    : CrudController<Customer, CustomerRequestDto, CustomerResponseDto>(service)
 {
     public IUserService<CustomerRequestDto, CustomerResponseDto> UserService { get; } = service;
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
-    public async Task<Results<Ok<CustomerResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
+    public Task<Results<Ok<CustomerResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<CustomerRequestDto, CustomerResponseDto>)this).GetCurrentUserDefault(
-            cancellationToken);
+        return UserControllerHelper.GetCurrentUser(UserService, User, cancellationToken);
     }
 
     [AllowAnonymous]
