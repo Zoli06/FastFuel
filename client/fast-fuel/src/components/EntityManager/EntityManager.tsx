@@ -1,28 +1,24 @@
 import { Button, Container, Divider, Flex, Title } from '@mantine/core';
 import type { UseFormInput } from '@mantine/form';
 
-import type { ColumnDefinition } from '../GenericTable/GenericTable.tsx';
-import { GenericTable } from '../GenericTable/GenericTable.tsx';
-import type { FieldOrFieldset, FormValues } from '../GenericEditor';
-import { GenericEditor } from '../GenericEditor';
-import { useEditorState } from '../GenericEditor/useEditorState.ts';
-import { Main } from '../Main/Main.tsx';
+import type { ColumnDefinition } from './EntityTable/EntityTable.tsx';
+import { EntityTable } from './EntityTable/EntityTable.tsx';
+import type { Field } from './EntityEditor';
+import { EntityEditor, useEditorState } from './EntityEditor';
+import { Paper } from '../common/Paper/Paper.tsx';
 
-export type EntityManagerProps<TData extends { id: number | string }, TForm extends FormValues> = {
+export type EntityManagerProps<Values extends { id: number | string }> = {
   title: string;
   entityName: string;
-  data: TData[];
-  tableColumns: ColumnDefinition<TData>[];
-  editorFields: FieldOrFieldset<TForm>[];
-  validate?: UseFormInput<TForm>['validate'];
-  onSubmit: (values: TForm, mode: 'create' | 'edit', item: TData | null) => void;
-  onDelete?: (item: TData) => void;
-  addButtonLabel?: string;
-  createTitle?: string;
-  editTitle?: string;
+  data: Values[];
+  tableColumns: ColumnDefinition<Values>[];
+  editorFields: Field[];
+  validate?: UseFormInput<Values>['validate'];
+  onSubmit: (values: Values, mode: 'create' | 'edit') => void;
+  onDelete?: (item: Values) => void;
 };
 
-export const EntityManager = <TData extends { id: number | string }, TForm extends FormValues>({
+export const EntityManager = <Values extends { id: number | string }>({
   title,
   entityName,
   data,
@@ -31,49 +27,42 @@ export const EntityManager = <TData extends { id: number | string }, TForm exten
   validate,
   onSubmit,
   onDelete,
-  addButtonLabel,
-  createTitle,
-  editTitle,
-}: EntityManagerProps<TData, TForm>) => {
-  const { opened, mode, data: editingItem, openCreate, openEdit, close } = useEditorState<TData>();
+}: EntityManagerProps<Values>) => {
+  const { opened, mode, data: editedItem, openCreate, openEdit, close } = useEditorState<Values>();
 
-  const handleSubmit = (values: TForm, submitMode: 'create' | 'edit') => {
-    onSubmit(values, submitMode, editingItem);
+  const handleSubmit = (values: Values, submitMode: 'create' | 'edit') => {
+    onSubmit(values, submitMode);
     close();
   };
 
   const editorModeAndData =
-    mode === 'edit' ? { mode: 'edit' as const, data: editingItem } : { mode: 'create' as const };
+    mode === 'edit' ? { mode: 'edit' as const, values: editedItem! } : { mode: 'create' as const };
 
   return (
     <>
-      <Main>
+      <Paper>
         <Flex justify="space-between" align="center">
           <Title>{title}</Title>
           <Button onClick={openCreate} color="green">
-            {addButtonLabel ?? `Add ${title}`}
+            Create
           </Button>
         </Flex>
         <Divider my="md" color="black" />
         <Container>
-          <GenericTable<TData>
+          <EntityTable<Values>
             data={data}
             columns={tableColumns}
             onEdit={openEdit}
             onDelete={onDelete}
           />
         </Container>
-      </Main>
+      </Paper>
 
-      <GenericEditor<TForm, TData>
+      <EntityEditor<Values>
         {...editorModeAndData}
         opened={opened}
         onClose={close}
-        title={
-          mode === 'create'
-            ? (createTitle ?? `Create ${entityName}`)
-            : (editTitle ?? `Edit ${entityName}`)
-        }
+        title={mode === 'create' ? `Create ${entityName}` : `Edit ${entityName}`}
         fields={editorFields}
         validate={validate}
         onSubmit={handleSubmit}

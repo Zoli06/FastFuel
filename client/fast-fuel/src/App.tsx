@@ -1,34 +1,26 @@
-import '@mantine/core/styles.css';
-import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { HomePage } from './pages/HomePage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
-import { RestaurantsPage } from './pages/RestaurantsPage.tsx';
-import { AllergiesPage } from './pages/AllergiesPage.tsx';
-import { FoodsPage } from './pages/FoodsPage.tsx';
-import { IngredientsPage } from './pages/IngredientsPage.tsx';
+import { RestaurantManagerPage } from './pages/EntityManagerPages/RestaurantManagerPage.tsx';
+import { AllergyManagerPage } from './pages/EntityManagerPages/AllergyManagerPage.tsx';
+import { FoodManagerPage } from './pages/EntityManagerPages/FoodManagerPage.tsx';
+import { IngredientManagerPage } from './pages/EntityManagerPages/IngredientManagerPage.tsx';
 
 export function App() {
   return (
     <BrowserRouter>
-      <div className="app">
-        <Routes>
-          {/* Default */}
-          <Route path="/" element={<HomePage />} />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
 
-          <Route path="/restaurants" element={<RestaurantsPage />} />
+        <Route path="manage">
+          <Route path="allergy" element={<AllergyManagerPage />} />
+          <Route path="ingredient" element={<IngredientManagerPage />} />
+          <Route path="food" element={<FoodManagerPage />} />
+          <Route path="restaurant" element={<RestaurantManagerPage />} />
+        </Route>
 
-          <Route path="/login" element={<LoginPage />} />
-
-          <Route path="/home" element={<HomePage />} />
-
-          <Route path="/allergies" element={<AllergiesPage />} />
-
-          <Route path="/foods" element={<FoodsPage />} />
-
-          <Route path="/ingredients" element={<IngredientsPage />} />
-        </Routes>
-      </div>
+        <Route path="login" element={<LoginPage />} />
+      </Routes>
     </BrowserRouter>
   );
 }
