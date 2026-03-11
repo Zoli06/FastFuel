@@ -17,14 +17,14 @@ public class CustomerService(
     IMapper<Customer, CustomerRequestDto, CustomerResponseDto> mapper,
     UserManager<User> userManager,
     RoleManager<Role> roleManager)
-    : UserService<Customer, CustomerRequestDto, CustomerResponseDto>(dbContext, mapper, userManager, roleManager)
+    : UserServiceBase<Customer, CustomerRequestDto, CustomerResponseDto>(dbContext, mapper, userManager, roleManager)
 {
     protected override DbSet<Customer> DbSet { get; } = dbContext.Customers;
 
     protected override Update<Customer, CustomerRequestDto, CustomerResponseDto> UpdateOperation { get; } =
         new Update(dbContext, dbContext.Customers, mapper);
 
-    protected override List<(string RoleName, string[] Permissions)> DefaultRoles =>
+    protected override IReadOnlyList<(string RoleName, string[] Permissions)> DefaultRoles =>
     [
         ..base.DefaultRoles,
         ("Customer", ["Permission:Order:Create"])

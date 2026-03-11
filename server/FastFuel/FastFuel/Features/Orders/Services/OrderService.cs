@@ -4,6 +4,8 @@ using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Foods.Entities;
+using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
@@ -32,7 +34,7 @@ public class OrderService(
     public async Task<List<OrderResponseDto>> GetOrdersForCurrentUserAsync(ClaimsPrincipal user,
         CancellationToken cancellationToken = default)
     {
-        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
             throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(user));
 
@@ -107,8 +109,8 @@ public class OrderService(
             .Where(f => foodIds.Contains(f.Id))
             .ToDictionaryAsync(f => f.Id, f => f.Price, cancellationToken);
 
-        var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * menuPrices.GetValueOrDefault(m.MenuId));
-        var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * foodPrices.GetValueOrDefault(f.FoodId));
+        var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * (menuPrices.TryGetValue(m.MenuId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Menu), m.MenuId)));
+        var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * (foodPrices.TryGetValue(f.FoodId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Food), f.FoodId)));
         return menuPrice + foodPrice;
     }
 

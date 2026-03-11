@@ -71,10 +71,13 @@ public static class Program
             dbContextOptions
                 .UseLazyLoadingProxies()
                 .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-            if (builder.Environment.IsDevelopment())
-                dbContextOptions.LogTo(Console.WriteLine, LogLevel.Information)
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
+
+            if (!builder.Environment.IsDevelopment())
+                return;
+
+            dbContextOptions
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors();
         });
     }
 
@@ -142,7 +145,13 @@ public static class Program
     {
         app.UseExceptionHandler();
 
-        app.UseCors("AllowAll");
+        app.UseCors(options =>
+        {
+            options.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+
         if (app.Environment.IsDevelopment())
         {
             app.UseOpenApi();

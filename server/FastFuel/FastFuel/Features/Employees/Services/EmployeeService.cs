@@ -15,11 +15,11 @@ public class EmployeeService(
     IMapper<Employee, EmployeeRequestDto, EmployeeResponseDto> mapper,
     UserManager<User> userManager,
     RoleManager<Role> roleManager)
-    : UserService<Employee, EmployeeRequestDto, EmployeeResponseDto>(dbContext, mapper, userManager, roleManager)
+    : UserServiceBase<Employee, EmployeeRequestDto, EmployeeResponseDto>(dbContext, mapper, userManager, roleManager)
 {
     protected override DbSet<Employee> DbSet { get; } = dbContext.Employees;
 
-    protected override List<(string RoleName, string[] Permissions)> DefaultRoles =>
+    protected override IReadOnlyList<(string RoleName, string[] Permissions)> DefaultRoles =>
     [
         ..base.DefaultRoles,
         ("Employee",

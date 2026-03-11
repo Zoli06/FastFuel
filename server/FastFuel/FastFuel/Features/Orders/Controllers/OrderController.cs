@@ -22,6 +22,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
             await ((IOrderService)Service).GetOrdersForCurrentUserAsync(User, cancellationToken));
     }
 
+    [HttpGet]
     [SwaggerQueryParam("status", typeof(OrderStatus))]
     [PermissionCheck(CrudOperation.Read)]
     public override async Task<Results<Ok<List<OrderResponseDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult,
@@ -42,7 +43,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [HttpPut("{id:int}/status")]
-    // seperate permission
+    // TODO: Add a specific permission just for updating the status, not the whole order
     [PermissionCheck(CrudOperation.Update)]
     public async Task<Results<
             NoContent,

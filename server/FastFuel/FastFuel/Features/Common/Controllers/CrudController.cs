@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.Common.Controllers;
 
-[Authorize]
+[AllowAnonymous]
 [ApiController]
 [Route("/api/[controller]")]
 public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<TRequest, TResponse> service)

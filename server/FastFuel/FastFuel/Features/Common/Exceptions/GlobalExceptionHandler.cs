@@ -26,7 +26,7 @@ public class GlobalExceptionHandler(
             ResourceNotFoundAppException => StatusCodes.Status404NotFound,
             UnauthorizedAppException => StatusCodes.Status401Unauthorized,
             // Other app exceptions
-            AppException => StatusCodes.Status500InternalServerError,
+            AppException => StatusCodes.Status400BadRequest,
             // Other exceptions
             _ => StatusCodes.Status500InternalServerError
         };
