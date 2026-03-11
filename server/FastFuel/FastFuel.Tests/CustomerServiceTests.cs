@@ -36,8 +36,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         _service = new CustomerService(
             _dbContext,
             customerMapper,
-            userManager,
-            roleManager
+            userManager
         );
 
         // Ensure database is clean before each test
