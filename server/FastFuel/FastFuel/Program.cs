@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
 using FastFuel.NSwag.SwaggerQueryParam;
 using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
@@ -71,10 +72,13 @@ public static class Program
             dbContextOptions
                 .UseLazyLoadingProxies()
                 .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-            if (builder.Environment.IsDevelopment())
-                dbContextOptions.LogTo(Console.WriteLine, LogLevel.Information)
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
+
+            if (!builder.Environment.IsDevelopment())
+                return;
+
+            dbContextOptions
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors();
         });
     }
 
@@ -83,9 +87,6 @@ public static class Program
     {
         builder.Services.AddControllers()
             .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-        builder.Services.ConfigureHttpJsonOptions(options =>
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         builder.Services.AddEndpointsApiExplorer();
 
@@ -117,6 +118,7 @@ public static class Program
         });
 
         builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.AddScoped<IDefaultRoleInitializer, DefaultRoleInitializer>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter
@@ -142,7 +144,13 @@ public static class Program
     {
         app.UseExceptionHandler();
 
-        app.UseCors("AllowAll");
+        app.UseCors(options =>
+        {
+            options.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+
         if (app.Environment.IsDevelopment())
         {
             app.UseOpenApi();
@@ -159,18 +167,21 @@ public static class Program
     private static async Task SeedDatabaseAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+
         if (app.Environment.IsDevelopment())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
+        }
 
+        var roleInitializer = scope.ServiceProvider.GetRequiredService<IDefaultRoleInitializer>();
+        await roleInitializer.InitializeAsync();
+
+        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+        if (app.Environment.IsDevelopment())
             await databaseSeeder.SeedTestAsync();
-        }
         else
-        {
             await databaseSeeder.SeedAsync();
-        }
     }
 }

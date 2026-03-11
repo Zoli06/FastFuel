@@ -13,17 +13,15 @@ namespace FastFuel.Features.Employees.Controllers;
 public class EmployeeController(
     IUserService<EmployeeRequestDto, EmployeeResponseDto> service,
     UserManager<User> userManager)
-    : CrudController<Employee, EmployeeRequestDto, EmployeeResponseDto>(service),
-        IUserController<EmployeeRequestDto, EmployeeResponseDto>
+    : CrudController<Employee, EmployeeRequestDto, EmployeeResponseDto>(service)
 {
     public IUserService<EmployeeRequestDto, EmployeeResponseDto> UserService { get; } = service;
     public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
-    public async Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
+    public Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {
-        return await ((IUserController<EmployeeRequestDto, EmployeeResponseDto>)this).GetCurrentUserDefault(
-            cancellationToken);
+        return UserControllerHelper.GetCurrentUser(UserService, User, cancellationToken);
     }
 }
