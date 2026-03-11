@@ -19,7 +19,7 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
         return new UserResponseDto
         {
             Id = model.Id,
-            Name = model.UserName,
+            Name = model.Name,
             Email = model.Email,
             UserName = model.UserName,
             ThemeId = model.ThemeId,
