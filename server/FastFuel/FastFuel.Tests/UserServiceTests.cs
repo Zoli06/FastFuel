@@ -38,8 +38,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         _service = new TestUserService(
             _dbContext,
             mapper,
-            _userManager,
-            _roleManager
+            _userManager
         );
 
         await Task.CompletedTask;
@@ -262,13 +261,11 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     private class TestUserService(
         ApplicationDbContext dbContext,
         IMapper<User, UserRequestDto, UserResponseDto> mapper,
-        UserManager<User> userManager,
-        RoleManager<Role> roleManager
-    ) : UserService<User, UserRequestDto, UserResponseDto>(
+        UserManager<User> userManager
+    ) : UserService(
         dbContext,
         mapper,
-        userManager,
-        roleManager
+        userManager
     )
     {
         protected override DbSet<User> DbSet => DbContext.Set<User>();

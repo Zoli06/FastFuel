@@ -43,8 +43,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         _service = new EmployeeService(
             _dbContext,
             mapper,
-            userManager,
-            roleManager
+            userManager
         );
     }
 
