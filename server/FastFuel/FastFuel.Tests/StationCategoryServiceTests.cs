@@ -12,8 +12,8 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
     private ApplicationDbContext _dbContext = null!;
-    private StationCategoryService _service = null!;
     private Restaurant _defaultRestaurant = null!;
+    private StationCategoryService _service = null!;
 
     // ─── Lifecycle ─────────────────────────────────────────────
     public async Task InitializeAsync()
@@ -80,12 +80,6 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         return await _service.CreateAsync(BuildRequest(name, ingredientIds, stationIds));
     }
 
-    private async Task<int> GetAllCountAsync()
-    {
-        var all = await _service.GetAllAsync();
-        return all.Count;
-    }
-
     // ─── Tests ────────────────────────────────────────────────
 
     [Fact]
@@ -96,8 +90,8 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
 
         var category = await CreateCategoryAsync("Salads", new List<uint> { ing1.Id, ing2.Id });
 
-        var st1 = await SeedStationAsync("Station 1", category.Id);
-        var st2 = await SeedStationAsync("Station 2", category.Id);
+        await SeedStationAsync("Station 1", category.Id);
+        await SeedStationAsync("Station 2", category.Id);
 
         var updatedCategory = await _service.GetByIdAsync(category.Id);
 
@@ -126,8 +120,8 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task GetAllAsync_ReturnsAllCategories()
     {
-        var a = await CreateCategoryAsync("A");
-        var b = await CreateCategoryAsync("B");
+        await CreateCategoryAsync("A");
+        await CreateCategoryAsync("B");
 
         var all = await _service.GetAllAsync();
         Assert.Equal(2, all.Count);

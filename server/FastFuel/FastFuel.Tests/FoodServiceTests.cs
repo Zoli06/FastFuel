@@ -36,9 +36,7 @@ public class FoodServiceTests(MariaDbFixture fixture)
         string name = "TestFood",
         uint price = 1000,
         string? description = "Test description",
-        Uri? imageUrl = null,
-        List<uint>? ingredientIds = null,
-        List<uint>? menuIds = null)
+        Uri? imageUrl = null)
     {
         return new FoodRequestDto
         {
@@ -85,7 +83,7 @@ public class FoodServiceTests(MariaDbFixture fixture)
         var result = await _service.GetByIdAsync(created.Id);
 
         Assert.NotNull(result);
-        Assert.Equal("Steak", result!.Name);
+        Assert.Equal("Steak", result.Name);
         Assert.Equal(5000u, result.Price);
     }
 
@@ -130,7 +128,7 @@ public class FoodServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task UpdateAsync_WithValidId_UpdatesFood()
     {
-        var created = await _service.CreateAsync(BuildRequest("OldFood", 1000));
+        var created = await _service.CreateAsync(BuildRequest("OldFood"));
 
         var updateRequest = BuildRequest("NewFood", 3000, "Updated description");
 

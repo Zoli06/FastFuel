@@ -1,15 +1,16 @@
+using EntityFramework.Exceptions.Common;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Mappers;
 using FastFuel.Features.Customers.Services;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
-using FastFuel.Tests;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+namespace FastFuel.Tests;
 
 public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 {
@@ -55,28 +56,6 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         _dbContext.Users.RemoveRange(_dbContext.Users);
         _dbContext.Roles.RemoveRange(_dbContext.Roles);
         await _dbContext.SaveChangesAsync();
-    }
-
-    // ----------------------------------------------------
-    // Identity Helpers
-    // ----------------------------------------------------
-
-    private class DummyServiceProvider : IServiceProvider
-    {
-        public object? GetService(Type serviceType) => null;
-    }
-
-    private class DummyLogger<T> : ILogger<T>
-    {
-        public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
-        public bool IsEnabled(LogLevel logLevel) => false;
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
-
-        private class NullScope : IDisposable
-        {
-            public static readonly NullScope Instance = new NullScope();
-            public void Dispose() { }
-        }
     }
 
     private UserManager<User> CreateUserManager()
@@ -153,10 +132,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
         await _service.CreateAsync(request1);
 
-        await Assert.ThrowsAsync<EntityFramework.Exceptions.Common.UniqueConstraintException>(async () =>
-        {
-            await _service.CreateAsync(request2);
-        });
+        await Assert.ThrowsAsync<UniqueConstraintException>(async () => { await _service.CreateAsync(request2); });
     }
 
     [Fact]
@@ -173,5 +149,44 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
         Assert.Single(allCustomers); // Only 1 customer should exist
         Assert.Equal("all@test.com", allCustomers[0].Email);
+    }
+
+    // ----------------------------------------------------
+    // Identity Helpers
+    // ----------------------------------------------------
+
+    private class DummyServiceProvider : IServiceProvider
+    {
+        public object? GetService(Type serviceType)
+        {
+            return null;
+        }
+    }
+
+    private class DummyLogger<T> : ILogger<T>
+    {
+        IDisposable ILogger.BeginScope<TState>(TState state)
+        {
+            return NullScope.Instance;
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return false;
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+        }
+
+        private class NullScope : IDisposable
+        {
+            public static readonly NullScope Instance = new();
+
+            public void Dispose()
+            {
+            }
+        }
     }
 }

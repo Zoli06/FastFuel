@@ -4,20 +4,20 @@ using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Mappers;
 using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
-using FastFuel.Tests;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+namespace FastFuel.Tests;
 
 public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 {
     private readonly MariaDbFixture _fixture;
 
     private ApplicationDbContext _dbContext = null!;
-    private RoleService _service = null!;
     private RoleManager<Role> _roleManager = null!;
+    private RoleService _service = null!;
     private UserManager<User> _userManager = null!;
 
     public RoleServiceTests(MariaDbFixture fixture)
@@ -58,18 +58,6 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         await _dbContext.SaveChangesAsync();
     }
 
-    // -------------------------
-    // Identity Helpers
-    // -------------------------
-
-    private class DummyLogger<T> : ILogger<T>
-    {
-        public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
-        public bool IsEnabled(LogLevel logLevel) => false;
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
-        private class NullScope : IDisposable { public static readonly NullScope Instance = new NullScope(); public void Dispose() { } }
-    }
-
     private UserManager<User> CreateUserManager()
     {
         var store = new UserStore<User, Role, ApplicationDbContext, uint>(_dbContext);
@@ -99,8 +87,6 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             new DummyLogger<RoleManager<Role>>()
         );
     }
-
-    private class DummyServiceProvider : IServiceProvider { public object? GetService(Type serviceType) => null; }
 
     // -------------------------
     // Helpers
@@ -220,5 +206,44 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _service.DeleteAsync(role.Id)
         );
+    }
+
+    // -------------------------
+    // Identity Helpers
+    // -------------------------
+
+    private class DummyLogger<T> : ILogger<T>
+    {
+        IDisposable ILogger.BeginScope<TState>(TState state)
+        {
+            return NullScope.Instance;
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return false;
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+        }
+
+        private class NullScope : IDisposable
+        {
+            public static readonly NullScope Instance = new();
+
+            public void Dispose()
+            {
+            }
+        }
+    }
+
+    private class DummyServiceProvider : IServiceProvider
+    {
+        public object? GetService(Type serviceType)
+        {
+            return null;
+        }
     }
 }

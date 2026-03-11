@@ -4,12 +4,12 @@ using FastFuel.Features.Employees.Mappers;
 using FastFuel.Features.Employees.Services;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
-using FastFuel.Tests;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+namespace FastFuel.Tests;
 
 public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 {
@@ -32,13 +32,11 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
         // Seed required role if your service uses it
         if (!await roleManager.RoleExistsAsync("Employee"))
-        {
             await roleManager.CreateAsync(new Role
             {
                 Name = "Employee",
                 NormalizedName = "EMPLOYEE"
             });
-        }
 
         var mapper = new EmployeeMapper(_dbContext, roleManager, userManager);
 
@@ -75,7 +73,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             new List<IPasswordValidator<User>> { new PasswordValidator<User>() },
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(),
-            null,
+            null!,
             logger
         );
     }

@@ -11,8 +11,8 @@ public class ShiftServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
     private ApplicationDbContext _dbContext = null!;
-    private ShiftService _service = null!;
     private Employee _defaultEmployee = null!;
+    private ShiftService _service = null!;
 
     // ─── Lifecycle ───────────────────────────────────────────────
 
@@ -62,16 +62,6 @@ public class ShiftServiceTests(MariaDbFixture fixture)
             EndTime = endTime ?? DateTime.UtcNow.AddHours(8),
             EmployeeId = employeeId ?? _defaultEmployee.Id
         };
-    }
-
-    private async Task<List<ShiftResponseDto>> CreateShiftsAsync(int count)
-    {
-        var shifts = new List<ShiftResponseDto>();
-        for (int i = 0; i < count; i++)
-        {
-            shifts.Add(await _service.CreateAsync(BuildRequest()));
-        }
-        return shifts;
     }
 
     // ─── GetAll ─────────────────────────────────────────────────

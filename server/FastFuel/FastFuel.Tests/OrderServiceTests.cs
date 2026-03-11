@@ -15,11 +15,11 @@ public class OrderServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
     private ApplicationDbContext _dbContext = null!;
-    private IOrderService _service = null!;
-
-    private Restaurant _restaurant = null!;
     private Food _food = null!;
     private Menu _menu = null!;
+
+    private Restaurant _restaurant = null!;
+    private IOrderService _service = null!;
 
     // ─── Lifecycle ─────────────────────────────────────────────
 
@@ -98,16 +98,9 @@ public class OrderServiceTests(MariaDbFixture fixture)
         return new ClaimsPrincipal(identity);
     }
 
-    private async Task<List<OrderResponseDto>> CreateOrdersAsync(int count)
+    private async Task CreateOrdersAsync(int count)
     {
-        var orders = new List<OrderResponseDto>();
-
-        for (int i = 0; i < count; i++)
-        {
-            orders.Add(await _service.CreateAsync(BuildRequest()));
-        }
-
-        return orders;
+        for (var i = 0; i < count; i++) await _service.CreateAsync(BuildRequest());
     }
 
     // ─── Tests ────────────────────────────────────────────────
