@@ -7,6 +7,7 @@ import { FoodManagerPage } from './pages/EntityManagerPages/FoodManagerPage.tsx'
 import { IngredientManagerPage } from './pages/EntityManagerPages/IngredientManagerPage.tsx';
 import { MenuManagerPage } from './pages/EntityManagerPages/MenuManagerPage.tsx';
 import { StationCategoryManagerPage } from './pages/EntityManagerPages/StationCategoryManagerPage.tsx';
+import { StationManagerPage } from './pages/EntityManagerPages/StationManagerPage.tsx';
 import { OrderManagerPage } from './pages/EntityManagerPages/OrderManagerPage.tsx';
 
 export function App() {
@@ -22,6 +23,7 @@ export function App() {
           <Route path="menu" element={<MenuManagerPage />} />
           <Route path="order" element={<OrderManagerPage />} />
           <Route path="station-category" element={<StationCategoryManagerPage />} />
+          <Route path="station" element={<StationManagerPage />} />
           <Route path="restaurant" element={<RestaurantManagerPage />} />
         </Route>
 
