@@ -107,15 +107,7 @@ public static class Program
             config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
         });
 
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", policy =>
-            {
-                policy.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            });
-        });
+        builder.Services.AddCors();
 
         builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IDefaultRoleInitializer, DefaultRoleInitializer>();
@@ -146,9 +138,11 @@ public static class Program
 
         app.UseCors(options =>
         {
-            options.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
+            // TODO: Remove this security issue
+            options.SetIsOriginAllowed(_ => true);
+            options.AllowAnyMethod();
+            options.AllowAnyHeader();
+            options.AllowCredentials();
         });
 
         if (app.Environment.IsDevelopment())

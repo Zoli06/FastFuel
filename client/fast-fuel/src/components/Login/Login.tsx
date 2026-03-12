@@ -28,6 +28,12 @@ export const Login = () => {
   const handleSubmit = (values: LoginValues) => {
     login({
       body: values,
+      params: {
+        query: {
+          useCookies: true,
+          useSessionCookies: true,
+        },
+      },
     });
   };
 
