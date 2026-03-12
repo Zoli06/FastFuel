@@ -43,8 +43,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     }
 
     [HttpPut("{id:int}/status")]
-    // TODO: Add a specific permission just for updating the status, not the whole order
-    [PermissionCheck(CrudOperation.Update)]
+    [PermissionCheck("UpdateStatus")]
     public async Task<Results<
             NoContent,
             NotFound,
