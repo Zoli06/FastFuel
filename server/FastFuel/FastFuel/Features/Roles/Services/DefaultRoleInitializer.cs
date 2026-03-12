@@ -29,8 +29,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager) : IDefaultRol
                 "Permission:Employee:Read",
                 "Permission:Order:Create",
                 "Permission:Order:Read",
-                "Permission:Order:Update",
-                "Permission:Order:Delete",
+                "Permission:Order:UpdateStatus",
                 "Permission:Station:Read",
                 "Permission:Customer:Read",
                 "Permission:Station:ViewTasks"

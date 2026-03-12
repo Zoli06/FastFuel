@@ -88,6 +88,9 @@ public static class Program
         builder.Services.AddControllers()
             .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+        builder.Services.ConfigureHttpJsonOptions(options =>
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApiDocument(config =>
