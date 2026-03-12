@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useMemo } from 'react';
 import {
   Button,
+  Checkbox,
   Fieldset,
   Group,
   Modal,
@@ -96,6 +97,16 @@ function renderField(
           required={isRequired(field, mode)}
           type={undefined}
           {...form.getInputProps(field.key)}
+        />
+      );
+
+    case 'bool':
+      return (
+        <Checkbox
+          key={form.key(field.key)}
+          label={field.label}
+          checked={!!form.getValues()[field.key]}
+          onChange={(e) => form.setFieldValue(field.key, e.currentTarget.checked)}
         />
       );
 

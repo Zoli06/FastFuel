@@ -8,6 +8,7 @@ export type FormValues = Record<string, unknown>;
 export type FieldType =
   | 'text'
   | 'number'
+  | 'bool'
   | 'password'
   | 'time'
   | 'select'
@@ -42,6 +43,7 @@ export type OmitUnnecessaryComboboxProps<T> = Omit<T, 'value' | 'onChange' | 'la
 
 export type TextField = BaseField<'text', string>;
 export type NumberField = BaseField<'number', number>;
+export type BoolField = BaseField<'bool', boolean>;
 export type PasswordField = BaseField<'password', string>;
 export type TimeField = BaseField<'time', string | null>;
 export type SelectField = BaseField<'select', string | null> & {
@@ -72,6 +74,7 @@ export type CustomField = {
 export type Field =
   | TextField
   | NumberField
+  | BoolField
   | PasswordField
   | TimeField
   | SelectField
