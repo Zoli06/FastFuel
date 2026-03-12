@@ -46,7 +46,7 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         return ingredient;
     }
 
-    private async Task<Station> SeedStationAsync(string name = "Station", uint stationCategoryId = 1)
+    private async Task SeedStationAsync(string name = "Station", uint stationCategoryId = 1)
     {
         var station = new Station
         {
@@ -56,28 +56,24 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         };
         _dbContext.Stations.Add(station);
         await _dbContext.SaveChangesAsync();
-        return station;
     }
 
     private static StationCategoryRequestDto BuildRequest(
         string name = "Test Category",
-        List<uint>? ingredientIds = null,
-        List<uint>? stationIds = null)
+        List<uint>? ingredientIds = null)
     {
         return new StationCategoryRequestDto
         {
             Name = name,
-            IngredientIds = ingredientIds ?? new List<uint>(),
-            StationIds = stationIds ?? new List<uint>()
+            IngredientIds = ingredientIds ?? new List<uint>()
         };
     }
 
     private async Task<StationCategoryResponseDto> CreateCategoryAsync(
         string name = "Test Category",
-        List<uint>? ingredientIds = null,
-        List<uint>? stationIds = null)
+        List<uint>? ingredientIds = null)
     {
-        return await _service.CreateAsync(BuildRequest(name, ingredientIds, stationIds));
+        return await _service.CreateAsync(BuildRequest(name, ingredientIds));
     }
 
     // ─── Tests ────────────────────────────────────────────────
@@ -103,7 +99,7 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task CreateAsync_WithEmptyLists_PersistsCategory()
     {
-        var category = await CreateCategoryAsync("Empty Category", new List<uint>(), new List<uint>());
+        var category = await CreateCategoryAsync("Empty Category", new List<uint>());
 
         Assert.NotNull(category);
         Assert.Empty(category.IngredientIds);
@@ -152,9 +148,8 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
     {
         var category = await CreateCategoryAsync("Old Name");
         var ing = await SeedIngredientAsync("New Ingredient");
-        var st = await SeedStationAsync("New Station", category.Id);
 
-        var updateRequest = BuildRequest("New Name", new List<uint> { ing.Id }, new List<uint> { st.Id });
+        var updateRequest = BuildRequest("New Name", new List<uint> { ing.Id });
         var success = await _service.UpdateAsync(category.Id, updateRequest);
 
         var updated = await _service.GetByIdAsync(category.Id);
@@ -162,7 +157,6 @@ public class StationCategoryServiceTests(MariaDbFixture fixture)
         Assert.True(success);
         Assert.Equal("New Name", updated!.Name);
         Assert.Single(updated.IngredientIds);
-        Assert.Single(updated.StationIds);
     }
 
     [Fact]
