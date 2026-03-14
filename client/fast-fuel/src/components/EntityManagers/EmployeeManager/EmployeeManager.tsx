@@ -71,8 +71,8 @@ export const EmployeeManager = ({
       key: 'password',
       label: 'Password',
       initialValue: '',
-      nullable: 'always',
-      required: 'never',
+      nullable: 'edit',
+      required: 'create',
     },
     {
       type: 'numericMultiSelect',
