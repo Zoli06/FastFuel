@@ -52,7 +52,7 @@ export const StationCategoryManager = ({
       initialValue: [],
       nullable: 'never',
       required: 'never',
-      selectProps: {
+      fieldProps: {
         data: ingredientOptions,
         placeholder: 'Search ingredients...',
         searchable: true,

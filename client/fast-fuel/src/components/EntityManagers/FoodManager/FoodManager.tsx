@@ -79,7 +79,7 @@ export const FoodManager = ({ foods, ingredients, refetchFoods }: FoodManagerPro
               initialValue: 0,
               nullable: 'never',
               required: 'always',
-              selectProps: {
+              fieldProps: {
                 data: ingredientOptions,
                 placeholder: 'Select ingredient',
                 searchable: true,

@@ -9,6 +9,8 @@ import { MenuManagerPage } from './pages/EntityManagerPages/MenuManagerPage.tsx'
 import { StationCategoryManagerPage } from './pages/EntityManagerPages/StationCategoryManagerPage.tsx';
 import { StationManagerPage } from './pages/EntityManagerPages/StationManagerPage.tsx';
 import { OrderManagerPage } from './pages/EntityManagerPages/OrderManagerPage.tsx';
+import { EmployeeManagerPage } from './pages/EntityManagerPages/EmployeeManagerPage.tsx';
+import { ShiftManagerPage } from './pages/EntityManagerPages/ShiftManagerPage.tsx';
 
 export function App() {
   return (
@@ -25,6 +27,8 @@ export function App() {
           <Route path="station-category" element={<StationCategoryManagerPage />} />
           <Route path="station" element={<StationManagerPage />} />
           <Route path="restaurant" element={<RestaurantManagerPage />} />
+          <Route path="employee" element={<EmployeeManagerPage />} />
+          <Route path="shift" element={<ShiftManagerPage />} />
         </Route>
 
         <Route path="login" element={<LoginPage />} />
