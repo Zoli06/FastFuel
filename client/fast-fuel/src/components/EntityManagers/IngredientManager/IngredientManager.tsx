@@ -2,7 +2,7 @@ import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor';
-import { apiClient } from '../../../apiClient.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
 type Ingredient = components['schemas']['IngredientResponseDto'];

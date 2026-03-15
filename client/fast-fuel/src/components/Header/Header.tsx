@@ -1,31 +1,33 @@
 import { Button, Center, Flex, Text } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
+import { apiClient } from '../../lib/api-client.ts';
 
 interface HeaderProps {
   title: string;
-  hideLeftButton?: boolean;
-  rightButtonText?: string;
-  rightButtonNavigateTo?: string | number;
+  authButton?: 'Login' | 'Logout' | 'Register';
 }
 
-export const Header = ({
-  title,
-  rightButtonText = 'Go Back',
-  rightButtonNavigateTo = -1,
-}: HeaderProps) => {
+export const Header = ({ title, authButton }: HeaderProps) => {
+  authButton = authButton || 'Logout';
+
   const navigate = useNavigate();
+  const { mutate: logout } = apiClient.useMutation('post', '/api/Auth/logout', {
+    onSuccess: () => {
+      navigate('/login');
+    },
+  });
+
+  const authButtonStates = {
+    Login: { text: 'Login', color: 'green', action: () => navigate('/login') },
+    Logout: { text: 'Logout', color: 'red', action: () => logout({}) },
+    Register: { text: 'Register', color: 'blue', action: () => navigate('/register') },
+  };
 
   return (
     <>
       <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
-        {/* Left */}
         <Flex flex={1} justify="flex-start">
-          <Button
-            variant="filled"
-            className="home-button"
-            onClick={() => navigate('/')}
-            color={'gray'}
-          >
+          <Button variant="filled" onClick={() => navigate('/')} color={'gray'}>
             Home
           </Button>
         </Flex>
@@ -33,22 +35,13 @@ export const Header = ({
           <Text fz="4rem">{title}</Text>
         </Center>
 
-        {/* Right Section */}
         <Flex flex={1} justify="flex-end">
           <Button
             variant="filled"
-            className="home-button"
-            onClick={() => {
-              // Thomas never seen such bullshit before
-              if (typeof rightButtonNavigateTo === 'number') {
-                navigate(rightButtonNavigateTo);
-              } else {
-                navigate(rightButtonNavigateTo);
-              }
-            }}
-            color={'gray'}
+            onClick={authButtonStates[authButton].action}
+            color={authButtonStates[authButton].color}
           >
-            {rightButtonText}
+            {authButtonStates[authButton].text}
           </Button>
         </Flex>
       </Flex>
