@@ -1,7 +1,7 @@
 import { ShiftManager } from '../../components/EntityManagers/ShiftManager/ShiftManager.tsx';
 import { Footer } from '../../components/Footer/Footer.tsx';
 import { Header } from '../../components/Header/Header.tsx';
-import { apiClient } from '../../apiClient.ts';
+import { apiClient } from '../../lib/api-client.ts';
 import { LoadingPage } from '../LoadingPage.tsx';
 import { ErrorPage } from '../ErrorPage.tsx';
 

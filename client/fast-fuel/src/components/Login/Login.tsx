@@ -1,7 +1,7 @@
 import { Button, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Paper } from '../common/Paper/Paper.tsx';
-import { apiClient } from '../../apiClient.ts';
+import { apiClient } from '../../lib/api-client.ts';
 import type { components } from '../../types/api';
 
 type LoginValues = components['schemas']['LoginRequestDto'];
