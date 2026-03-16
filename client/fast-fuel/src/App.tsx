@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { HomePage } from './pages/HomePage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
+import { RegistrationPage } from './pages/RegistrationPage.tsx';
 import { RestaurantManagerPage } from './pages/EntityManagerPages/RestaurantManagerPage.tsx';
 import { AllergyManagerPage } from './pages/EntityManagerPages/AllergyManagerPage.tsx';
 import { FoodManagerPage } from './pages/EntityManagerPages/FoodManagerPage.tsx';
@@ -28,6 +29,7 @@ export function App() {
         </Route>
 
         <Route path="login" element={<LoginPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
       </Routes>
     </BrowserRouter>
   );

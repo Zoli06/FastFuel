@@ -1,5 +1,6 @@
-import { Button, Stack, TextInput } from '@mantine/core';
+import { Button, Stack, TextInput, Anchor } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
+import { Link } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper.tsx';
 import { apiClient } from '../../apiClient.ts';
 import type { components } from '../../types/api';
@@ -57,6 +58,10 @@ export const Login = () => {
           <Button type="submit" fullWidth loading={isPending}>
             Login
           </Button>
+
+          <Anchor component={Link} to="/register" size="sm" ta="center">
+            Don't have an account? Register
+          </Anchor>
         </Stack>
       </Form>
     </Paper>
