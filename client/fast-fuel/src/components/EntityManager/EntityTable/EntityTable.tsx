@@ -11,6 +11,7 @@ export type EntityTableProps<Values extends { id: number | string }> = {
   data: Values[];
   columns: ColumnDefinition<Values>[];
   renderRow?: (item: Values, columns: ColumnDefinition<Values>[]) => ReactNode;
+  sectionKey?: (item: Values) => string;
   onEdit?: (item: Values) => void;
   onDelete?: (item: Values) => void;
 };
@@ -19,6 +20,7 @@ export const EntityTable = <Values extends { id: number | string }>({
   data,
   columns,
   renderRow,
+  sectionKey,
   onEdit,
   onDelete,
 }: EntityTableProps<Values>) => {
@@ -50,6 +52,34 @@ export const EntityTable = <Values extends { id: number | string }>({
     </Table.Tr>
   );
 
+  const totalColumns = columns.length + (onEdit ? 1 : 0) + (onDelete ? 1 : 0);
+
+  const renderRows = (): ReactNode => {
+    if (!sectionKey) {
+      return data.map((item) => (renderRow ? renderRow(item, columns) : defaultRenderRow(item)));
+    }
+
+    const rows: ReactNode[] = [];
+    let currentSection: string | null = null;
+
+    for (const item of data) {
+      const section = sectionKey(item);
+      if (section !== currentSection) {
+        currentSection = section;
+        rows.push(
+          <Table.Tr key={`section-${section}`}>
+            <Table.Td colSpan={totalColumns} fw="bold" bg="gray.1">
+              {section}
+            </Table.Td>
+          </Table.Tr>,
+        );
+      }
+      rows.push(renderRow ? renderRow(item, columns) : defaultRenderRow(item));
+    }
+
+    return rows;
+  };
+
   return (
     <Table>
       <Table.Thead>
@@ -61,9 +91,7 @@ export const EntityTable = <Values extends { id: number | string }>({
           {onDelete && <Table.Th>Delete</Table.Th>}
         </Table.Tr>
       </Table.Thead>
-      <Table.Tbody>
-        {data.map((item) => (renderRow ? renderRow(item, columns) : defaultRenderRow(item)))}
-      </Table.Tbody>
+      <Table.Tbody>{renderRows()}</Table.Tbody>
     </Table>
   );
 };

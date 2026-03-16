@@ -105,7 +105,7 @@ export const MenuManager = ({ menus, refetchMenus, foods }: MenuManagerProps) =>
               initialValue: 0,
               nullable: 'never',
               required: 'always',
-              selectProps: {
+              fieldProps: {
                 data: foodOptions,
                 placeholder: 'Select food',
                 searchable: true,

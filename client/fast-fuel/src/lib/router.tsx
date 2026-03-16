@@ -12,6 +12,8 @@ import { HomePage } from '../pages/HomePage.tsx';
 import { Suspense } from 'react';
 import { LoadingPage } from '../pages/LoadingPage.tsx';
 import { ErrorPage } from '../pages/ErrorPage.tsx';
+import { EmployeeManagerPage } from '../pages/EntityManagerPages/EmployeeManagerPage.tsx';
+import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -44,6 +46,10 @@ export const router = createBrowserRouter([
             element: <IngredientManagerPage />,
           },
           {
+            path: 'employee',
+            element: <EmployeeManagerPage />,
+          },
+          {
             path: 'food',
             element: <FoodManagerPage />,
           },
@@ -54,6 +60,10 @@ export const router = createBrowserRouter([
           {
             path: 'order',
             element: <OrderManagerPage />,
+          },
+          {
+            path: 'shift',
+            element: <ShiftManagerPage />,
           },
           {
             path: 'station-category',

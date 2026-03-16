@@ -53,8 +53,11 @@ public class EmployeeMapper(
     {
         User userEntity = entity;
         base.UpdateEntity(dto, userEntity);
-        entity.Shifts = dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList();
-        entity.StationCategories =
-            dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList();
+
+        entity.Shifts.Clear();
+        entity.Shifts.AddRange(dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList());
+
+        entity.StationCategories.Clear();
+        entity.StationCategories.AddRange(dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList());
     }
 }

@@ -13,7 +13,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import { Form, useForm, type UseFormInput, type UseFormReturnType } from '@mantine/form';
-import { TimePicker } from '@mantine/dates';
+import { TimePicker, DateTimePicker } from '@mantine/dates';
 import { NumericMultiSelect, NumericSelect } from '../../common/NumericCombobox';
 import type { EditorMode, Field, FormValues, ListField } from './types.ts';
 import { IconTrash } from '@tabler/icons-react';
@@ -85,6 +85,7 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -96,6 +97,7 @@ function renderField(
           label={field.label}
           required={isRequired(field, mode)}
           type={undefined}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -106,6 +108,7 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           checked={!!form.getValues()[field.key]}
+          {...field.fieldProps}
           onChange={(e) => form.setFieldValue(field.key, e.currentTarget.checked)}
         />
       );
@@ -116,6 +119,7 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -126,6 +130,18 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
+          {...field.fieldProps}
+          {...form.getInputProps(field.key)}
+        />
+      );
+
+    case 'dateTime':
+      return (
+        <DateTimePicker
+          key={form.key(field.key)}
+          label={field.label}
+          required={isRequired(field, mode)}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -136,7 +152,7 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
-          {...field.selectProps}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -147,7 +163,7 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
-          {...field.selectProps}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -158,7 +174,7 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
-          {...field.selectProps}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
@@ -169,21 +185,27 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
-          {...field.selectProps}
+          {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
       );
 
-    case 'fieldset':
+    case 'fieldset': {
+      const children = field.fields.map((f, i) => (
+        <span key={'key' in f ? f.key : i}>{renderField(f, form, mode)}</span>
+      ));
       return (
         <Fieldset key={field.key} legend={field.legend}>
-          <Stack>
-            {field.fields.map((f, i) => (
-              <span key={'key' in f ? f.key : i}>{renderField(f, form, mode)}</span>
-            ))}
-          </Stack>
+          {field.layout === 'row' ? (
+            <Group grow align="flex-end">
+              {children}
+            </Group>
+          ) : (
+            <Stack>{children}</Stack>
+          )}
         </Fieldset>
       );
+    }
 
     case 'list':
       return renderListField(field, form, mode);
@@ -243,7 +265,7 @@ export type EntityEditorProps<Values extends FormValues> = {
   title: string;
   fields: Field[];
   validate?: UseFormInput<Values>['validate'];
-  onSubmit: (values: Values, mode: EditorMode) => void;
+  onSubmit: (values: Values, mode: EditorMode) => void | Promise<void>;
 } & ({ mode: 'create' } | { mode: 'edit'; values: Values });
 
 export const EntityEditor = <Values extends FormValues>(props: EntityEditorProps<Values>) => {
