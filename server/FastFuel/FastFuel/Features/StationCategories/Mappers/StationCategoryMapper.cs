@@ -38,7 +38,5 @@ public class StationCategoryMapper(ApplicationDbContext dbContext)
         entity.Ingredients.AddRange(dbContext.Ingredients
             .Where(ingredient => dto.IngredientIds.Contains(ingredient.Id))
             .ToList());
-
-        entity.Stations.Clear();
     }
 }

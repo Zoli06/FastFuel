@@ -124,7 +124,7 @@ const editorFields: Field[] = [
             initialValue: 'Monday',
             nullable: 'never',
             required: 'always',
-            selectProps: {
+            fieldProps: {
               data: dayOfWeekOptions,
               allowDeselect: false,
             },

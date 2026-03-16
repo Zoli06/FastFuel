@@ -82,7 +82,7 @@ export const IngredientManager = ({
       initialValue: [],
       nullable: 'never',
       required: 'never',
-      selectProps: {
+      fieldProps: {
         data: allergies.map((allergy) => ({ value: allergy.id, label: allergy.name })),
         placeholder: 'Select allergies',
         searchable: true,
@@ -95,7 +95,7 @@ export const IngredientManager = ({
       initialValue: [],
       nullable: 'never',
       required: 'never',
-      selectProps: {
+      fieldProps: {
         data: stationCategories.map((sc) => ({ value: sc.id, label: sc.name })),
         placeholder: 'Select station categories',
         searchable: true,
