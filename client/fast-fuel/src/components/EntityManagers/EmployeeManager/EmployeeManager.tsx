@@ -29,7 +29,6 @@ export const EmployeeManager = ({
     { header: 'Name', accessor: 'name' },
     { header: 'Username', accessor: 'userName' },
     { header: 'Email', accessor: 'email' },
-    { header: 'User Type', accessor: 'userType' },
     {
       header: 'Station Categories',
       render: (e) => {
@@ -105,7 +104,7 @@ export const EmployeeManager = ({
     email: values.email,
     userName: values.userName,
     themeId: null,
-    password: values.password ?? null,
+    password: values.password || null,
     shiftIds: values.shiftIds,
     stationCategoryIds: values.stationCategoryIds,
   });

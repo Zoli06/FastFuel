@@ -13,22 +13,18 @@ export type CustomerManagerProps = {
   refetchCustomers: () => void;
 };
 
-export const CustomerManager = ({
-  customers,
-  refetchCustomers,
-}: CustomerManagerProps) => {
-
+export const CustomerManager = ({ customers, refetchCustomers }: CustomerManagerProps) => {
   const tableColumns: ColumnDefinition<Customer>[] = [
-//     name: string
-//   email: string
-//   userName: string
-//   themeId: number | null
-//   roleIds: number[]
-//   userType: string
-//   id: number
-// } & {
-//   orderIds?: number[]
-// }
+    //     name: string
+    //   email: string
+    //   userName: string
+    //   themeId: number | null
+    //   roleIds: number[]
+    //   userType: string
+    //   id: number
+    // } & {
+    //   orderIds?: number[]
+    // }
 
     { header: 'Name', accessor: 'name' },
     { header: 'Username', accessor: 'userName' },
@@ -72,13 +68,15 @@ export const CustomerManager = ({
     onSuccess: () => refetchCustomers(),
   });
 
-  const toRequestDto = (values: CustomerFormValues) => ({
-    name: values.name,
-    email: values.email,
-    userName: values.userName,
-    themeId: null,
-    password: values.password || null
-  });
+  const toRequestDto = (values: CustomerFormValues) =>
+    ({
+      name: values.name,
+      email: values.email,
+      userName: values.userName,
+      themeId: null,
+      password: values.password || null,
+      // https://github.com/openapi-ts/openapi-typescript/issues/1520
+    }) as components['schemas']['CustomerRequestDto'];
 
   const handleSubmit = (values: CustomerFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create') {
