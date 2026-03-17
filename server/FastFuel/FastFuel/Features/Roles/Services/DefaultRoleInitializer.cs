@@ -16,17 +16,20 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager) : IDefaultRol
                 "Permission:Food:Read",
                 "Permission:Ingredient:Read",
                 "Permission:Allergy:Read",
-                "Permission:Restaurant:Read"
+                "Permission:Restaurant:Read",
+                "Permission:User:ReadSelf",
             ],
             [DefaultRole.Customer] =
             [
-                "Permission:Order:Create"
+                "Permission:Order:Create",
+                "Permission:Customer:ReadSelf",
+                "Permission:Customer:UpdateSelf"
             ],
             [DefaultRole.Employee] =
             [
                 "Permission:Shift:Read",
                 "Permission:StationCategory:Read",
-                "Permission:Employee:Read",
+                "Permission:Employee:ReadSelf",
                 "Permission:Order:Create",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",

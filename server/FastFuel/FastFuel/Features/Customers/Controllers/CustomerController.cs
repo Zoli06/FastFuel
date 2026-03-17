@@ -3,11 +3,9 @@ using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Users.Controllers;
-using FastFuel.Features.Users.Entities;
 using FastFuel.Features.Users.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FastFuel.Features.Customers.Controllers;
@@ -15,14 +13,13 @@ namespace FastFuel.Features.Customers.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class CustomerController(
-    IUserService<CustomerRequestDto, CustomerResponseDto> service,
-    UserManager<User> userManager)
+    IUserService<CustomerRequestDto, CustomerResponseDto> service)
     : CrudController<Customer, CustomerRequestDto, CustomerResponseDto>(service)
 {
     public IUserService<CustomerRequestDto, CustomerResponseDto> UserService { get; } = service;
-    public UserManager<User> UserManager { get; } = userManager;
 
     [HttpGet("me")]
+    [PermissionCheck("ReadSelf")]
     public Task<Results<Ok<CustomerResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {
@@ -38,18 +35,16 @@ public class CustomerController(
         return base.Create(requestDto, cancellationToken);
     }
 
-    // Custom permission check in the service to only allow customers to update their own data
-    // Even admins can't update customers
-    // They can delete it though
-    [SkipPermissionCheck]
-    public override Task<Results<
+    [HttpPut("me")]
+    [PermissionCheck("UpdateSelf")]
+    public async Task<Results<
         NoContent,
         NotFound,
         BadRequest<ProblemDetails>,
         Conflict<ProblemDetails>,
         UnauthorizedHttpResult,
-        ForbidHttpResult>> Update(uint id, CustomerRequestDto requestDto, CancellationToken cancellationToken = default)
+        ForbidHttpResult>> UpdateSelf(CustomerRequestDto requestDto, CancellationToken cancellationToken = default)
     {
-        return base.Update(id, requestDto, cancellationToken);
+        return await base.Update(GetUserId(User)!.Value, requestDto, cancellationToken);
     }
 }
