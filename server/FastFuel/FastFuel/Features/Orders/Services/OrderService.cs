@@ -29,8 +29,6 @@ public class OrderService(
     protected override Update<Order, OrderRequestDto, OrderResponseDto> UpdateOperation =>
         new Update(DbContext, DbSet, Mapper);
 
-    protected override Delete<Order> DeleteOperation => new Delete(DbContext, DbSet);
-
     public async Task<List<OrderResponseDto>> GetOrdersForCurrentUserAsync(ClaimsPrincipal user,
         CancellationToken cancellationToken = default)
     {
@@ -87,12 +85,6 @@ public class OrderService(
             lastOrder.CreatedAt.AddHours(MinHoursBeforeReset) < DateTime.UtcNow)
             return 1;
         return (lastOrder?.OrderNumber ?? 0) + 1;
-    }
-
-    private static void EnsurePendingStatus(Order entity)
-    {
-        if (entity.Status != OrderStatus.Pending)
-            throw new UnauthorizedAppException("Only pending orders can be modified.");
     }
 
     private static async Task<uint> CalculatePriceAsync(Order entity, ApplicationDbContext dbContext,
@@ -173,23 +165,6 @@ public class OrderService(
         {
             await base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
             entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
-        }
-
-        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity, uint? userId = null,
-            CancellationToken cancellationToken = default)
-        {
-            EnsurePendingStatus(entity);
-            return base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
-        }
-    }
-
-    private class Delete(ApplicationDbContext dbContext, DbSet<Order> dbSet) : Delete<Order>(dbContext, dbSet)
-    {
-        protected override Task DeleteEntityAsync(uint id, Order entity, uint? userId = null,
-            CancellationToken cancellationToken = default)
-        {
-            EnsurePendingStatus(entity);
-            return base.DeleteEntityAsync(id, entity, userId, cancellationToken);
         }
     }
 }

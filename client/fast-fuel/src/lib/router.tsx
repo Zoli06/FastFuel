@@ -14,6 +14,7 @@ import { LoadingPage } from '../pages/LoadingPage.tsx';
 import { ErrorPage } from '../pages/ErrorPage.tsx';
 import { EmployeeManagerPage } from '../pages/EntityManagerPages/EmployeeManagerPage.tsx';
 import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.tsx';
+import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />,
+      },
+      {
+        path: 'stations/:id/tasks',
+        element: <StationTasksPage />,
       },
       {
         path: 'manage',

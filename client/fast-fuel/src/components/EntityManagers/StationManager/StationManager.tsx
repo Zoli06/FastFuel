@@ -3,6 +3,8 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { Button } from '@mantine/core';
+import { Link } from 'react-router-dom';
 
 type Station = components['schemas']['StationResponseDto'];
 type Restaurant = components['schemas']['RestaurantResponseDto'];
@@ -41,6 +43,16 @@ export const StationManager = ({
       header: 'Category',
       render: (s) => categoryNameById.get(s.stationCategoryId) ?? `#${s.stationCategoryId}`,
     },
+    {
+      header: 'Tasks',
+      render: (s) => {
+        return (
+          <Link to={`/stations/${s.id}/tasks`}>
+            <Button>View Tasks</Button>
+          </Link>
+        );
+      },
+    },
   ];
 
   const editorFields: Field[] = [
@@ -67,7 +79,7 @@ export const StationManager = ({
       initialValue: 0,
       nullable: 'never',
       required: 'always',
-      selectProps: {
+      fieldProps: {
         data: restaurantOptions,
         placeholder: 'Select restaurant',
         searchable: true,
@@ -80,7 +92,7 @@ export const StationManager = ({
       initialValue: 0,
       nullable: 'never',
       required: 'always',
-      selectProps: {
+      fieldProps: {
         data: categoryOptions,
         placeholder: 'Select category',
         searchable: true,

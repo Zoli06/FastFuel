@@ -8,9 +8,6 @@ type Order = components['schemas']['OrderResponseDto'];
 type Menu = components['schemas']['MenuResponseDto'];
 type Food = components['schemas']['FoodResponseDto'];
 type Restaurant = components['schemas']['RestaurantResponseDto'];
-type OrderStatus = components['schemas']['OrderStatus'];
-
-const ORDER_STATUS_OPTIONS: OrderStatus[] = ['Pending', 'InProgress', 'Completed', 'Cancelled'];
 
 export type OrderManagerProps = {
   orders: Order[];
@@ -81,22 +78,10 @@ export const OrderManager = ({
       initialValue: 0,
       nullable: 'never',
       required: 'always',
-      selectProps: {
+      fieldProps: {
         data: restaurantOptions,
         placeholder: 'Select restaurant',
         searchable: true,
-      },
-    },
-    {
-      type: 'select',
-      key: 'status',
-      label: 'Status',
-      initialValue: 'Pending',
-      nullable: 'never',
-      required: 'always',
-      selectProps: {
-        data: ORDER_STATUS_OPTIONS,
-        allowDeselect: false,
       },
     },
     {
@@ -123,7 +108,7 @@ export const OrderManager = ({
               initialValue: 0,
               nullable: 'never',
               required: 'always',
-              selectProps: {
+              fieldProps: {
                 data: menuOptions,
                 placeholder: 'Select menu',
                 searchable: true,
@@ -173,7 +158,7 @@ export const OrderManager = ({
               initialValue: 0,
               nullable: 'never',
               required: 'always',
-              selectProps: {
+              fieldProps: {
                 data: foodOptions,
                 placeholder: 'Select food',
                 searchable: true,
