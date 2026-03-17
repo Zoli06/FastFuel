@@ -84,13 +84,16 @@ export const Register = () => {
             key={form.key('name')}
             label="Name"
             placeholder="Enter your name"
+            required
             {...form.getInputProps('name')}
           />
 
           <TextInput
+            type="email"
             key={form.key('email')}
             label="Email"
             placeholder="Enter your email"
+            required
             {...form.getInputProps('email')}
           />
 
@@ -98,6 +101,7 @@ export const Register = () => {
             key={form.key('userName')}
             label="Username"
             placeholder="Enter username"
+            required
             {...form.getInputProps('userName')}
           />
 
@@ -105,6 +109,7 @@ export const Register = () => {
             key={form.key('password')}
             label="Password"
             placeholder="Enter password"
+            required
             {...form.getInputProps('password')}
           />
 
@@ -112,6 +117,7 @@ export const Register = () => {
             key={form.key('confirmPassword')}
             label="Confirm Password"
             placeholder="Confirm password"
+            required
             {...form.getInputProps('confirmPassword')}
           />
 
