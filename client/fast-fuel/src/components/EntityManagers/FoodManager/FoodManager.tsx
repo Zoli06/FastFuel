@@ -1,5 +1,5 @@
 ﻿import type { components } from '../../../types/api';
-import { apiClient } from '../../../apiClient.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
@@ -79,7 +79,7 @@ export const FoodManager = ({ foods, ingredients, refetchFoods }: FoodManagerPro
               initialValue: 0,
               nullable: 'never',
               required: 'always',
-              selectProps: {
+              fieldProps: {
                 data: ingredientOptions,
                 placeholder: 'Select ingredient',
                 searchable: true,

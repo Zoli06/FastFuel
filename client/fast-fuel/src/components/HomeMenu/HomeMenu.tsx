@@ -16,11 +16,13 @@ export const HomeMenu = () => {
       <SimpleGrid cols={3} spacing="md" verticalSpacing="sm">
         {[
           { text: 'Allergies', to: '/manage/allergy' },
+          { text: 'Employees', to: '/manage/employee' },
           { text: 'Foods', to: '/manage/food' },
           { text: 'Ingredients', to: '/manage/ingredient' },
           { text: 'Menus', to: '/manage/menu' },
           { text: 'Orders', to: '/manage/order' },
           { text: 'Restaurants', to: '/manage/restaurant' },
+          { text: 'Shifts', to: '/manage/shift' },
           { text: 'Station Categories', to: '/manage/station-category' },
           { text: 'Stations', to: '/manage/station' },
         ].map((link, index) => (

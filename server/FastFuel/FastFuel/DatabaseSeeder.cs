@@ -205,14 +205,16 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         {
             Menu = lunchMenu,
             Order = order,
-            Quantity = 1
+            Quantity = 1,
+            SpecialInstructions = "Please make the burger without tomato."
         };
 
         var orderFoodItem = new OrderFood
         {
             Food = cheeseBurger,
             Order = order,
-            Quantity = 1
+            Quantity = 1,
+            SpecialInstructions = "Extra cheese, please."
         };
         _context.OrderMenus.Add(orderMenuItem);
         _context.OrderFoods.Add(orderFoodItem);

@@ -2,7 +2,7 @@ import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor';
-import { apiClient } from '../../../apiClient.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
 type Ingredient = components['schemas']['IngredientResponseDto'];
@@ -82,7 +82,7 @@ export const IngredientManager = ({
       initialValue: [],
       nullable: 'never',
       required: 'never',
-      selectProps: {
+      fieldProps: {
         data: allergies.map((allergy) => ({ value: allergy.id, label: allergy.name })),
         placeholder: 'Select allergies',
         searchable: true,
@@ -95,7 +95,7 @@ export const IngredientManager = ({
       initialValue: [],
       nullable: 'never',
       required: 'never',
-      selectProps: {
+      fieldProps: {
         data: stationCategories.map((sc) => ({ value: sc.id, label: sc.name })),
         placeholder: 'Select station categories',
         searchable: true,

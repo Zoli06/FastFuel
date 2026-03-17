@@ -2,7 +2,7 @@ import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor';
-import { apiClient } from '../../../apiClient.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
 type Menu = components['schemas']['MenuResponseDto'];
@@ -105,7 +105,7 @@ export const MenuManager = ({ menus, refetchMenus, foods }: MenuManagerProps) =>
               initialValue: 0,
               nullable: 'never',
               required: 'always',
-              selectProps: {
+              fieldProps: {
                 data: foodOptions,
                 placeholder: 'Select food',
                 searchable: true,

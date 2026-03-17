@@ -1,26 +1,16 @@
 import { RestaurantManager } from '../../components/EntityManagers/RestaurantManager/RestaurantManager.tsx';
 import { Footer } from '../../components/Footer/Footer.tsx';
 import { Header } from '../../components/Header/Header.tsx';
-import { apiClient } from '../../apiClient.ts';
-import { LoadingPage } from '../LoadingPage.tsx';
-import { ErrorPage } from '../ErrorPage.tsx';
+import { apiClient } from '../../lib/api-client.ts';
 
 export const RestaurantManagerPage = () => {
-  const { data, isLoading, error, refetch } = apiClient.useQuery('get', '/api/Restaurant');
-
-  if (isLoading) {
-    return <LoadingPage />;
-  }
-
-  if (error) {
-    return <ErrorPage title="Failed to Load Restaurants" />;
-  }
+  const { data, refetch } = apiClient.useSuspenseQuery('get', '/api/Restaurant');
 
   return (
     <>
       <Header title="Restaurants" />
 
-      <RestaurantManager restaurants={data || []} refetchRestaurants={refetch} />
+      <RestaurantManager restaurants={data} refetchRestaurants={refetch} />
 
       <Footer />
     </>

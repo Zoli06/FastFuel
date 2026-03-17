@@ -1,7 +1,15 @@
 import type { ReactNode } from 'react';
-import type { MultiSelectProps, SelectProps } from '@mantine/core';
+import type {
+  CheckboxProps,
+  MultiSelectProps,
+  NumberInputProps,
+  PasswordInputProps,
+  SelectProps,
+  TextInputProps,
+} from '@mantine/core';
 import type { UseFormReturnType } from '@mantine/form';
 import type { NumericMultiSelectProps, NumericSelectProps } from '../../common/NumericCombobox';
+import type { DateTimePickerProps, TimePickerProps } from '@mantine/dates';
 
 export type FormValues = Record<string, unknown>;
 
@@ -11,6 +19,7 @@ export type FieldType =
   | 'bool'
   | 'password'
   | 'time'
+  | 'dateTime'
   | 'select'
   | 'numericSelect'
   | 'multiselect'
@@ -19,11 +28,12 @@ export type FieldType =
   | 'fieldset'
   | 'custom';
 
-type BaseField<Type extends FieldType, InitialValueType> = {
+type BaseField<Type extends FieldType, InitialValueType, FieldProps> = {
   key: string;
   type: Type;
   initialValue: InitialValueType;
   label: string;
+  fieldProps?: OmitUnnecessaryComboboxProps<FieldProps>;
 } & (
   | {
       nullable: 'never';
@@ -41,29 +51,28 @@ type BaseField<Type extends FieldType, InitialValueType> = {
 
 export type OmitUnnecessaryComboboxProps<T> = Omit<T, 'value' | 'onChange' | 'label' | 'required'>;
 
-export type TextField = BaseField<'text', string>;
-export type NumberField = BaseField<'number', number>;
-export type BoolField = BaseField<'bool', boolean>;
-export type PasswordField = BaseField<'password', string>;
-export type TimeField = BaseField<'time', string | null>;
-export type SelectField = BaseField<'select', string | null> & {
-  selectProps?: OmitUnnecessaryComboboxProps<SelectProps>;
-};
-export type NumericSelectField = BaseField<'numericSelect', number | null> & {
-  selectProps?: OmitUnnecessaryComboboxProps<NumericSelectProps>;
-};
-export type MultiSelectField = BaseField<'multiselect', string[]> & {
-  selectProps?: OmitUnnecessaryComboboxProps<MultiSelectProps>;
-};
-export type NumericMultiSelectField = BaseField<'numericMultiSelect', number[]> & {
-  selectProps?: OmitUnnecessaryComboboxProps<NumericMultiSelectProps>;
-};
-export type ListField = BaseField<'list', unknown[]> & {
+export type TextField = BaseField<'text', string, TextInputProps>;
+export type NumberField = BaseField<'number', number, NumberInputProps>;
+export type BoolField = BaseField<'bool', boolean, CheckboxProps>;
+export type PasswordField = BaseField<'password', string, PasswordInputProps>;
+export type TimeField = BaseField<'time', string | null, TimePickerProps>;
+export type DateTimeField = BaseField<'dateTime', string | null, DateTimePickerProps>;
+export type SelectField = BaseField<'select', string | null, SelectProps>;
+export type NumericSelectField = BaseField<'numericSelect', number | null, NumericSelectProps>;
+export type MultiSelectField = BaseField<'multiselect', string[], MultiSelectProps>;
+export type NumericMultiSelectField = BaseField<
+  'numericMultiSelect',
+  number[],
+  NumericMultiSelectProps
+>;
+export type ListField = BaseField<'list', unknown[], never> & {
   items: Field[];
 };
-export type FieldSet = BaseField<'fieldset', unknown[]> & {
+export type FieldSet = BaseField<'fieldset', unknown[], never> & {
   legend: string;
   fields: Field[];
+  /** Controls how child fields are laid out. Defaults to 'column'. */
+  layout?: 'row' | 'column';
 };
 
 export type CustomField = {
@@ -77,6 +86,7 @@ export type Field =
   | BoolField
   | PasswordField
   | TimeField
+  | DateTimeField
   | SelectField
   | NumericSelectField
   | MultiSelectField

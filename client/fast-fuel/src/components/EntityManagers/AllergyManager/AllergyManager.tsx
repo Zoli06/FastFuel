@@ -1,5 +1,5 @@
 ﻿import type { components } from '../../../types/api';
-import { apiClient } from '../../../apiClient.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
@@ -61,7 +61,7 @@ export const AllergyManager = ({
       initialValue: [],
       nullable: 'never',
       required: 'never',
-      selectProps: {
+      fieldProps: {
         data: ingredientOptions,
         placeholder: 'Search ingredients...',
         searchable: true,

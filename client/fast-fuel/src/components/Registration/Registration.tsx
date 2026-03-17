@@ -1,7 +1,7 @@
 import { Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Paper } from '../common/Paper/Paper';
-import { apiClient } from '../../apiClient';
+import { apiClient } from '../../lib/api-client';
 import type { components } from '../../types/api';
 import { useNavigate } from 'react-router-dom';
 
