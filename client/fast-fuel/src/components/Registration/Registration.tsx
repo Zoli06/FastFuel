@@ -36,12 +36,6 @@ export const Register = () => {
       onSuccess: () => {
         form.reset();
       },
-      onError: () => {
-        // TODO: On the dev branch there is already a system for (error) notifications, use that
-        form.setErrors({
-          userName: 'Unknown error occurred. Please try again later.',
-        });
-      },
     },
   );
 
@@ -51,11 +45,6 @@ export const Register = () => {
     {
       onSuccess: () => {
         redirect('/');
-      },
-      onError: () => {
-        form.setErrors({
-          userName: 'Unknown error occurred during login. Please try logging in manually.',
-        });
       },
     },
   );
