@@ -15,6 +15,7 @@ import { ErrorPage } from '../pages/ErrorPage.tsx';
 import { EmployeeManagerPage } from '../pages/EntityManagerPages/EmployeeManagerPage.tsx';
 import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.tsx';
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
+import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />,
+      },
+      {
+        path: 'register',
+        element: <RegistrationPage />,
       },
       {
         path: 'stations/:id/tasks',
