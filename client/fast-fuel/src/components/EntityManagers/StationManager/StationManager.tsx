@@ -1,4 +1,3 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
@@ -6,23 +5,16 @@ import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 
-type Station = components['schemas']['StationResponseDto'];
-type Restaurant = components['schemas']['RestaurantResponseDto'];
-type StationCategory = components['schemas']['StationCategoryResponseDto'];
+export const StationManager = () => {
+  const { data: stations, refetch: refetchStations } = apiClient.useSuspenseQuery(
+    'get',
+    '/api/Station',
+  );
+  type Station = (typeof stations)[number];
 
-export type StationManagerProps = {
-  stations: Station[];
-  refetchStations: () => void;
-  restaurants: Restaurant[];
-  stationCategories: StationCategory[];
-};
+  const { data: restaurants } = apiClient.useSuspenseQuery('get', '/api/Restaurant');
+  const { data: stationCategories } = apiClient.useSuspenseQuery('get', '/api/StationCategory');
 
-export const StationManager = ({
-  stations,
-  refetchStations,
-  restaurants,
-  stationCategories,
-}: StationManagerProps) => {
   const restaurantNameById = new Map((restaurants ?? []).map((r) => [r.id, r.name]));
   const categoryNameById = new Map((stationCategories ?? []).map((c) => [c.id, c.name]));
 

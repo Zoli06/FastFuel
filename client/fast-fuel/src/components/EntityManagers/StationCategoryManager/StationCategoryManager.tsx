@@ -1,23 +1,16 @@
-import type { components } from '../../../types/api';
-import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
+import type { Field } from '../../EntityManager/EntityEditor';
 
-type StationCategory = components['schemas']['StationCategoryResponseDto'];
-type Ingredient = components['schemas']['IngredientResponseDto'];
+export const StationCategoryManager = () => {
+  const { data: stationCategories, refetch: refetchStationCategories } = apiClient.useSuspenseQuery(
+    'get',
+    '/api/StationCategory',
+  );
+  type StationCategory = (typeof stationCategories)[number];
 
-export type StationCategoryManagerProps = {
-  stationCategories: StationCategory[];
-  refetchStationCategories: () => void;
-  ingredients: Ingredient[];
-};
-
-export const StationCategoryManager = ({
-  stationCategories,
-  refetchStationCategories,
-  ingredients,
-}: StationCategoryManagerProps) => {
+  const { data: ingredients } = apiClient.useSuspenseQuery('get', '/api/Ingredient');
   const ingredientOptions = (ingredients ?? []).map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,

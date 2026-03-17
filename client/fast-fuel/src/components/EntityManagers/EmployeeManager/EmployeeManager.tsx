@@ -1,25 +1,19 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
-type Employee = components['schemas']['EmployeeResponseDto'];
-type StationCategory = components['schemas']['StationCategoryResponseDto'];
+export const EmployeeManager = () => {
+  const { data: employees, refetch: refetchEmployees } = apiClient.useSuspenseQuery(
+    'get',
+    '/api/Employee',
+  );
+  type Employee = (typeof employees)[number];
 
-type EmployeeFormValues = Employee & { password?: string | null };
+  const { data: stationCategories } = apiClient.useSuspenseQuery('get', '/api/StationCategory');
 
-export type EmployeeManagerProps = {
-  employees: Employee[];
-  refetchEmployees: () => void;
-  stationCategories: StationCategory[];
-};
+  type EmployeeFormValues = Employee & { password?: string | null };
 
-export const EmployeeManager = ({
-  employees,
-  refetchEmployees,
-  stationCategories,
-}: EmployeeManagerProps) => {
   const stationCategoryOptions = (stationCategories ?? []).map((sc) => ({
     value: sc.id,
     label: sc.name,

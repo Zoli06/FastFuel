@@ -1,29 +1,16 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
-type Order = components['schemas']['OrderResponseDto'];
-type Menu = components['schemas']['MenuResponseDto'];
-type Food = components['schemas']['FoodResponseDto'];
-type Restaurant = components['schemas']['RestaurantResponseDto'];
+export const OrderManager = () => {
+  const { data: orders, refetch: refetchOrders } = apiClient.useSuspenseQuery('get', '/api/Order');
+  type Order = (typeof orders)[number];
 
-export type OrderManagerProps = {
-  orders: Order[];
-  refetchOrders: () => void;
-  menus: Menu[];
-  foods: Food[];
-  restaurants: Restaurant[];
-};
+  const { data: menus } = apiClient.useSuspenseQuery('get', '/api/Menu');
+  const { data: foods } = apiClient.useSuspenseQuery('get', '/api/Food');
+  const { data: restaurants } = apiClient.useSuspenseQuery('get', '/api/Restaurant');
 
-export const OrderManager = ({
-  orders,
-  refetchOrders,
-  menus,
-  foods,
-  restaurants,
-}: OrderManagerProps) => {
   const menuNameById = new Map((menus ?? []).map((m) => [m.id, m.name]));
   const foodNameById = new Map((foods ?? []).map((f) => [f.id, f.name]));
   const restaurantNameById = new Map((restaurants ?? []).map((r) => [r.id, r.name]));
