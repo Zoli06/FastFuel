@@ -60,9 +60,9 @@ export const EntityManager = <
   return (
     <>
       <Paper>
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align="center" gap="md">
           <Title>{title}</Title>
-          <Button onClick={openCreate} color="green">
+          <Button onClick={openCreate} color="green" style={{ flexShrink: 0 }}>
             Create
           </Button>
         </Flex>
