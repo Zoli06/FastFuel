@@ -1,7 +1,8 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 const getDuration = (start: Date, end: Date) => {
   const diffMs = end.getTime() - start.getTime();
@@ -13,10 +14,15 @@ const getDuration = (start: Date, end: Date) => {
 };
 
 export const ShiftManager = () => {
-  const { data: shifts, refetch: refetchShifts } = apiClient.useSuspenseQuery('get', '/api/Shift');
+  const [{ data: permissions }, { data: shifts, refetch: refetchShifts }, { data: employees }] =
+    useSuspenseQueries({
+      queries: [
+        apiClient.queryOptions('get', '/api/Permission/my'),
+        apiClient.queryOptions('get', '/api/Shift'),
+        apiClient.queryOptions('get', '/api/Employee'),
+      ] as const,
+    });
   type Shift = (typeof shifts)[number];
-
-  const { data: employees } = apiClient.useSuspenseQuery('get', '/api/Employee');
 
   type ShiftFormValues = Shift & {
     durationHours: number;
@@ -164,6 +170,9 @@ export const ShiftManager = () => {
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteShift({ params: { path: { id: s.id } } })}
+      canCreate={permissions?.includes('Permission:Shift:Create')}
+      canEdit={permissions?.includes('Permission:Shift:Update')}
+      canDelete={permissions?.includes('Permission:Shift:Delete')}
     />
   );
 };

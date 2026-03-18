@@ -1,15 +1,26 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const OrderManager = () => {
-  const { data: orders, refetch: refetchOrders } = apiClient.useSuspenseQuery('get', '/api/Order');
+  const [
+    { data: permissions },
+    { data: orders, refetch: refetchOrders },
+    { data: menus },
+    { data: foods },
+    { data: restaurants },
+  ] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions('get', '/api/Permission/my'),
+      apiClient.queryOptions('get', '/api/Order'),
+      apiClient.queryOptions('get', '/api/Menu'),
+      apiClient.queryOptions('get', '/api/Food'),
+      apiClient.queryOptions('get', '/api/Restaurant'),
+    ] as const,
+  });
   type Order = (typeof orders)[number];
-
-  const { data: menus } = apiClient.useSuspenseQuery('get', '/api/Menu');
-  const { data: foods } = apiClient.useSuspenseQuery('get', '/api/Food');
-  const { data: restaurants } = apiClient.useSuspenseQuery('get', '/api/Restaurant');
 
   const menuNameById = new Map((menus ?? []).map((m) => [m.id, m.name]));
   const foodNameById = new Map((foods ?? []).map((f) => [f.id, f.name]));
@@ -200,6 +211,9 @@ export const OrderManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(o) => deleteOrder({ params: { path: { id: o.id } } })}
+      canCreate={permissions?.includes('Permission:Order:Create')}
+      canEdit={permissions?.includes('Permission:Order:Update')}
+      canDelete={permissions?.includes('Permission:Order:Delete')}
     />
   );
 };

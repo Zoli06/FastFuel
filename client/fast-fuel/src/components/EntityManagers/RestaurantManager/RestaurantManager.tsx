@@ -4,6 +4,7 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.ts';
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 // TODO: Remove this or at least extract to a helper
 const maxLength = 100;
@@ -28,10 +29,13 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const { data: restaurants, refetch: refetchRestaurants } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/Restaurant',
-  );
+  const [{ data: permissions }, { data: restaurants, refetch: refetchRestaurants }] =
+    useSuspenseQueries({
+      queries: [
+        apiClient.queryOptions('get', '/api/Permission/my'),
+        apiClient.queryOptions('get', '/api/Restaurant'),
+      ] as const,
+    });
   type Restaurant = (typeof restaurants)[number];
 
   const tableColumns: ColumnDefinition<Restaurant>[] = [
@@ -189,6 +193,9 @@ export const RestaurantManager = () => {
       }}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteRestaurant({ params: { path: { id: r.id } } })}
+      canCreate={permissions?.includes('Permission:Restaurant:Create')}
+      canEdit={permissions?.includes('Permission:Restaurant:Update')}
+      canDelete={permissions?.includes('Permission:Restaurant:Delete')}
     />
   );
 };

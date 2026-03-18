@@ -1,16 +1,22 @@
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const StationCategoryManager = () => {
-  const { data: stationCategories, refetch: refetchStationCategories } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/StationCategory',
-  );
+  const [
+    { data: permissions },
+    { data: stationCategories, refetch: refetchStationCategories },
+    { data: ingredients },
+  ] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions('get', '/api/Permission/my'),
+      apiClient.queryOptions('get', '/api/StationCategory'),
+      apiClient.queryOptions('get', '/api/Ingredient'),
+    ] as const,
+  });
   type StationCategory = (typeof stationCategories)[number];
-
-  const { data: ingredients } = apiClient.useSuspenseQuery('get', '/api/Ingredient');
   const ingredientOptions = (ingredients ?? []).map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
@@ -89,6 +95,9 @@ export const StationCategoryManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteStationCategory({ params: { path: { id: r.id } } })}
+      canCreate={permissions?.includes('Permission:StationCategory:Create')}
+      canEdit={permissions?.includes('Permission:StationCategory:Update')}
+      canDelete={permissions?.includes('Permission:StationCategory:Delete')}
     />
   );
 };

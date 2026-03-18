@@ -1,16 +1,22 @@
 ﻿import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const AllergyManager = () => {
-  const { data: allergies, refetch: refetchAllergies } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/Allergy',
-  );
+  const [
+    { data: permissions },
+    { data: allergies, refetch: refetchAllergies },
+    { data: ingredients },
+  ] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions('get', '/api/Permission/my'),
+      apiClient.queryOptions('get', '/api/Allergy'),
+      apiClient.queryOptions('get', '/api/Ingredient'),
+    ] as const,
+  });
   type Allergy = (typeof allergies)[number];
-
-  const { data: ingredients } = apiClient.useSuspenseQuery('get', '/api/Ingredient');
   const ingredientOptions = ingredients.map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
@@ -89,6 +95,9 @@ export const AllergyManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteAllergy({ params: { path: { id: r.id } } })}
+      canCreate={permissions?.includes('Permission:Allergy:Create')}
+      canEdit={permissions?.includes('Permission:Allergy:Update')}
+      canDelete={permissions?.includes('Permission:Allergy:Delete')}
     />
   );
 };

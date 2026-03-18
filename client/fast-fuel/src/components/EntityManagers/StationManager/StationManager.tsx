@@ -1,19 +1,27 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const StationManager = () => {
-  const { data: stations, refetch: refetchStations } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/Station',
-  );
+  const [
+    { data: permissions },
+    { data: stations, refetch: refetchStations },
+    { data: restaurants },
+    { data: stationCategories },
+  ] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions('get', '/api/Permission/my'),
+      apiClient.queryOptions('get', '/api/Station'),
+      apiClient.queryOptions('get', '/api/Restaurant'),
+      apiClient.queryOptions('get', '/api/StationCategory'),
+    ] as const,
+  });
+  const canViewTasks = permissions?.includes('Permission:Station:ViewTasks') ?? false;
   type Station = (typeof stations)[number];
-
-  const { data: restaurants } = apiClient.useSuspenseQuery('get', '/api/Restaurant');
-  const { data: stationCategories } = apiClient.useSuspenseQuery('get', '/api/StationCategory');
 
   const restaurantNameById = new Map((restaurants ?? []).map((r) => [r.id, r.name]));
   const categoryNameById = new Map((stationCategories ?? []).map((c) => [c.id, c.name]));
@@ -35,16 +43,18 @@ export const StationManager = () => {
       header: 'Category',
       render: (s) => categoryNameById.get(s.stationCategoryId) ?? `#${s.stationCategoryId}`,
     },
-    {
-      header: 'Tasks',
-      render: (s) => {
-        return (
-          <Link to={`/stations/${s.id}/tasks`}>
-            <Button>View Tasks</Button>
-          </Link>
-        );
-      },
-    },
+    ...(canViewTasks
+      ? [
+          {
+            header: 'Tasks',
+            render: (s: Station) => (
+              <Link to={`/stations/${s.id}/tasks`}>
+                <Button>View Tasks</Button>
+              </Link>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const editorFields: Field[] = [
@@ -119,6 +129,9 @@ export const StationManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteStation({ params: { path: { id: s.id } } })}
+      canCreate={permissions?.includes('Permission:Station:Create')}
+      canEdit={permissions?.includes('Permission:Station:Update')}
+      canDelete={permissions?.includes('Permission:Station:Delete')}
     />
   );
 };

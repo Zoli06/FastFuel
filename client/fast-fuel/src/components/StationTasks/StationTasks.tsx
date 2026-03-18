@@ -48,9 +48,11 @@ const nextStatusLabel: Record<string, string> = {
 const OrderCard = ({
   order,
   onAdvance,
+  canAdvanceStatus,
 }: {
   order: StationTaskOrder;
   onAdvance: (id: number, status: OrderStatus) => void;
+  canAdvanceStatus: boolean;
 }) => {
   const next = nextStatus[order.status];
 
@@ -158,7 +160,7 @@ const OrderCard = ({
         )}
       </Stack>
 
-      {next && (
+      {next && canAdvanceStatus && (
         <>
           <Divider mt="sm" mb="xs" />
           <Button
@@ -177,6 +179,9 @@ const OrderCard = ({
 };
 
 export const StationTasks = ({ tasks, refetchTasks }: StationTasksProps) => {
+  const { data: permissions } = apiClient.useSuspenseQuery('get', '/api/Permission/my');
+  const canUpdateOrderStatus = permissions?.includes('Permission:Order:UpdateStatus') ?? false;
+
   const { mutate: updateStatus } = apiClient.useMutation('put', '/api/Order/{id}/status', {
     onSuccess: refetchTasks,
   });
@@ -218,7 +223,12 @@ export const StationTasks = ({ tasks, refetchTasks }: StationTasksProps) => {
                 </Text>
               ) : (
                 pendingOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} onAdvance={handleAdvance} />
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onAdvance={handleAdvance}
+                    canAdvanceStatus={canUpdateOrderStatus}
+                  />
                 ))
               )}
             </Stack>
@@ -240,7 +250,12 @@ export const StationTasks = ({ tasks, refetchTasks }: StationTasksProps) => {
                 </Text>
               ) : (
                 inProgressOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} onAdvance={handleAdvance} />
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onAdvance={handleAdvance}
+                    canAdvanceStatus={canUpdateOrderStatus}
+                  />
                 ))
               )}
             </Stack>

@@ -1,16 +1,22 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const EmployeeManager = () => {
-  const { data: employees, refetch: refetchEmployees } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/Employee',
-  );
+  const [
+    { data: permissions },
+    { data: employees, refetch: refetchEmployees },
+    { data: stationCategories },
+  ] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions('get', '/api/Permission/my'),
+      apiClient.queryOptions('get', '/api/Employee'),
+      apiClient.queryOptions('get', '/api/StationCategory'),
+    ] as const,
+  });
   type Employee = (typeof employees)[number];
-
-  const { data: stationCategories } = apiClient.useSuspenseQuery('get', '/api/StationCategory');
 
   type EmployeeFormValues = Employee & { password?: string | null };
 
@@ -121,6 +127,9 @@ export const EmployeeManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(e) => deleteEmployee({ params: { path: { id: e.id } } })}
+      canCreate={permissions?.includes('Permission:Employee:Create')}
+      canEdit={permissions?.includes('Permission:Employee:Update')}
+      canDelete={permissions?.includes('Permission:Employee:Delete')}
     />
   );
 };

@@ -1,18 +1,25 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const IngredientManager = () => {
-  const { data: ingredients, refetch: refetchIngredients } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/Ingredient',
-  );
+  const [
+    { data: permissions },
+    { data: ingredients, refetch: refetchIngredients },
+    { data: allergies },
+    { data: stationCategories },
+  ] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions('get', '/api/Permission/my'),
+      apiClient.queryOptions('get', '/api/Ingredient'),
+      apiClient.queryOptions('get', '/api/Allergy'),
+      apiClient.queryOptions('get', '/api/StationCategory'),
+    ] as const,
+  });
   type Ingredient = (typeof ingredients)[number];
-
-  const { data: allergies } = apiClient.useSuspenseQuery('get', '/api/Allergy');
-  const { data: stationCategories } = apiClient.useSuspenseQuery('get', '/api/StationCategory');
   const tableColumns: ColumnDefinition<Ingredient>[] = [
     { header: 'Name', accessor: 'name' },
     {
@@ -129,6 +136,9 @@ export const IngredientManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteIngredient({ params: { path: { id: r.id } } })}
+      canCreate={permissions?.includes('Permission:Ingredient:Create')}
+      canEdit={permissions?.includes('Permission:Ingredient:Update')}
+      canDelete={permissions?.includes('Permission:Ingredient:Delete')}
     />
   );
 };

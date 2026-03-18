@@ -1,14 +1,20 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
-import type { Field } from '../../EntityManager/EntityEditor';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 export const MenuManager = () => {
-  const { data: menus, refetch: refetchMenus } = apiClient.useSuspenseQuery('get', '/api/Menu');
+  const [{ data: permissions }, { data: menus, refetch: refetchMenus }, { data: foods }] =
+    useSuspenseQueries({
+      queries: [
+        apiClient.queryOptions('get', '/api/Permission/my'),
+        apiClient.queryOptions('get', '/api/Menu'),
+        apiClient.queryOptions('get', '/api/Food'),
+      ] as const,
+    });
   type Menu = (typeof menus)[number];
-
-  const { data: foods } = apiClient.useSuspenseQuery('get', '/api/Food');
   const foodNameById = new Map((foods ?? []).map((food) => [food.id, food.name]));
   const foodOptions = (foods ?? []).map((food) => ({
     value: food.id,
@@ -146,6 +152,9 @@ export const MenuManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteMenu({ params: { path: { id: r.id } } })}
+      canCreate={permissions?.includes('Permission:Menu:Create')}
+      canEdit={permissions?.includes('Permission:Menu:Update')}
+      canDelete={permissions?.includes('Permission:Menu:Delete')}
     />
   );
 };
