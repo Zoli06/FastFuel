@@ -1,24 +1,17 @@
-﻿import type { components } from '../../../types/api';
-import { apiClient } from '../../../lib/api-client.ts';
+﻿import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
 
-type Allergy = components['schemas']['AllergyResponseDto'];
-type Ingredient = components['schemas']['IngredientResponseDto'];
+export const AllergyManager = () => {
+  const { data: allergies, refetch: refetchAllergies } = apiClient.useSuspenseQuery(
+    'get',
+    '/api/Allergy',
+  );
+  type Allergy = (typeof allergies)[number];
 
-export type AllergyManagerProps = {
-  allergies: Allergy[];
-  ingredients: Ingredient[];
-  refetchAllergies: () => void;
-};
-
-export const AllergyManager = ({
-  allergies,
-  refetchAllergies,
-  ingredients,
-}: AllergyManagerProps) => {
-  const ingredientOptions = (ingredients ?? []).map((ingredient) => ({
+  const { data: ingredients } = apiClient.useSuspenseQuery('get', '/api/Ingredient');
+  const ingredientOptions = ingredients.map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
   }));

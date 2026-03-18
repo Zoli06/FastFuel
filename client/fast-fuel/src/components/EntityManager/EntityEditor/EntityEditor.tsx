@@ -14,7 +14,8 @@ import {
 } from '@mantine/core';
 import { Form, useForm, type UseFormInput, type UseFormReturnType } from '@mantine/form';
 import { TimePicker, DateTimePicker } from '@mantine/dates';
-import { NumericMultiSelect, NumericSelect } from '../../common/NumericCombobox';
+import { NumericSelect } from '../../common/NumericCombobox/NumericSelect.tsx';
+import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 import type { EditorMode, Field, FormValues, ListField } from './types.ts';
 import { IconTrash } from '@tabler/icons-react';
 

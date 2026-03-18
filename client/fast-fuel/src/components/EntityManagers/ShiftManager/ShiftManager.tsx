@@ -1,25 +1,7 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-
-type Shift = components['schemas']['ShiftResponseDto'];
-type Employee = components['schemas']['EmployeeResponseDto'];
-
-type ShiftFormValues = {
-  id: number;
-  employeeId: number;
-  startTime: string;
-  durationHours: number;
-  durationMinutes: number;
-};
-
-export type ShiftManagerProps = {
-  shifts: Shift[];
-  refetchShifts: () => void;
-  employees: Employee[];
-};
 
 const getDuration = (start: Date, end: Date) => {
   const diffMs = end.getTime() - start.getTime();
@@ -30,7 +12,17 @@ const getDuration = (start: Date, end: Date) => {
   };
 };
 
-export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerProps) => {
+export const ShiftManager = () => {
+  const { data: shifts, refetch: refetchShifts } = apiClient.useSuspenseQuery('get', '/api/Shift');
+  type Shift = (typeof shifts)[number];
+
+  const { data: employees } = apiClient.useSuspenseQuery('get', '/api/Employee');
+
+  type ShiftFormValues = Shift & {
+    durationHours: number;
+    durationMinutes: number;
+  };
+
   const employeeOptions = (employees ?? []).map((e) => ({
     value: e.id,
     label: e.name,
@@ -145,6 +137,7 @@ export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerP
       id: shift.id,
       employeeId: shift.employeeId,
       startTime: shift.startTime,
+      endTime: shift.endTime,
       durationHours: hours,
       durationMinutes: minutes,
     };

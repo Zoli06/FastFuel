@@ -1,17 +1,9 @@
-import type { components } from '../../../types/api';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field, FormValues } from '../../EntityManager/EntityEditor';
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
-
-type Restaurant = components['schemas']['RestaurantResponseDto'];
-
-export type RestaurantManagerProps = {
-  restaurants: Restaurant[];
-  refetchRestaurants: () => void;
-};
 
 // TODO: Remove this or at least extract to a helper
 const maxLength = 100;
@@ -20,14 +12,7 @@ const getDisplayedDescription = (description: string | null) => {
   return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
 };
 
-const tableColumns: ColumnDefinition<Restaurant>[] = [
-  { header: 'Name', accessor: 'name' },
-  { header: 'Address', accessor: 'address' },
-  { header: 'Description', render: (r) => getDisplayedDescription(r.description) },
-  { header: 'Phone', accessor: 'phone' },
-];
-
-const dayOfWeekOptions: Restaurant['openingHours'][0]['dayOfWeek'][] = [
+const dayOfWeekOptions = [
   'Monday',
   'Tuesday',
   'Wednesday',
@@ -35,123 +20,135 @@ const dayOfWeekOptions: Restaurant['openingHours'][0]['dayOfWeek'][] = [
   'Friday',
   'Saturday',
   'Sunday',
-];
+] as const;
 
-const defaultOpeningHours: Restaurant['openingHours'] = [
+const defaultOpeningHours = [
   { dayOfWeek: 'Monday', openTime: '09:00', closeTime: '17:00' },
   { dayOfWeek: 'Tuesday', openTime: '09:00', closeTime: '17:00' },
 ];
 
-const editorFields: Field[] = [
-  {
-    type: 'text',
-    key: 'name',
-    label: 'Name',
-    initialValue: '',
-    nullable: 'never',
-    required: 'always',
-  },
-  {
-    type: 'text',
-    key: 'description',
-    label: 'Description',
-    nullable: 'always',
-    required: 'never',
-    initialValue: '',
-  },
-  {
-    type: 'text',
-    key: 'phone',
-    label: 'Phone',
-    nullable: 'always',
-    required: 'never',
-    initialValue: '',
-  },
-  {
-    type: 'fieldset',
-    key: 'location-fieldset',
-    legend: 'Location',
-    label: 'Location',
-    initialValue: [],
-    nullable: 'never',
-    required: 'never',
-    fields: [
-      {
-        type: 'custom',
-        render: (form: UseFormReturnType<FormValues>) => (
-          <LocationPicker
-            lat={(form.values.latitude as number) || 47}
-            lng={(form.values.longitude as number) || 19}
-            onLocationChange={({ lat, lng, address }) => {
-              form.setFieldValue('latitude', lat);
-              form.setFieldValue('longitude', lng);
-              if (address) form.setFieldValue('address', address);
-            }}
-          />
-        ),
-      },
-      {
-        type: 'text',
-        key: 'address',
-        label: 'Address',
-        initialValue: '',
-        nullable: 'never',
-        required: 'always',
-      },
-    ],
-  },
-  {
-    type: 'fieldset',
-    key: 'opening-hours-fieldset',
-    legend: 'Opening Hours',
-    label: 'Opening Hours',
-    initialValue: [],
-    nullable: 'never',
-    required: 'never',
-    fields: [
-      {
-        type: 'list',
-        key: 'openingHours',
-        label: 'Opening Hours',
-        initialValue: defaultOpeningHours,
-        nullable: 'never',
-        required: 'never',
-        items: [
-          {
-            type: 'select',
-            key: 'dayOfWeek',
-            label: 'Day of Week',
-            initialValue: 'Monday',
-            nullable: 'never',
-            required: 'always',
-            fieldProps: {
-              data: dayOfWeekOptions,
-              allowDeselect: false,
-            },
-          },
-          {
-            type: 'time',
-            key: 'openTime',
-            label: 'Open Time (HH:mm)',
-            initialValue: '09:00',
-            nullable: 'never',
-            required: 'always',
-          },
-          {
-            type: 'time',
-            key: 'closeTime',
-            label: 'Close Time (HH:mm)',
-            initialValue: '17:00',
-            nullable: 'never',
-            required: 'always',
-          },
-        ],
-      },
-    ],
-  },
-];
+export const RestaurantManager = () => {
+  const { data: restaurants, refetch: refetchRestaurants } = apiClient.useSuspenseQuery(
+    'get',
+    '/api/Restaurant',
+  );
+  type Restaurant = (typeof restaurants)[number];
 
-export const RestaurantManager = ({ restaurants, refetchRestaurants }: RestaurantManagerProps) => {
+  const tableColumns: ColumnDefinition<Restaurant>[] = [
+    { header: 'Name', accessor: 'name' },
+    { header: 'Address', accessor: 'address' },
+    { header: 'Description', render: (r) => getDisplayedDescription(r.description) },
+    { header: 'Phone', accessor: 'phone' },
+  ];
+
+  const editorFields: Field[] = [
+    {
+      type: 'text',
+      key: 'name',
+      label: 'Name',
+      initialValue: '',
+      nullable: 'never',
+      required: 'always',
+    },
+    {
+      type: 'text',
+      key: 'description',
+      label: 'Description',
+      nullable: 'always',
+      required: 'never',
+      initialValue: '',
+    },
+    {
+      type: 'text',
+      key: 'phone',
+      label: 'Phone',
+      nullable: 'always',
+      required: 'never',
+      initialValue: '',
+    },
+    {
+      type: 'fieldset',
+      key: 'location-fieldset',
+      legend: 'Location',
+      label: 'Location',
+      initialValue: [],
+      nullable: 'never',
+      required: 'never',
+      fields: [
+        {
+          type: 'custom',
+          render: (form: UseFormReturnType<FormValues>) => (
+            <LocationPicker
+              lat={(form.values.latitude as number) || 47}
+              lng={(form.values.longitude as number) || 19}
+              onLocationChange={({ lat, lng, address }) => {
+                form.setFieldValue('latitude', lat);
+                form.setFieldValue('longitude', lng);
+                if (address) form.setFieldValue('address', address);
+              }}
+            />
+          ),
+        },
+        {
+          type: 'text',
+          key: 'address',
+          label: 'Address',
+          initialValue: '',
+          nullable: 'never',
+          required: 'always',
+        },
+      ],
+    },
+    {
+      type: 'fieldset',
+      key: 'opening-hours-fieldset',
+      legend: 'Opening Hours',
+      label: 'Opening Hours',
+      initialValue: [],
+      nullable: 'never',
+      required: 'never',
+      fields: [
+        {
+          type: 'list',
+          key: 'openingHours',
+          label: 'Opening Hours',
+          initialValue: defaultOpeningHours,
+          nullable: 'never',
+          required: 'never',
+          items: [
+            {
+              type: 'select',
+              key: 'dayOfWeek',
+              label: 'Day of Week',
+              initialValue: 'Monday',
+              nullable: 'never',
+              required: 'always',
+              fieldProps: {
+                data: dayOfWeekOptions,
+                allowDeselect: false,
+              },
+            },
+            {
+              type: 'time',
+              key: 'openTime',
+              label: 'Open Time (HH:mm)',
+              initialValue: '09:00',
+              nullable: 'never',
+              required: 'always',
+            },
+            {
+              type: 'time',
+              key: 'closeTime',
+              label: 'Close Time (HH:mm)',
+              initialValue: '17:00',
+              nullable: 'never',
+              required: 'always',
+            },
+          ],
+        },
+      ],
+    },
+  ];
   const { mutate: createRestaurant } = apiClient.useMutation('post', '/api/Restaurant', {
     onSuccess: () => refetchRestaurants(),
   });

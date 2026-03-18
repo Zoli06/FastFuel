@@ -1,19 +1,14 @@
-﻿import type { components } from '../../../types/api';
-import { apiClient } from '../../../lib/api-client.ts';
+﻿import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor';
 
-type Food = components['schemas']['FoodResponseDto'];
-type Ingredient = components['schemas']['IngredientResponseDto'];
+export const FoodManager = () => {
+  const { data: foods, refetch: refetchFoods } = apiClient.useSuspenseQuery('get', '/api/Food');
+  type Food = (typeof foods)[number];
 
-export type FoodManagerProps = {
-  foods: Food[];
-  ingredients: Ingredient[];
-  refetchFoods: () => void;
-};
+  const { data: ingredients } = apiClient.useSuspenseQuery('get', '/api/Ingredient');
 
-export const FoodManager = ({ foods, ingredients, refetchFoods }: FoodManagerProps) => {
   const ingredientNameById = new Map(
     (ingredients ?? []).map((ingredient) => [ingredient.id, ingredient.name]),
   );

@@ -1,20 +1,14 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
-type Menu = components['schemas']['MenuResponseDto'];
-type Food = components['schemas']['FoodResponseDto'];
+export const MenuManager = () => {
+  const { data: menus, refetch: refetchMenus } = apiClient.useSuspenseQuery('get', '/api/Menu');
+  type Menu = (typeof menus)[number];
 
-export type MenuManagerProps = {
-  menus: Menu[];
-  refetchMenus: () => void;
-  foods: Food[];
-};
-
-export const MenuManager = ({ menus, refetchMenus, foods }: MenuManagerProps) => {
+  const { data: foods } = apiClient.useSuspenseQuery('get', '/api/Food');
   const foodNameById = new Map((foods ?? []).map((food) => [food.id, food.name]));
   const foodOptions = (foods ?? []).map((food) => ({
     value: food.id,
