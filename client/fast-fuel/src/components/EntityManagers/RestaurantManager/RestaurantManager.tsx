@@ -12,17 +12,21 @@ export type RestaurantManagerProps = {
   restaurants: Restaurant[];
   refetchRestaurants: () => void;
 };
-const MAX_DESC_LENGTH = 90;
-const truncate = (str: string | null) => {
-  if (!str) return '—';
-  return str.length > MAX_DESC_LENGTH ? `${str.substring(0, MAX_DESC_LENGTH)}…` : str;
+
+// TODO: Remove this or at least extract to a helper
+const maxLength = 100;
+const getDisplayedDescription = (description: string | null) => {
+  if (!description) return 'No description provided';
+  return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
 };
+
 const tableColumns: ColumnDefinition<Restaurant>[] = [
   { header: 'Name', accessor: 'name' },
   { header: 'Address', accessor: 'address' },
-  { header: 'Description', render: (r) => truncate(r.description) },
+  { header: 'Description', render: (r) => getDisplayedDescription(r.description) },
   { header: 'Phone', accessor: 'phone' },
 ];
+
 const dayOfWeekOptions: Restaurant['openingHours'][0]['dayOfWeek'][] = [
   'Monday',
   'Tuesday',
@@ -42,7 +46,7 @@ const editorFields: Field[] = [
   {
     type: 'text',
     key: 'name',
-    label: 'Restaurant Name',
+    label: 'Name',
     initialValue: '',
     nullable: 'never',
     required: 'always',
@@ -58,7 +62,7 @@ const editorFields: Field[] = [
   {
     type: 'text',
     key: 'phone',
-    label: 'Phone Number',
+    label: 'Phone',
     nullable: 'always',
     required: 'never',
     initialValue: '',
@@ -128,7 +132,7 @@ const editorFields: Field[] = [
           {
             type: 'time',
             key: 'openTime',
-            label: 'Opens at',
+            label: 'Open Time (HH:mm)',
             initialValue: '09:00',
             nullable: 'never',
             required: 'always',
@@ -136,7 +140,7 @@ const editorFields: Field[] = [
           {
             type: 'time',
             key: 'closeTime',
-            label: 'Closes at',
+            label: 'Close Time (HH:mm)',
             initialValue: '17:00',
             nullable: 'never',
             required: 'always',

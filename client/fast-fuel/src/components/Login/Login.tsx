@@ -1,4 +1,4 @@
-import { Anchor, Button, PasswordInput, Stack, TextInput } from '@mantine/core';
+import { Button, Stack, TextInput, Anchor } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Link } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper.tsx';
@@ -48,9 +48,9 @@ export const Login = () => {
             {...form.getInputProps('userName')}
           />
 
-          <PasswordInput
-            key={form.key('password')}
+          <TextInput
             label="Password"
+            type="password"
             placeholder="Enter password"
             {...form.getInputProps('password')}
           />

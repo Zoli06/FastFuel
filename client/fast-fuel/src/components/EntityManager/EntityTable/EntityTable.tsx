@@ -1,4 +1,4 @@
-import { Button, ScrollArea, Table } from '@mantine/core';
+import { Button, Table } from '@mantine/core';
 import type { ReactNode } from 'react';
 
 export type ColumnDefinition<Values> = {
@@ -14,8 +14,6 @@ export type EntityTableProps<Values extends { id: number | string }> = {
   sectionKey?: (item: Values) => string;
   onEdit?: (item: Values) => void;
   onDelete?: (item: Values) => void;
-  /** Height of the scrollable data viewport. Defaults to 400. */
-  maxHeight?: number | string;
 };
 
 export const EntityTable = <Values extends { id: number | string }>({
@@ -25,7 +23,6 @@ export const EntityTable = <Values extends { id: number | string }>({
   sectionKey,
   onEdit,
   onDelete,
-  maxHeight = 400,
 }: EntityTableProps<Values>) => {
   const defaultRenderRow = (item: Values) => (
     <Table.Tr key={item.id}>
@@ -84,19 +81,17 @@ export const EntityTable = <Values extends { id: number | string }>({
   };
 
   return (
-    <ScrollArea h={maxHeight} type="auto">
-      <Table stickyHeader>
-        <Table.Thead>
-          <Table.Tr>
-            {columns.map((column, index) => (
-              <Table.Th key={index}>{column.header}</Table.Th>
-            ))}
-            {onEdit && <Table.Th>Edit</Table.Th>}
-            {onDelete && <Table.Th>Delete</Table.Th>}
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{renderRows()}</Table.Tbody>
-      </Table>
-    </ScrollArea>
+    <Table>
+      <Table.Thead>
+        <Table.Tr>
+          {columns.map((column, index) => (
+            <Table.Th key={index}>{column.header}</Table.Th>
+          ))}
+          {onEdit && <Table.Th>Edit</Table.Th>}
+          {onDelete && <Table.Th>Delete</Table.Th>}
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{renderRows()}</Table.Tbody>
+    </Table>
   );
 };

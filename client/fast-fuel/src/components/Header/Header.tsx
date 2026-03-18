@@ -32,7 +32,7 @@ export const Header = ({ title, authButton }: HeaderProps) => {
           </Button>
         </Flex>
         <Center>
-          <Text fz="2rem">{title}</Text>
+          <Text fz="4rem">{title}</Text>
         </Center>
 
         <Flex flex={1} justify="flex-end">
