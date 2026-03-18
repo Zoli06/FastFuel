@@ -20,18 +20,18 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager) : IDefaultRol
             ],
             [DefaultRole.Customer] =
             [
-                "Permission:Order:Create"
+                "Permission:Order:Create",
+                "Permission:Order:ReadOwn"
             ],
             [DefaultRole.Employee] =
             [
-                "Permission:Shift:Read",
+                "Permission:Shift:ReadOwn",
                 "Permission:StationCategory:Read",
-                "Permission:Employee:Read",
+                "Permission:Employee:ReadOwn",
                 "Permission:Order:Create",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",
                 "Permission:Station:Read",
-                "Permission:Customer:Read",
                 "Permission:Station:ViewTasks"
             ]
         };
