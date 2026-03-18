@@ -1,27 +1,18 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 
-type Ingredient = components['schemas']['IngredientResponseDto'];
-type Allergy = components['schemas']['AllergyResponseDto'];
-type StationCategory = components['schemas']['StationCategoryResponseDto'];
+export const IngredientManager = () => {
+  const { data: ingredients, refetch: refetchIngredients } = apiClient.useSuspenseQuery(
+    'get',
+    '/api/Ingredient',
+  );
+  type Ingredient = (typeof ingredients)[number];
 
-export type IngredientManagerProps = {
-  ingredients: Ingredient[];
-  refetchIngredients: () => void;
-  allergies: Allergy[];
-  stationCategories: StationCategory[];
-};
-
-export const IngredientManager = ({
-  ingredients,
-  refetchIngredients,
-  allergies,
-  stationCategories,
-}: IngredientManagerProps) => {
+  const { data: allergies } = apiClient.useSuspenseQuery('get', '/api/Allergy');
+  const { data: stationCategories } = apiClient.useSuspenseQuery('get', '/api/StationCategory');
   const tableColumns: ColumnDefinition<Ingredient>[] = [
     { header: 'Name', accessor: 'name' },
     {

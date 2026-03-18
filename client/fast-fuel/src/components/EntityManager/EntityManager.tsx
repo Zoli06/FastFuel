@@ -3,8 +3,9 @@ import type { UseFormInput } from '@mantine/form';
 
 import type { ColumnDefinition } from './EntityTable/EntityTable.tsx';
 import { EntityTable } from './EntityTable/EntityTable.tsx';
-import type { Field } from './EntityEditor';
-import { EntityEditor, useEditorState } from './EntityEditor';
+import type { Field } from './EntityEditor/types.ts';
+import { EntityEditor } from './EntityEditor/EntityEditor.tsx';
+import { useEditorState } from './EntityEditor/useEditorState.ts';
 import { Paper } from '../common/Paper/Paper.tsx';
 
 export type EntityManagerProps<
