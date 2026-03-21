@@ -60,7 +60,7 @@ export const EmployeeManager = () => {
       required: 'always',
     },
     {
-      type: 'text',
+      type: 'email',
       key: 'email',
       label: 'Email',
       initialValue: '',
@@ -68,7 +68,7 @@ export const EmployeeManager = () => {
       required: 'always',
     },
     {
-      type: 'text',
+      type: 'password',
       key: 'password',
       label: 'Password',
       initialValue: '',
@@ -111,11 +111,14 @@ export const EmployeeManager = () => {
     userName: values.userName,
     themeId: null,
     password: values.password ?? null,
-    shiftIds: values.shiftIds,
+    shiftIds: values.shiftIds ?? [],
     stationCategoryIds: values.stationCategoryIds,
   });
 
   const handleSubmit = (values: EmployeeFormValues, mode: 'create' | 'edit') => {
+    console.log(values);
+    console.log(toRequestDto(values));
+
     if (mode === 'create') {
       createEmployee({ body: toRequestDto(values) });
     } else {
