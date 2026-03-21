@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Services;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Employees.DTOs;
+using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.Entities;
 using FastFuel.Features.Ingredients.Entities;
@@ -181,7 +182,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
         await SeedAdmin();
         await SeedEmployee();
-        await SeedCustomer();
+        var customer = await SeedCustomer();
 
         // Place an order
         var order = new Order
@@ -190,7 +191,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             OrderNumber = 1,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            Customer = await _context.Users.OfType<Customer>().FirstOrDefaultAsync(c => c.UserName == "customer")
+            User = customer
         };
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
@@ -223,11 +224,14 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await SeedAdmin();
     }
 
-    private async Task SeedEmployee()
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<Employee> SeedEmployee()
     {
+        var userName = "employee";
+
         var employeeDto = new EmployeeRequestDto
         {
-            UserName = "employee",
+            UserName = userName,
             Email = "employee@example.com",
             Name = "Employee User",
             Password = "Employee123!",
@@ -237,13 +241,17 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         };
 
         await _employeeService.CreateAsync(employeeDto);
+        var employee = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(employee as Employee).Result!;
     }
 
-    private async Task SeedCustomer()
+    private async Task<Customer> SeedCustomer()
     {
+        var userName = "customer";
+
         var customerDto = new CustomerRequestDto
         {
-            UserName = "customer",
+            UserName = userName,
             Email = "customer@example.com",
             Name = "Customer User",
             Password = "Customer123!",
@@ -251,13 +259,19 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         };
 
         await _customerService.CreateAsync(customerDto);
+
+        var customer = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(customer as Customer).Result!;
     }
 
-    private async Task SeedAdmin()
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<Employee> SeedAdmin()
     {
-        var adminDto = new EmployeeRequestDto
+        var userName = "admin";
+
+        var adminRequestDto = new EmployeeRequestDto
         {
-            UserName = "admin",
+            UserName = userName,
             Email = "admin@example.com",
             Name = "Admin User",
             Password = "Admin123!",
@@ -266,10 +280,12 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             StationCategoryIds = []
         };
 
-        await _employeeService.CreateAsync(adminDto);
+        await _employeeService.CreateAsync(adminRequestDto);
 
-        var adminUser = await _userManager.FindByNameAsync("admin");
+        var adminUser = await _userManager.FindByNameAsync(userName);
 
         await _userManager.AddToRoleAsync(adminUser!, "Admin");
+
+        return Task.FromResult(adminUser as Employee).Result!;
     }
 }

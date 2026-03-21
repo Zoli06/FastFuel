@@ -101,7 +101,7 @@ public class StationService(
                 Id = order.Id,
                 OrderNumber = order.OrderNumber,
                 RestaurantId = order.RestaurantId,
-                CustomerId = order.CustomerId,
+                UserId = order.UserId,
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
                 CompletedAt = order.CompletedAt,

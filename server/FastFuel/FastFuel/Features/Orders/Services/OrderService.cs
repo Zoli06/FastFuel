@@ -42,7 +42,7 @@ public class OrderService(
         var orders = await DbSet
             .Include(o => o.Foods)
             .Include(o => o.Menus)
-            .Where(o => o.CustomerId == userId)
+            .Where(o => o.UserId == userId)
             .ToListAsync(cancellationToken);
 
         return orders.ConvertAll(Mapper.ToDto);
@@ -144,8 +144,10 @@ public class OrderService(
                 .FirstOrDefaultAsync(cancellationToken);
             entity.OrderNumber = GetNextOrderNumber(lastOrder);
 
-            if (await DbContext.Customers.AnyAsync(c => c.Id == userId, cancellationToken))
-                entity.CustomerId = userId;
+            if (userId == null)
+                throw new AppException("User ID is required to create an order.");
+
+            entity.UserId = userId.Value;
 
             entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
 
