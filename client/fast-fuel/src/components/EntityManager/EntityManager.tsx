@@ -21,6 +21,11 @@ export type EntityManagerProps<
   sectionKey?: (item: Values) => string;
   /** Transform a data item before it is loaded into the editor (e.g. derive extra form fields). */
   transformEditValues?: (item: Values) => FormValues;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canEditItem?: (item: Values) => boolean;
+  canDeleteItem?: (item: Values) => boolean;
   onSubmit: (values: FormValues, mode: 'create' | 'edit') => void | Promise<void>;
   onDelete?: (item: Values) => void;
 };
@@ -37,6 +42,11 @@ export const EntityManager = <
   validate,
   sectionKey,
   transformEditValues,
+  canCreate,
+  canEdit,
+  canDelete,
+  canEditItem,
+  canDeleteItem,
   onSubmit,
   onDelete,
 }: EntityManagerProps<Values, FormValues>) => {
@@ -68,9 +78,11 @@ export const EntityManager = <
           direction={{ base: 'column', sm: 'row' }}
         >
           <Title>{title}</Title>
-          <Button onClick={openCreate} color="green" style={{ flexShrink: 0 }}>
-            Create
-          </Button>
+          {canCreate && (
+            <Button onClick={openCreate} color="green" style={{ flexShrink: 0 }}>
+              Create
+            </Button>
+          )}
         </Flex>
         <Divider my="md" color="black" />
         <Container>
@@ -78,8 +90,10 @@ export const EntityManager = <
             data={data}
             columns={tableColumns}
             sectionKey={sectionKey}
-            onEdit={openEdit}
-            onDelete={onDelete}
+            onEdit={canEdit ? openEdit : undefined}
+            onDelete={canDelete ? onDelete : undefined}
+            isEditEnabled={canEdit ? canEditItem : undefined}
+            isDeleteEnabled={canDelete ? canDeleteItem : undefined}
           />
         </Container>
       </Paper>

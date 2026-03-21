@@ -15,6 +15,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     : CrudController<Order, OrderRequestDto, OrderResponseDto>(service)
 {
     [HttpGet("my")]
+    [PermissionCheck("ReadOwn")]
     public async Task<Results<Ok<List<OrderResponseDto>>, UnauthorizedHttpResult>> GetMyOrders(
         CancellationToken cancellationToken = default)
     {

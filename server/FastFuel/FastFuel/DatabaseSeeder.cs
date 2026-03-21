@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Services;
@@ -15,9 +14,7 @@ using FastFuel.Features.OrderFoods.Entities;
 using FastFuel.Features.OrderMenus.Entities;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.Entities;
-using FastFuel.Features.Permissions.Services;
 using FastFuel.Features.Restaurants.Entities;
-using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.StationCategories.Entities;
 using FastFuel.Features.Stations.Entities;
 using FastFuel.Features.Themes.Entities;
@@ -38,8 +35,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
 
-    private readonly IPermissionService _permissionService = serviceProvider.GetRequiredService<IPermissionService>();
-    private readonly RoleManager<Role> _roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
     private readonly UserManager<User> _userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
     public async Task SeedTestAsync()
@@ -274,15 +269,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _employeeService.CreateAsync(adminDto);
 
         var adminUser = await _userManager.FindByNameAsync("admin");
-        var allPermissions = await _permissionService.GetAllPermissionsAsync();
-        var role = await _roleManager.FindByNameAsync("Admin");
-        if (role == null)
-        {
-            role = new Role { Name = "Admin", IsDefault = true };
-            await _roleManager.CreateAsync(role);
-            foreach (var permission in allPermissions)
-                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
-        }
 
         await _userManager.AddToRoleAsync(adminUser!, "Admin");
     }

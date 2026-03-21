@@ -11,18 +11,19 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
+import { Header } from '../Header/Header.tsx';
+import { Footer } from '../Footer/Footer.tsx';
+import { useSuspensePermissions } from '../../hooks/useSuspensePermissions.ts';
 
 type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
-type Station = components['schemas']['StationResponseDto'];
 type OrderStatus = components['schemas']['OrderStatus'];
 
 export type StationTasksProps = {
-  tasks: StationTask | StationTask[];
-  refetchTasks: () => void;
-  station: Station;
+  stationId: number;
 };
 
 const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
@@ -48,9 +49,11 @@ const nextStatusLabel: Record<string, string> = {
 const OrderCard = ({
   order,
   onAdvance,
+  canAdvanceStatus,
 }: {
   order: StationTaskOrder;
   onAdvance: (id: number, status: OrderStatus) => void;
+  canAdvanceStatus: boolean;
 }) => {
   const next = nextStatus[order.status];
 
@@ -158,7 +161,7 @@ const OrderCard = ({
         )}
       </Stack>
 
-      {next && (
+      {next && canAdvanceStatus && (
         <>
           <Divider mt="sm" mb="xs" />
           <Button
@@ -176,7 +179,27 @@ const OrderCard = ({
   );
 };
 
-export const StationTasks = ({ tasks, refetchTasks }: StationTasksProps) => {
+export const StationTasks = ({ stationId }: StationTasksProps) => {
+  const can = useSuspensePermissions();
+
+  const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useSuspenseQueries({
+    queries: [
+      apiClient.queryOptions(
+        'get',
+        '/api/Station/{id}/tasks',
+        {
+          params: { path: { id: stationId } },
+        },
+        {
+          refetchInterval: 2500,
+        },
+      ),
+      apiClient.queryOptions('get', '/api/Station/{id}', {
+        params: { path: { id: stationId } },
+      }),
+    ] as const,
+  });
+
   const { mutate: updateStatus } = apiClient.useMutation('put', '/api/Order/{id}/status', {
     onSuccess: refetchTasks,
   });
@@ -192,61 +215,79 @@ export const StationTasks = ({ tasks, refetchTasks }: StationTasksProps) => {
 
   if (allOrders.length === 0) {
     return (
-      <Box p="xl">
-        <Text ta="center" c="dimmed" fz="xl">
-          No pending tasks
-        </Text>
-      </Box>
+      <>
+        <Header title={`Tasks: ${station.name}`} />
+        <Box p="xl" pb={80}>
+          <Text ta="center" c="dimmed" fz="xl">
+            No pending tasks
+          </Text>
+        </Box>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <Box p="md" pb={80}>
-      <SimpleGrid cols={2} spacing="lg">
-        <Box>
-          <Group mb="sm" gap="xs">
-            <Title order={3}>Pending</Title>
-            <Badge color="yellow" variant="filled" size="lg">
-              {pendingOrders.length}
-            </Badge>
-          </Group>
-          <ScrollArea>
-            <Stack gap="sm">
-              {pendingOrders.length === 0 ? (
-                <Text c="dimmed" ta="center" py="md">
-                  No pending orders
-                </Text>
-              ) : (
-                pendingOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} onAdvance={handleAdvance} />
-                ))
-              )}
-            </Stack>
-          </ScrollArea>
-        </Box>
+    <>
+      <Header title={`Tasks: ${station.name}`} />
+      <Box p="md" pb={80}>
+        <SimpleGrid cols={2} spacing="lg">
+          <Box>
+            <Group mb="sm" gap="xs">
+              <Title order={3}>Pending</Title>
+              <Badge color="yellow" variant="filled" size="lg">
+                {pendingOrders.length}
+              </Badge>
+            </Group>
+            <ScrollArea>
+              <Stack gap="sm">
+                {pendingOrders.length === 0 ? (
+                  <Text c="dimmed" ta="center" py="md">
+                    No pending orders
+                  </Text>
+                ) : (
+                  pendingOrders.map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onAdvance={handleAdvance}
+                      canAdvanceStatus={can.Order.UpdateStatus}
+                    />
+                  ))
+                )}
+              </Stack>
+            </ScrollArea>
+          </Box>
 
-        <Box>
-          <Group mb="sm" gap="xs">
-            <Title order={3}>In Progress</Title>
-            <Badge color="blue" variant="filled" size="lg">
-              {inProgressOrders.length}
-            </Badge>
-          </Group>
-          <ScrollArea>
-            <Stack gap="sm">
-              {inProgressOrders.length === 0 ? (
-                <Text c="dimmed" ta="center" py="md">
-                  No orders in progress
-                </Text>
-              ) : (
-                inProgressOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} onAdvance={handleAdvance} />
-                ))
-              )}
-            </Stack>
-          </ScrollArea>
-        </Box>
-      </SimpleGrid>
-    </Box>
+          <Box>
+            <Group mb="sm" gap="xs">
+              <Title order={3}>In Progress</Title>
+              <Badge color="blue" variant="filled" size="lg">
+                {inProgressOrders.length}
+              </Badge>
+            </Group>
+            <ScrollArea>
+              <Stack gap="sm">
+                {inProgressOrders.length === 0 ? (
+                  <Text c="dimmed" ta="center" py="md">
+                    No orders in progress
+                  </Text>
+                ) : (
+                  inProgressOrders.map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onAdvance={handleAdvance}
+                      canAdvanceStatus={can.Order.UpdateStatus}
+                    />
+                  ))
+                )}
+              </Stack>
+            </ScrollArea>
+          </Box>
+        </SimpleGrid>
+      </Box>
+      <Footer />
+    </>
   );
 };
