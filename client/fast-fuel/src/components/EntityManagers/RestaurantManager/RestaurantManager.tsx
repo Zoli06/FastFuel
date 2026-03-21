@@ -6,6 +6,8 @@ import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { Button } from '@mantine/core';
+import { Link } from 'react-router-dom';
 
 // TODO: Remove this or at least extract to a helper
 const maxLength = 100;
@@ -43,6 +45,14 @@ export const RestaurantManager = () => {
     { header: 'Address', accessor: 'address' },
     { header: 'Description', render: (r) => getDisplayedDescription(r.description) },
     { header: 'Phone', accessor: 'phone' },
+    {
+      header: 'Display Order Statuses',
+      render: (r) => (
+        <Link to={`/restaurants/${r.id}/status-display`}>
+          <Button>Display</Button>
+        </Link>
+      ),
+    },
   ];
 
   const editorFields: Field[] = [
