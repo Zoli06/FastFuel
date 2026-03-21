@@ -1,7 +1,8 @@
 import { Box, Center, SimpleGrid, Text, UnstyledButton } from '@mantine/core';
 import { Paper } from '../common/Paper/Paper.tsx';
 import { Link } from 'react-router-dom';
-import { apiClient } from '../../lib/api-client.ts';
+import { myPermissionsQueryOptions } from '../../lib/api-client.ts';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
 const MenuLink = ({ text, to }: { text: string; to: string }) => {
   return (
@@ -20,7 +21,7 @@ const MenuLink = ({ text, to }: { text: string; to: string }) => {
 };
 
 export const HomeMenu = () => {
-  const { data: permissions } = apiClient.useSuspenseQuery('get', '/api/Permission/my');
+  const { data: permissions } = useSuspenseQuery(myPermissionsQueryOptions());
   const menuLinks: {
     text: string;
     to: string;
@@ -44,6 +45,7 @@ export const HomeMenu = () => {
     },
     { text: 'Menus', to: '/manage/menu', requiredPermission: 'Permission:Menu:Read' },
     { text: 'Orders', to: '/manage/order', requiredPermission: 'Permission:Order:Read' },
+    { text: 'Roles', to: '/manage/role', requiredPermission: 'Permission:Role:Read' },
     {
       text: 'Restaurants',
       to: '/manage/restaurant',

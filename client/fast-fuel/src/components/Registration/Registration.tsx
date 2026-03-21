@@ -1,7 +1,7 @@
 import { Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Paper } from '../common/Paper/Paper';
-import { apiClient } from '../../lib/api-client';
+import { apiClient, triggerPermissionsRefresh } from '../../lib/api-client';
 import type { components } from '../../types/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -44,7 +44,8 @@ export const Register = () => {
     '/api/Auth/login',
     {
       onSuccess: () => {
-        redirect('/');
+        triggerPermissionsRefresh();
+        redirect('/', { replace: true });
       },
     },
   );
@@ -72,8 +73,6 @@ export const Register = () => {
         },
       },
     });
-
-    redirect('/');
   };
 
   return (

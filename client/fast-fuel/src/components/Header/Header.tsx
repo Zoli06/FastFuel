@@ -1,6 +1,6 @@
 import { Button, Center, Flex, Text } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../lib/api-client.ts';
+import { apiClient, triggerPermissionsRefresh } from '../../lib/api-client.ts';
 
 interface HeaderProps {
   title: string;
@@ -13,6 +13,7 @@ export const Header = ({ title, authButton }: HeaderProps) => {
   const navigate = useNavigate();
   const { mutate: logout } = apiClient.useMutation('post', '/api/Auth/logout', {
     onSuccess: () => {
+      triggerPermissionsRefresh();
       navigate('/login');
     },
   });

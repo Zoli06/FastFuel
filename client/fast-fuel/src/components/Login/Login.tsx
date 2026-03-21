@@ -1,13 +1,15 @@
 import { Anchor, Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper.tsx';
-import { apiClient } from '../../lib/api-client.ts';
+import { apiClient, triggerPermissionsRefresh } from '../../lib/api-client.ts';
 import type { components } from '../../types/api';
 
 type LoginValues = components['schemas']['LoginRequestDto'];
 
 export const Login = () => {
+  const navigate = useNavigate();
+
   const form = useForm<LoginValues>({
     initialValues: {
       userName: '',
@@ -17,7 +19,8 @@ export const Login = () => {
 
   const { mutate: login, isPending } = apiClient.useMutation('post', '/api/Auth/login', {
     onSuccess: () => {
-      window.location.href = '/';
+      triggerPermissionsRefresh();
+      navigate('/', { replace: true });
     },
     onError: () => {
       form.setErrors({

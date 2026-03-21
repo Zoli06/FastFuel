@@ -16,6 +16,7 @@ import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
+import { useSuspensePermissions } from '../../hooks/useSuspensePermissions.ts';
 
 type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
@@ -179,6 +180,8 @@ const OrderCard = ({
 };
 
 export const StationTasks = ({ stationId }: StationTasksProps) => {
+  const can = useSuspensePermissions();
+
   const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useSuspenseQueries({
     queries: [
       apiClient.queryOptions(
@@ -196,9 +199,6 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
       }),
     ] as const,
   });
-
-  const { data: permissions } = apiClient.useSuspenseQuery('get', '/api/Permission/my');
-  const canUpdateOrderStatus = permissions?.includes('Permission:Order:UpdateStatus') ?? false;
 
   const { mutate: updateStatus } = apiClient.useMutation('put', '/api/Order/{id}/status', {
     onSuccess: refetchTasks,
@@ -251,7 +251,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                       key={order.id}
                       order={order}
                       onAdvance={handleAdvance}
-                      canAdvanceStatus={canUpdateOrderStatus}
+                      canAdvanceStatus={can.Order.UpdateStatus}
                     />
                   ))
                 )}
@@ -278,7 +278,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                       key={order.id}
                       order={order}
                       onAdvance={handleAdvance}
-                      canAdvanceStatus={canUpdateOrderStatus}
+                      canAdvanceStatus={can.Order.UpdateStatus}
                     />
                   ))
                 )}

@@ -3,23 +3,24 @@ import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspenseQueries } from '@tanstack/react-query';
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const IngredientManager = () => {
+  const can = useSuspensePermissions();
+
   const [
-    { data: permissions },
-    { data: ingredients, refetch: refetchIngredients },
-    { data: allergies },
-    { data: stationCategories },
-  ] = useSuspenseQueries({
-    queries: [
-      apiClient.queryOptions('get', '/api/Permission/my'),
-      apiClient.queryOptions('get', '/api/Ingredient'),
-      apiClient.queryOptions('get', '/api/Allergy'),
-      apiClient.queryOptions('get', '/api/StationCategory'),
-    ] as const,
-  });
+    { data: allergies = [] },
+    { data: stationCategories = [] },
+    { data: ingredients = [], refetch: refetchIngredients },
+  ] = useConditionalSuspenseQueries([
+    can.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
+    can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    apiClient.queryOptions('get', '/api/Ingredient'),
+  ]);
+
   type Ingredient = (typeof ingredients)[number];
+
   const tableColumns: ColumnDefinition<Ingredient>[] = [
     { header: 'Name', accessor: 'name' },
     {
@@ -31,24 +32,32 @@ export const IngredientManager = () => {
           'No image'
         ),
     },
-    {
-      header: 'Allergies',
-      render: (ingredient) => {
-        if (!ingredient.allergyIds?.length) return 'None';
-        return ingredient.allergyIds
-          .map((id) => allergies.find((a) => a.id === id)?.name ?? id)
-          .join(', ');
-      },
-    },
-    {
-      header: 'Station Categories',
-      render: (ingredient) => {
-        if (!ingredient.stationCategoryIds?.length) return 'None';
-        return ingredient.stationCategoryIds
-          .map((id) => stationCategories.find((sc) => sc.id === id)?.name ?? id)
-          .join(', ');
-      },
-    },
+    ...(can.Allergy.Read
+      ? [
+          {
+            header: 'Allergies',
+            render: (ingredient: Ingredient) => {
+              if (!ingredient.allergyIds?.length) return 'None';
+              return ingredient.allergyIds
+                .map((id) => allergies.find((a) => a.id === id)?.name ?? id)
+                .join(', ');
+            },
+          },
+        ]
+      : []),
+    ...(can.StationCategory.Read
+      ? [
+          {
+            header: 'Station Categories',
+            render: (ingredient: Ingredient) => {
+              if (!ingredient.stationCategoryIds?.length) return 'None';
+              return ingredient.stationCategoryIds
+                .map((id) => stationCategories.find((sc) => sc.id === id)?.name ?? id)
+                .join(', ');
+            },
+          },
+        ]
+      : []),
     {
       header: 'Default Timer Value',
       accessor: 'defaultTimerValueSeconds',
@@ -73,32 +82,40 @@ export const IngredientManager = () => {
       required: 'never',
       initialValue: '',
     },
-    {
-      type: 'numericMultiSelect',
-      key: 'allergyIds',
-      label: 'Allergies',
-      initialValue: [],
-      nullable: 'never',
-      required: 'never',
-      fieldProps: {
-        data: allergies.map((allergy) => ({ value: allergy.id, label: allergy.name })),
-        placeholder: 'Select allergies',
-        searchable: true,
-      },
-    },
-    {
-      type: 'numericMultiSelect',
-      key: 'stationCategoryIds',
-      label: 'Station Categories',
-      initialValue: [],
-      nullable: 'never',
-      required: 'never',
-      fieldProps: {
-        data: stationCategories.map((sc) => ({ value: sc.id, label: sc.name })),
-        placeholder: 'Select station categories',
-        searchable: true,
-      },
-    },
+    ...(can.Allergy.Read
+      ? [
+          {
+            type: 'numericMultiSelect',
+            key: 'allergyIds',
+            label: 'Allergies',
+            initialValue: [],
+            nullable: 'never',
+            required: 'never',
+            fieldProps: {
+              data: allergies.map((allergy) => ({ value: allergy.id, label: allergy.name })),
+              placeholder: 'Select allergies',
+              searchable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
+    ...(can.StationCategory.Read
+      ? [
+          {
+            type: 'numericMultiSelect',
+            key: 'stationCategoryIds',
+            label: 'Station Categories',
+            initialValue: [],
+            nullable: 'never',
+            required: 'never',
+            fieldProps: {
+              data: stationCategories.map((sc) => ({ value: sc.id, label: sc.name })),
+              placeholder: 'Select station categories',
+              searchable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
     {
       type: 'number',
       key: 'defaultTimerValueSeconds',
@@ -136,9 +153,9 @@ export const IngredientManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteIngredient({ params: { path: { id: r.id } } })}
-      canCreate={permissions?.includes('Permission:Ingredient:Create')}
-      canEdit={permissions?.includes('Permission:Ingredient:Update')}
-      canDelete={permissions?.includes('Permission:Ingredient:Delete')}
+      canCreate={can.Ingredient.Create}
+      canEdit={can.Ingredient.Update}
+      canDelete={can.Ingredient.Delete}
     />
   );
 };

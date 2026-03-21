@@ -2,7 +2,8 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspenseQueries } from '@tanstack/react-query';
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 const getDuration = (start: Date, end: Date) => {
   const diffMs = end.getTime() - start.getTime();
@@ -14,32 +15,35 @@ const getDuration = (start: Date, end: Date) => {
 };
 
 export const ShiftManager = () => {
-  const [{ data: permissions }, { data: shifts, refetch: refetchShifts }, { data: employees }] =
-    useSuspenseQueries({
-      queries: [
-        apiClient.queryOptions('get', '/api/Permission/my'),
-        apiClient.queryOptions('get', '/api/Shift'),
-        apiClient.queryOptions('get', '/api/Employee'),
-      ] as const,
-    });
-  type Shift = (typeof shifts)[number];
+  const can = useSuspensePermissions();
 
+  const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
+    useConditionalSuspenseQueries([
+      can.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
+      apiClient.queryOptions('get', '/api/Shift'),
+    ]);
+
+  type Shift = (typeof shifts)[number];
   type ShiftFormValues = Shift & {
     durationHours: number;
     durationMinutes: number;
   };
 
-  const employeeOptions = (employees ?? []).map((e) => ({
+  const employeeOptions = employees.map((e) => ({
     value: e.id,
     label: e.name,
   }));
 
   const tableColumns: ColumnDefinition<Shift>[] = [
-    {
-      header: 'Employee',
-      render: (s) =>
-        employeeOptions.find((o) => o.value === s.employeeId)?.label ?? `#${s.employeeId}`,
-    },
+    ...(can.Employee.Read
+      ? [
+          {
+            header: 'Employee',
+            render: (s: Shift) =>
+              employeeOptions.find((o) => o.value === s.employeeId)?.label ?? `#${s.employeeId}`,
+          },
+        ]
+      : []),
     {
       header: 'Start',
       render: (s) => new Date(s.startTime).toLocaleString(),
@@ -58,19 +62,23 @@ export const ShiftManager = () => {
   ];
 
   const editorFields: Field[] = [
-    {
-      type: 'numericSelect',
-      key: 'employeeId',
-      label: 'Employee',
-      initialValue: null,
-      nullable: 'never',
-      required: 'always',
-      fieldProps: {
-        data: employeeOptions,
-        placeholder: 'Select employee...',
-        searchable: true,
-      },
-    },
+    ...(can.Employee.Read
+      ? [
+          {
+            type: 'numericSelect',
+            key: 'employeeId',
+            label: 'Employee',
+            initialValue: null,
+            nullable: 'never',
+            required: 'always',
+            fieldProps: {
+              data: employeeOptions,
+              placeholder: 'Select employee...',
+              searchable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
     {
       type: 'dateTime',
       key: 'startTime',
@@ -170,9 +178,9 @@ export const ShiftManager = () => {
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteShift({ params: { path: { id: s.id } } })}
-      canCreate={permissions?.includes('Permission:Shift:Create')}
-      canEdit={permissions?.includes('Permission:Shift:Update')}
-      canDelete={permissions?.includes('Permission:Shift:Delete')}
+      canCreate={can.Shift.Create}
+      canEdit={can.Shift.Update}
+      canDelete={can.Shift.Delete}
     />
   );
 };

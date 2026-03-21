@@ -2,37 +2,42 @@ import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { useSuspenseQueries } from '@tanstack/react-query';
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationCategoryManager = () => {
+  const can = useSuspensePermissions();
+
   const [
-    { data: permissions },
-    { data: stationCategories, refetch: refetchStationCategories },
-    { data: ingredients },
-  ] = useSuspenseQueries({
-    queries: [
-      apiClient.queryOptions('get', '/api/Permission/my'),
-      apiClient.queryOptions('get', '/api/StationCategory'),
-      apiClient.queryOptions('get', '/api/Ingredient'),
-    ] as const,
-  });
+    { data: ingredients = [] },
+    { data: stationCategories = [], refetch: refetchStationCategories },
+  ] = useConditionalSuspenseQueries([
+    can.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
+    apiClient.queryOptions('get', '/api/StationCategory'),
+  ]);
+
   type StationCategory = (typeof stationCategories)[number];
-  const ingredientOptions = (ingredients ?? []).map((ingredient) => ({
+
+  const ingredientOptions = ingredients.map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
   }));
 
   const tableColumns: ColumnDefinition<StationCategory>[] = [
     { header: 'Name', accessor: 'name' },
-    {
-      header: 'Ingredients',
-      render: (r) => {
-        if (!r.ingredientIds?.length) return 'None';
-        return r.ingredientIds
-          .map((id) => ingredientOptions.find((o) => o.value === id)?.label ?? `#${id}`)
-          .join(', ');
-      },
-    },
+    ...(can.Ingredient.Read
+      ? [
+          {
+            header: 'Ingredients',
+            render: (r: StationCategory) => {
+              if (!r.ingredientIds?.length) return 'None';
+              return r.ingredientIds
+                .map((id) => ingredientOptions.find((o) => o.value === id)?.label ?? `#${id}`)
+                .join(', ');
+            },
+          },
+        ]
+      : []),
   ];
 
   const editorFields: Field[] = [
@@ -44,20 +49,24 @@ export const StationCategoryManager = () => {
       nullable: 'never',
       required: 'always',
     },
-    {
-      type: 'numericMultiSelect',
-      key: 'ingredientIds',
-      label: 'Ingredients',
-      initialValue: [],
-      nullable: 'never',
-      required: 'never',
-      fieldProps: {
-        data: ingredientOptions,
-        placeholder: 'Search ingredients...',
-        searchable: true,
-        clearable: true,
-      },
-    },
+    ...(can.Ingredient.Read
+      ? [
+          {
+            type: 'numericMultiSelect',
+            key: 'ingredientIds',
+            label: 'Ingredients',
+            initialValue: [],
+            nullable: 'never',
+            required: 'never',
+            fieldProps: {
+              data: ingredientOptions,
+              placeholder: 'Search ingredients...',
+              searchable: true,
+              clearable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
   ];
 
   const { mutate: createStationCategory } = apiClient.useMutation('post', '/api/StationCategory', {
@@ -66,16 +75,12 @@ export const StationCategoryManager = () => {
   const { mutate: updateStationCategory } = apiClient.useMutation(
     'put',
     '/api/StationCategory/{id}',
-    {
-      onSuccess: () => refetchStationCategories(),
-    },
+    { onSuccess: () => refetchStationCategories() },
   );
   const { mutate: deleteStationCategory } = apiClient.useMutation(
     'delete',
     '/api/StationCategory/{id}',
-    {
-      onSuccess: () => refetchStationCategories(),
-    },
+    { onSuccess: () => refetchStationCategories() },
   );
 
   const handleSubmit = (values: StationCategory, mode: 'create' | 'edit') => {
@@ -95,9 +100,9 @@ export const StationCategoryManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteStationCategory({ params: { path: { id: r.id } } })}
-      canCreate={permissions?.includes('Permission:StationCategory:Create')}
-      canEdit={permissions?.includes('Permission:StationCategory:Update')}
-      canDelete={permissions?.includes('Permission:StationCategory:Delete')}
+      canCreate={can.StationCategory.Create}
+      canEdit={can.StationCategory.Update}
+      canDelete={can.StationCategory.Delete}
     />
   );
 };

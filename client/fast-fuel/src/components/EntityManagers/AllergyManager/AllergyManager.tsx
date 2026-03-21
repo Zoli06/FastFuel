@@ -2,21 +2,20 @@
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { useSuspenseQueries } from '@tanstack/react-query';
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const AllergyManager = () => {
-  const [
-    { data: permissions },
-    { data: allergies, refetch: refetchAllergies },
-    { data: ingredients },
-  ] = useSuspenseQueries({
-    queries: [
-      apiClient.queryOptions('get', '/api/Permission/my'),
+  const can = useSuspensePermissions();
+
+  const [{ data: ingredients = [] }, { data: allergies = [], refetch: refetchAllergies }] =
+    useConditionalSuspenseQueries([
+      can.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
       apiClient.queryOptions('get', '/api/Allergy'),
-      apiClient.queryOptions('get', '/api/Ingredient'),
-    ] as const,
-  });
+    ]);
+
   type Allergy = (typeof allergies)[number];
+
   const ingredientOptions = ingredients.map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
@@ -24,15 +23,19 @@ export const AllergyManager = () => {
 
   const tableColumns: ColumnDefinition<Allergy>[] = [
     { header: 'Name', accessor: 'name' },
-    {
-      header: 'Ingredients',
-      render: (r) => {
-        if (!r.ingredientIds?.length) return 'None';
-        return r.ingredientIds
-          .map((id) => ingredientOptions.find((o) => o.value === id)?.label ?? id)
-          .join(', ');
-      },
-    },
+    ...(can.Ingredient.Read
+      ? [
+          {
+            header: 'Ingredients',
+            render: (r: Allergy) => {
+              if (!r.ingredientIds?.length) return 'None';
+              return r.ingredientIds
+                .map((id) => ingredientOptions.find((o) => o.value === id)?.label ?? id)
+                .join(', ');
+            },
+          },
+        ]
+      : []),
     { header: 'Message', render: (r) => r.message ?? 'No message provided' },
   ];
 
@@ -53,21 +56,26 @@ export const AllergyManager = () => {
       required: 'never',
       initialValue: '',
     },
-    {
-      type: 'numericMultiSelect',
-      key: 'ingredientIds',
-      label: 'Ingredients',
-      initialValue: [],
-      nullable: 'never',
-      required: 'never',
-      fieldProps: {
-        data: ingredientOptions,
-        placeholder: 'Search ingredients...',
-        searchable: true,
-        clearable: true,
-      },
-    },
+    ...(can.Ingredient.Read
+      ? [
+          {
+            type: 'numericMultiSelect',
+            key: 'ingredientIds',
+            label: 'Ingredients',
+            initialValue: [],
+            nullable: 'never',
+            required: 'never',
+            fieldProps: {
+              data: ingredientOptions,
+              placeholder: 'Search ingredients...',
+              searchable: true,
+              clearable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
   ];
+
   const { mutate: createAllergy } = apiClient.useMutation('post', '/api/Allergy', {
     onSuccess: () => refetchAllergies(),
   });
@@ -95,9 +103,9 @@ export const AllergyManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteAllergy({ params: { path: { id: r.id } } })}
-      canCreate={permissions?.includes('Permission:Allergy:Create')}
-      canEdit={permissions?.includes('Permission:Allergy:Update')}
-      canDelete={permissions?.includes('Permission:Allergy:Delete')}
+      canCreate={can.Allergy.Create}
+      canEdit={can.Allergy.Update}
+      canDelete={can.Allergy.Delete}
     />
   );
 };
