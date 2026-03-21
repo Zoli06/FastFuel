@@ -69,7 +69,8 @@ public class StationService(
         return await DbContext.OrderFoods
             .Where(f =>
                 f.Order.RestaurantId == restaurantId &&
-                (f.Order.Status == OrderStatus.Pending || f.Order.Status == OrderStatus.InProgress) &&
+                (f.Order.Status == OrderStatus.Pending || f.Order.Status == OrderStatus.InProgress ||
+                 f.Order.Status == OrderStatus.Ready) &&
                 relevantFoodIds.Contains(f.FoodId))
             .ToListAsync(cancellationToken);
     }
@@ -80,7 +81,8 @@ public class StationService(
         return await DbContext.OrderMenus
             .Where(m =>
                 m.Order.RestaurantId == restaurantId &&
-                (m.Order.Status == OrderStatus.Pending || m.Order.Status == OrderStatus.InProgress) &&
+                (m.Order.Status == OrderStatus.Pending || m.Order.Status == OrderStatus.InProgress ||
+                 m.Order.Status == OrderStatus.Ready) &&
                 relevantMenuIds.Contains(m.MenuId))
             .ToListAsync(cancellationToken);
     }
