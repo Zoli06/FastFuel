@@ -8,7 +8,8 @@ import type {
   TextInputProps,
 } from '@mantine/core';
 import type { UseFormReturnType } from '@mantine/form';
-import type { NumericMultiSelectProps, NumericSelectProps } from '../../common/NumericCombobox';
+import type { NumericMultiSelectProps } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
+import type { NumericSelectProps } from '../../common/NumericCombobox/NumericSelect.tsx';
 import type { DateTimePickerProps, TimePickerProps } from '@mantine/dates';
 
 export type FormValues = Record<string, unknown>;
