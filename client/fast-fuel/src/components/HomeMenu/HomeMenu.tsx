@@ -45,6 +45,11 @@ export const HomeMenu = () => {
     },
     { text: 'Menus', to: '/manage/menu', requiredPermission: 'Permission:Menu:Read' },
     { text: 'Orders', to: '/manage/order', requiredPermission: 'Permission:Order:Read' },
+    {
+      text: 'Create Order',
+      to: '/employee/order',
+      requiredPermission: 'Permission:Order:Create',
+    },
     { text: 'Roles', to: '/manage/role', requiredPermission: 'Permission:Role:Read' },
     {
       text: 'Restaurants',
