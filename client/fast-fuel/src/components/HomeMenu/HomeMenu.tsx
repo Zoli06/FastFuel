@@ -25,6 +25,7 @@ export const HomeMenu = () => {
           { text: 'Shifts', to: '/manage/shift' },
           { text: 'Station Categories', to: '/manage/station-category' },
           { text: 'Stations', to: '/manage/station' },
+          { text: 'Customers', to: '/manage/customers' },
         ].map((link, index) => (
           <Center key={index}>{link.text && <MenuLink text={link.text} to={link.to} />}</Center>
         ))}
