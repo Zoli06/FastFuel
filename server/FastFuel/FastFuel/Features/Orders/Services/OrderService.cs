@@ -59,6 +59,9 @@ public class OrderService(
         if (filterParams.Status.HasValue)
             query = query.Where(o => o.Status == filterParams.Status.Value);
 
+        if (filterParams.RestaurantId.HasValue)
+            query = query.Where(o => o.RestaurantId == filterParams.RestaurantId.Value);
+
         var orders = await query.ToListAsync(cancellationToken);
         return orders.ConvertAll(Mapper.ToDto);
     }
