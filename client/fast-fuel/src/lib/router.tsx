@@ -14,6 +14,7 @@ import { LoadingPage } from '../pages/LoadingPage.tsx';
 import { ErrorPage } from '../pages/ErrorPage.tsx';
 import { EmployeeManagerPage } from '../pages/EntityManagerPages/EmployeeManagerPage.tsx';
 import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.tsx';
+import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
           {
             path: 'order',
             element: <OrderManagerPage />,
+          },
+          {
+            path: 'role',
+            element: <RoleManagerPage />,
           },
           {
             path: 'shift',

@@ -24,6 +24,8 @@ export type EntityManagerProps<
   canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  canEditItem?: (item: Values) => boolean;
+  canDeleteItem?: (item: Values) => boolean;
   onSubmit: (values: FormValues, mode: 'create' | 'edit') => void | Promise<void>;
   onDelete?: (item: Values) => void;
 };
@@ -43,6 +45,8 @@ export const EntityManager = <
   canCreate,
   canEdit,
   canDelete,
+  canEditItem,
+  canDeleteItem,
   onSubmit,
   onDelete,
 }: EntityManagerProps<Values, FormValues>) => {
@@ -88,6 +92,8 @@ export const EntityManager = <
             sectionKey={sectionKey}
             onEdit={canEdit ? openEdit : undefined}
             onDelete={canDelete ? onDelete : undefined}
+            isEditEnabled={canEdit ? canEditItem : undefined}
+            isDeleteEnabled={canDelete ? canDeleteItem : undefined}
           />
         </Container>
       </Paper>

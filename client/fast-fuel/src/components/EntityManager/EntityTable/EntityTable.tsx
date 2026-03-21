@@ -14,6 +14,8 @@ export type EntityTableProps<Values extends { id: number | string }> = {
   sectionKey?: (item: Values) => string;
   onEdit?: (item: Values) => void;
   onDelete?: (item: Values) => void;
+  isEditEnabled?: (item: Values) => boolean;
+  isDeleteEnabled?: (item: Values) => boolean;
   /** Height of the scrollable data viewport. Defaults to 400. */
   maxHeight?: number | string;
 };
@@ -25,35 +27,48 @@ export const EntityTable = <Values extends { id: number | string }>({
   sectionKey,
   onEdit,
   onDelete,
+  isEditEnabled,
+  isDeleteEnabled,
   maxHeight = 400,
 }: EntityTableProps<Values>) => {
-  const defaultRenderRow = (item: Values) => (
-    <Table.Tr key={item.id}>
-      {columns.map((column, index) => (
-        <Table.Td key={index}>
-          {column.render
-            ? column.render(item)
-            : column.accessor
-              ? item[column.accessor] == null
-                ? ''
-                : String(item[column.accessor])
-              : ''}
-        </Table.Td>
-      ))}
-      {onEdit && (
-        <Table.Td>
-          <Button onClick={() => onEdit(item)}>Edit</Button>
-        </Table.Td>
-      )}
-      {onDelete && (
-        <Table.Td>
-          <Button color="red" onClick={() => onDelete(item)}>
-            Delete
-          </Button>
-        </Table.Td>
-      )}
-    </Table.Tr>
-  );
+  const defaultRenderRow = (item: Values) => {
+    const canEditItem = !!onEdit && (isEditEnabled?.(item) ?? true);
+    const canDeleteItem = !!onDelete && (isDeleteEnabled?.(item) ?? true);
+
+    return (
+      <Table.Tr key={item.id}>
+        {columns.map((column, index) => (
+          <Table.Td key={index}>
+            {column.render
+              ? column.render(item)
+              : column.accessor
+                ? item[column.accessor] == null
+                  ? ''
+                  : String(item[column.accessor])
+                : ''}
+          </Table.Td>
+        ))}
+        {onEdit && (
+          <Table.Td>
+            <Button disabled={!canEditItem} onClick={() => canEditItem && onEdit(item)}>
+              Edit
+            </Button>
+          </Table.Td>
+        )}
+        {onDelete && (
+          <Table.Td>
+            <Button
+              color="red"
+              disabled={!canDeleteItem}
+              onClick={() => canDeleteItem && onDelete(item)}
+            >
+              Delete
+            </Button>
+          </Table.Td>
+        )}
+      </Table.Tr>
+    );
+  };
 
   const totalColumns = columns.length + (onEdit ? 1 : 0) + (onDelete ? 1 : 0);
 
