@@ -16,6 +16,7 @@ public class RoleMapper(RoleManager<Role> roleManager, UserManager<User> userMan
             Id = entity.Id,
             Name = entity.Name,
             IsDefault = entity.IsDefault,
+            IsImmutable = entity.IsImmutable,
             Permissions = roleManager.GetClaimsAsync(new Role { Id = entity.Id, Name = entity.Name }).Result
                 .Where(c => c.Type == "Permission")
                 .Select(c => c.Value)
