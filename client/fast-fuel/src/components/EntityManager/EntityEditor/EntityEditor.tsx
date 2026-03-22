@@ -91,6 +91,18 @@ function renderField(
         />
       );
 
+    case 'email':
+      return (
+        <TextInput
+          key={form.key(field.key)}
+          label={field.label}
+          required={isRequired(field, mode)}
+          type="email"
+          {...field.fieldProps}
+          {...form.getInputProps(field.key)}
+        />
+      );
+
     case 'number':
       return (
         <NumberInput
