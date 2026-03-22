@@ -11,11 +11,13 @@ export const OrderManager = () => {
   const [
     { data: menus = [] },
     { data: foods = [] },
+    { data: users = [] },
     { data: restaurants = [] },
     { data: orders = [], refetch: refetchOrders },
   ] = useConditionalSuspenseQueries([
     can.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
     can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
+    can.User.Read && apiClient.queryOptions('get', '/api/User'),
     can.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
     apiClient.queryOptions('get', '/api/Order'),
   ]);
@@ -24,6 +26,7 @@ export const OrderManager = () => {
 
   const menuNameById = new Map(menus.map((m) => [m.id, m.name]));
   const foodNameById = new Map(foods.map((f) => [f.id, f.name]));
+  const userNameById = new Map(users.map((u) => [u.id, u.name]));
   const restaurantNameById = new Map(restaurants.map((r) => [r.id, r.name]));
 
   const menuOptions = menus.map((m) => ({ value: m.id, label: m.name }));
@@ -32,6 +35,14 @@ export const OrderManager = () => {
 
   const tableColumns: ColumnDefinition<Order>[] = [
     { header: 'Order #', accessor: 'orderNumber' },
+    ...(can.User.Read
+      ? [
+          {
+            header: 'Ordered By',
+            render: (order: Order) => userNameById.get(order.userId) ?? `#${order.userId}`,
+          },
+        ]
+      : []),
     ...(can.Restaurant.Read
       ? [
           {

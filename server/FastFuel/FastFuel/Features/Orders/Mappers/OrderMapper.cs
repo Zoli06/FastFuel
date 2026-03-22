@@ -13,7 +13,7 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
         return new OrderResponseDto
         {
             Id = entity.Id,
-            CustomerId = entity.CustomerId,
+            UserId = entity.UserId,
             RestaurantId = entity.RestaurantId,
             OrderNumber = entity.OrderNumber,
             Status = entity.Status,
