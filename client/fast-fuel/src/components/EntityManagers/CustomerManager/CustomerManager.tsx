@@ -56,6 +56,14 @@ export const CustomerManager = ({ customers, refetchCustomers }: CustomerManager
       nullable: 'never',
       required: 'always',
     },
+    {
+      type: 'text',
+      key: 'password',
+      label: 'Password',
+      initialValue: '',
+      nullable: 'edit',
+      required: 'create',
+    },
   ];
 
   const { mutate: createCustomer } = apiClient.useMutation('post', '/api/Customer', {
