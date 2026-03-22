@@ -14,6 +14,17 @@ const getDuration = (start: Date, end: Date) => {
   };
 };
 
+const normalizeDateTime = (value: string) => {
+  const trimmed = value.trim();
+  return trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
+};
+
+const parseAsUtcDate = (value: string) => {
+  const normalized = normalizeDateTime(value);
+  const hasTimeZone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(normalized);
+  return new Date(hasTimeZone ? normalized : `${normalized}Z`);
+};
+
 export const ShiftManager = () => {
   const can = useSuspensePermissions();
 
@@ -46,11 +57,11 @@ export const ShiftManager = () => {
       : []),
     {
       header: 'Start',
-      render: (s) => new Date(s.startTime).toLocaleString(),
+      render: (s) => parseAsUtcDate(s.startTime).toLocaleString(),
     },
     {
       header: 'End',
-      render: (s) => new Date(s.endTime).toLocaleString(),
+      render: (s) => parseAsUtcDate(s.endTime).toLocaleString(),
     },
     {
       header: 'Duration',
@@ -129,11 +140,6 @@ export const ShiftManager = () => {
     onSuccess: () => refetchShifts(),
   });
 
-  const normalizeDateTime = (value: string) => {
-    const trimmed = value.trim();
-    return trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
-  };
-
   const toRequestDto = (values: ShiftFormValues) => {
     const start = new Date(normalizeDateTime(values.startTime));
     const totalMinutes = (values.durationHours ?? 0) * 60 + (values.durationMinutes ?? 0);
@@ -174,7 +180,7 @@ export const ShiftManager = () => {
       )}
       tableColumns={tableColumns}
       editorFields={editorFields}
-      sectionKey={(s) => new Date(s.startTime).toLocaleDateString()}
+      sectionKey={(s) => parseAsUtcDate(s.startTime).toLocaleDateString()}
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteShift({ params: { path: { id: s.id } } })}
