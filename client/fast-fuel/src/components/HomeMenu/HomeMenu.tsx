@@ -38,6 +38,13 @@ export const HomeMenu = () => {
       color: 'orange',
     },
     {
+      text: 'Admins',
+      to: '/manage/admin',
+      visibleWhen: (permissions: Permissions) => permissions.Admin.Read,
+      icon: IconShield,
+      color: 'red',
+    },
+    {
       text: 'Customers',
       to: 'manage/customer',
       visibleWhen: (permissions: Permissions) => permissions.Customer.Read,
@@ -71,6 +78,13 @@ export const HomeMenu = () => {
       visibleWhen: (permissions: Permissions) => permissions.Menu.Read,
       icon: IconBook2,
       color: 'violet',
+    },
+    {
+      text: 'Machines',
+      to: '/manage/machine',
+      visibleWhen: (permissions: Permissions) => permissions.Machine.Read,
+      icon: IconDeviceDesktop,
+      color: 'gray',
     },
     {
       text: 'Orders',

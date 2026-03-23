@@ -8,11 +8,6 @@ public class User : IdentityUser<uint>, IIdentifiable
 {
     public string Name { get; set; } = string.Empty;
 
-    public new string Email
-    {
-        get => base.Email ?? string.Empty;
-        set => base.Email = value;
-    }
 
     public new string UserName
     {

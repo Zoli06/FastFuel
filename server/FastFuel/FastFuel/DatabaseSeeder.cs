@@ -1,3 +1,5 @@
+using FastFuel.Features.Admins.DTOs;
+using FastFuel.Features.Admins.Entities;
 using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Services;
@@ -32,6 +34,9 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
     private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
         serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();
+
+    private readonly ICrudService<AdminRequestDto, AdminResponseDto> _adminService =
+        serviceProvider.GetRequiredService<ICrudService<AdminRequestDto, AdminResponseDto>>();
 
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
@@ -181,7 +186,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _context.SaveChangesAsync();
 
         await SeedAdmin();
-        await SeedEmployee();
+        await SeedEmployee(restaurant);
         var customer = await SeedCustomer();
 
         // Place an order
@@ -225,7 +230,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local
-    private async Task<Employee> SeedEmployee()
+    private async Task<Employee> SeedEmployee(Restaurant workplace)
     {
         var userName = "employee";
 
@@ -237,7 +242,8 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             Password = "Employee123!",
             ThemeId = null,
             ShiftIds = [],
-            StationCategoryIds = []
+            StationCategoryIds = [],
+            WorksAtRestaurantId = workplace.Id
         };
 
         await _employeeService.CreateAsync(employeeDto);
@@ -265,27 +271,22 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local
-    private async Task<Employee> SeedAdmin()
+    private async Task<Admin> SeedAdmin()
     {
         var userName = "admin";
 
-        var adminRequestDto = new EmployeeRequestDto
+        var adminRequestDto = new AdminRequestDto
         {
             UserName = userName,
             Email = "admin@example.com",
             Name = "Admin User",
             Password = "Admin123!",
-            ThemeId = null,
-            ShiftIds = [],
-            StationCategoryIds = []
+            ThemeId = null
         };
 
-        await _employeeService.CreateAsync(adminRequestDto);
+        await _adminService.CreateAsync(adminRequestDto);
 
         var adminUser = await _userManager.FindByNameAsync(userName);
-
-        await _userManager.AddToRoleAsync(adminUser!, "Admin");
-
-        return Task.FromResult(adminUser as Employee).Result!;
+        return Task.FromResult(adminUser as Admin).Result!;
     }
 }

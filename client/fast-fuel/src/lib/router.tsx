@@ -18,8 +18,9 @@ import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
-import { EmployeeOrderRestaurantSelectorPage } from '../pages/EmployeeOrderRestaurantSelectorPage.tsx';
 import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
+import { MachineManagerPage } from '../pages/EntityManagerPages/MachineManagerPage.tsx';
+import { AdminManagerPage } from '../pages/EntityManagerPages/AdminManagerPage.tsx';
 import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 
 export const router = createBrowserRouter([
@@ -54,10 +55,6 @@ export const router = createBrowserRouter([
       },
       {
         path: 'employee/order',
-        element: <EmployeeOrderRestaurantSelectorPage />,
-      },
-      {
-        path: 'employee/order/:id',
         element: <EmployeeOrderPage />,
       },
       {
@@ -79,6 +76,10 @@ export const router = createBrowserRouter([
           {
             path: 'employee',
             element: <EmployeeManagerPage />,
+          },
+          {
+            path: 'machine',
+            element: <MachineManagerPage />,
           },
           {
             path: 'food',
@@ -111,6 +112,10 @@ export const router = createBrowserRouter([
           {
             path: 'restaurant',
             element: <RestaurantManagerPage />,
+          },
+          {
+            path: 'admin',
+            element: <AdminManagerPage />,
           },
         ],
       },

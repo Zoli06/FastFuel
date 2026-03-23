@@ -16,4 +16,7 @@ public interface IOrderService : ICrudService<OrderRequestDto, OrderResponseDto>
 
     Task<bool> UpdateOrderStatusAsync(uint orderId, OrderStatus newStatus,
         CancellationToken cancellationToken = default);
+
+    Task<OrderResponseDto> CreateOrderAtWorkplaceAsync(ClaimsPrincipal user, OrderCreateAtWorkPlaceRequestDto requestDto,
+        CancellationToken cancellationToken = default);
 }

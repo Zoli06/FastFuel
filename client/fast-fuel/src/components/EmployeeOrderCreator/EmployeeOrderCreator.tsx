@@ -45,7 +45,7 @@ const requiredPermissions = [
   'Permission:Food:Read',
   'Permission:Menu:Read',
   'Permission:Order:ReadOwn',
-  'Permission:Order:Create',
+  'Permission:Order:CreateAtWorkplace',
 ] as const;
 
 const formatPrice = (value: number) =>
@@ -268,7 +268,7 @@ const CatalogItemCard = ({
 };
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps) => {
+export const EmployeeOrderCreator = () => {
   const can = useSuspensePermissions();
   const [catalogMode, setCatalogMode] = useState<CatalogMode>('food');
   const [search, setSearch] = useState('');
@@ -284,24 +284,19 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
         return !can.Menu.Read;
       case 'Permission:Order:ReadOwn':
         return !can.Order.ReadOwn;
-      case 'Permission:Order:Create':
-        return !can.Order.Create;
+      case 'Permission:Order:CreateAtWorkplace':
+        return !can.Order.CreateAtWorkplace;
     }
   });
 
-  const [{ data: restaurant }, { data: foods = [] }, { data: menus = [] }] =
-    useConditionalSuspenseQueries([
-      can.Restaurant.Read &&
-        apiClient.queryOptions('get', '/api/Restaurant/{id}', {
-          params: { path: { id: restaurantId } },
-        }),
-      can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-      can.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-    ]);
+  const [{ data: foods = [] }, { data: menus = [] }] = useConditionalSuspenseQueries([
+    can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
+    can.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
+  ]);
 
   const { mutateAsync: createOrder, isPending: isSubmitting } = apiClient.useMutation(
     'post',
-    '/api/Order',
+    '/api/Order/at-workplace',
   );
 
   const foodPriceById = useMemo(() => new Map(foods.map((f) => [f.id, f.price])), [foods]);
@@ -367,7 +362,7 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
 
     try {
       const created = await createOrder({
-        body: { restaurantId, foods: foodsPayload, menus: menusPayload },
+        body: { foods: foodsPayload, menus: menusPayload },
       });
       setLastOrderNumber(created.orderNumber);
       setCartLines([]);
@@ -398,11 +393,8 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
         <Group justify="space-between" align="center">
           <Stack gap={0}>
             <Title order={3} style={{ letterSpacing: '-0.02em' }}>
-              {can.Restaurant.Read && restaurant ? restaurant.name : 'New Order'}
+              New Order
             </Title>
-            <Text size="xs" c="dimmed">
-              Restaurant #{restaurantId}
-            </Text>
           </Stack>
           {lastOrderNumber !== null && (
             <Badge color="green" variant="light" size="lg" radius="sm">

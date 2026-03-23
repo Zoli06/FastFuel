@@ -89,14 +89,12 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
     private static UserRequestDto BuildRequest(
         string name = "Test User",
-        string email = "test@test.com",
         string username = "testuser",
         string password = "Password123!")
     {
         return new UserRequestDto
         {
             Name = name,
-            Email = email,
             UserName = username,
             Password = password,
             ThemeId = null
@@ -115,7 +113,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         var result = await _service.CreateAsync(request);
 
         Assert.NotNull(result);
-        Assert.Equal(request.Email, result.Email);
+        Assert.Equal(request.UserName, result.UserName);
     }
 
     [Fact]
@@ -134,7 +132,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     {
         var result = await _service.CreateAsync(BuildRequest());
 
-        var user = await _userManager.FindByEmailAsync(result.Email);
+        var user = await _userManager.FindByNameAsync(result.UserName);
         var roles = await _userManager.GetRolesAsync(user!);
 
         Assert.Contains("User", roles);
@@ -146,7 +144,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         var request = new UserRequestDto
         {
             Name = "Test",
-            Email = "test@test.com",
             UserName = "test",
             Password = null,
             ThemeId = null
@@ -165,7 +162,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         var update = new UserRequestDto
         {
             Name = "Updated",
-            Email = "updated@test.com",
             UserName = "updated",
             Password = null,
             ThemeId = null
@@ -175,7 +171,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         var user = await _userManager.FindByIdAsync(created.Id.ToString());
 
-        Assert.Equal("updated@test.com", user!.Email);
+        Assert.Equal("updated", user!.UserName);
     }
 
     // -------------------------
@@ -228,7 +224,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             return new User
             {
                 Name = dto.Name,
-                Email = dto.Email,
                 UserName = dto.UserName,
                 ThemeId = dto.ThemeId
             };
@@ -237,7 +232,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         public void UpdateEntity(UserRequestDto dto, User entity)
         {
             entity.Name = dto.Name;
-            entity.Email = dto.Email;
             entity.UserName = dto.UserName;
             entity.ThemeId = dto.ThemeId;
         }
@@ -248,7 +242,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             {
                 Id = entity.Id,
                 Name = entity.Name,
-                Email = entity.Email,
                 UserName = entity.UserName,
                 ThemeId = entity.ThemeId,
 

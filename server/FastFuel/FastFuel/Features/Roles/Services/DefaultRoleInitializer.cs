@@ -19,6 +19,8 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 "Permission:Ingredient:Read",
                 "Permission:Allergy:Read",
                 "Permission:Restaurant:Read",
+                "Permission:Order:ReadOwn",
+                "Permission:Restaurant:Read"
             ],
             [DefaultRole.Customer] =
             [
@@ -30,11 +32,14 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 "Permission:Shift:ReadOwn",
                 "Permission:StationCategory:Read",
                 "Permission:Employee:ReadOwn",
-                "Permission:Order:Create",
+                "Permission:Order:CreateAtWorkplace",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",
                 "Permission:Station:Read",
                 "Permission:Station:ViewTasks"
+            ],
+            [DefaultRole.Machine] =
+            [
             ]
         };
 
@@ -66,25 +71,15 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
 
     private async Task InitializeAdminRoleAsync()
     {
-        var adminRole = await roleManager.FindByNameAsync("Admin");
+        var adminRoleName = DefaultRole.Admin.ToRoleName();
+        var adminRole = await roleManager.FindByNameAsync(adminRoleName);
         if (adminRole == null)
         {
-            adminRole = new Role { Name = "Admin", IsDefault = true, IsImmutable = true };
+            adminRole = new Role { Name = adminRoleName, IsDefault = true, IsImmutable = true };
             var createResult = await roleManager.CreateAsync(adminRole);
             if (!createResult.Succeeded)
                 throw new ValidationAppException(
                     string.Join("; ", createResult.Errors.Select(e => e.Description)));
-
-            var allPermissions = await permissionService.GetAllPermissionsAsync();
-            foreach (var permission in allPermissions)
-            {
-                var claimResult = await roleManager.AddClaimAsync(adminRole, new Claim("Permission", permission));
-                if (!claimResult.Succeeded)
-                    throw new ValidationAppException(
-                        string.Join("; ", claimResult.Errors.Select(e => e.Description)));
-            }
-
-            return;
         }
 
         var shouldUpdate = false;
@@ -106,6 +101,30 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             if (!updateResult.Succeeded)
                 throw new ValidationAppException(
                     string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+        }
+
+        var allPermissions = await permissionService.GetAllPermissionsAsync();
+        var currentPermissionClaims = (await roleManager.GetClaimsAsync(adminRole))
+            .Where(claim => claim.Type == "Permission")
+            .Select(claim => claim.Value)
+            .ToHashSet();
+
+        var requiredPermissions = allPermissions.ToHashSet();
+
+        foreach (var permission in requiredPermissions.Except(currentPermissionClaims))
+        {
+            var claimResult = await roleManager.AddClaimAsync(adminRole, new Claim("Permission", permission));
+            if (!claimResult.Succeeded)
+                throw new ValidationAppException(
+                    string.Join("; ", claimResult.Errors.Select(e => e.Description)));
+        }
+
+        foreach (var permission in currentPermissionClaims.Except(requiredPermissions))
+        {
+            var claimResult = await roleManager.RemoveClaimAsync(adminRole, new Claim("Permission", permission));
+            if (!claimResult.Succeeded)
+                throw new ValidationAppException(
+                    string.Join("; ", claimResult.Errors.Select(e => e.Description)));
         }
     }
 }

@@ -72,6 +72,20 @@ public class RoleService(
         }
     }
 
+    private static async Task EnsureDefaultRoleUsersUnchangedAsync(UserManager<User> userManager, Role role,
+        List<uint> requestedUserIds)
+    {
+        if (!role.IsDefault)
+            return;
+
+        var usersInRole = await userManager.GetUsersInRoleAsync(role.Name);
+        var existingUserIds = usersInRole.Select(u => u.Id).ToHashSet();
+
+        if (!existingUserIds.SetEquals(requestedUserIds))
+            throw new UnauthorizedAppException(
+                $"Users of default role '{role.Name}' cannot be modified.");
+    }
+
     private class Create(
         ApplicationDbContext dbContext,
         DbSet<Role> dbSet,
@@ -116,6 +130,8 @@ public class RoleService(
             uint? userId = null,
             CancellationToken cancellationToken = default)
         {
+            await EnsureDefaultRoleUsersUnchangedAsync(userManager, entity, requestDto.UserIds);
+
             await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
 
             await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);

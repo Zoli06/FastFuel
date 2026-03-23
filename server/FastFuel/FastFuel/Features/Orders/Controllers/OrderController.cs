@@ -65,4 +65,21 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
 
         return TypedResults.NotFound();
     }
+
+    [HttpPost("at-workplace")]
+    [PermissionCheck("CreateAtWorkplace")]
+    public async Task<Results<
+            Created<OrderResponseDto>,
+            BadRequest<ProblemDetails>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        CreateOrderAtWorkplace(
+            [FromBody] OrderCreateAtWorkPlaceRequestDto requestDto,
+            CancellationToken cancellationToken = default
+        )
+    {
+        var responseDto = await ((IOrderService)Service).CreateOrderAtWorkplaceAsync(User, requestDto, cancellationToken);
+        var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
+        return TypedResults.Created(location!, responseDto);
+    }
 }
