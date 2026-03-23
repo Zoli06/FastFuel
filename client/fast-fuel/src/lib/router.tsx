@@ -14,9 +14,10 @@ import { LoadingPage } from '../pages/LoadingPage.tsx';
 import { ErrorPage } from '../pages/ErrorPage.tsx';
 import { EmployeeManagerPage } from '../pages/EntityManagerPages/EmployeeManagerPage.tsx';
 import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.tsx';
-import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
+import { CustomerPage } from '../pages/CustomerPages/CustomerPage.tsx';
+import { MenuPage } from '../pages/CustomerPages/MenuPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +40,20 @@ export const router = createBrowserRouter([
       {
         path: 'register',
         element: <RegistrationPage />,
+      },
+      {
+        path: 'customer',
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <CustomerPage />,
+          },
+          {
+            path: 'menu',
+            element: <MenuPage />,
+          },
+        ],
       },
       {
         path: 'stations/:id/tasks',
@@ -71,10 +86,6 @@ export const router = createBrowserRouter([
           {
             path: 'order',
             element: <OrderManagerPage />,
-          },
-          {
-            path: 'role',
-            element: <RoleManagerPage />,
           },
           {
             path: 'shift',
