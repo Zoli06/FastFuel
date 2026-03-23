@@ -20,6 +20,7 @@ import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
 import { EmployeeOrderRestaurantSelectorPage } from '../pages/EmployeeOrderRestaurantSelectorPage.tsx';
 import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
+import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -66,6 +67,10 @@ export const router = createBrowserRouter([
           {
             path: 'allergy',
             element: <AllergyManagerPage />,
+          },
+          {
+            path: 'customer',
+            element: <CustomerManagerPage />,
           },
           {
             path: 'ingredient',
