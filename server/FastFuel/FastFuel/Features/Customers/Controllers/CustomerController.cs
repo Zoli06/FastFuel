@@ -19,7 +19,6 @@ public class CustomerController(
     public IUserService<CustomerRequestDto, CustomerResponseDto> UserService { get; } = service;
 
     [HttpGet("me")]
-    [PermissionCheck("ReadSelf")]
     public Task<Results<Ok<CustomerResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {

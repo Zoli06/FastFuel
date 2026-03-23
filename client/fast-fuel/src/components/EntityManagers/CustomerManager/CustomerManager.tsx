@@ -1,31 +1,23 @@
 ﻿import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
-import { apiClient } from '../../../apiClient.ts';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 type Customer = components['schemas']['CustomerResponseDto'];
 
 type CustomerFormValues = Customer & { password?: string | null };
 
-export type CustomerManagerProps = {
-  customers: Customer[];
-  refetchCustomers: () => void;
-};
+export const CustomerManager = () => {
+  const can = useSuspensePermissions();
 
-export const CustomerManager = ({ customers, refetchCustomers }: CustomerManagerProps) => {
+  const [{ data: customers = [], refetch: refetchCustomers }] = useConditionalSuspenseQueries([
+    apiClient.queryOptions('get', '/api/Customer'),
+  ]);
+
   const tableColumns: ColumnDefinition<Customer>[] = [
-    //     name: string
-    //   email: string
-    //   userName: string
-    //   themeId: number | null
-    //   roleIds: number[]
-    //   userType: string
-    //   id: number
-    // } & {
-    //   orderIds?: number[]
-    // }
-
     { header: 'Name', accessor: 'name' },
     { header: 'Username', accessor: 'userName' },
     { header: 'Email', accessor: 'email' },
@@ -49,7 +41,7 @@ export const CustomerManager = ({ customers, refetchCustomers }: CustomerManager
       required: 'always',
     },
     {
-      type: 'text',
+      type: 'email',
       key: 'email',
       label: 'Email',
       initialValue: '',
@@ -57,7 +49,7 @@ export const CustomerManager = ({ customers, refetchCustomers }: CustomerManager
       required: 'always',
     },
     {
-      type: 'text',
+      type: 'password',
       key: 'password',
       label: 'Password',
       initialValue: '',
@@ -103,6 +95,9 @@ export const CustomerManager = ({ customers, refetchCustomers }: CustomerManager
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(e) => deleteCustomer({ params: { path: { id: e.id } } })}
+      canCreate={true}
+      canEdit={can.Customer.Update}
+      canDelete={can.Customer.Delete}
     />
   );
 };

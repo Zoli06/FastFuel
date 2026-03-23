@@ -15,7 +15,6 @@ public class EmployeeController(
 {
     public IUserService<EmployeeRequestDto, EmployeeResponseDto> UserService { get; } = service;
 
-    [PermissionCheck("ReadSelf")]
     [HttpGet("me")]
     public Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
