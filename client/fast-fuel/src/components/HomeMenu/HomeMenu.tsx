@@ -36,6 +36,13 @@ const MENU_ITEMS = [
     color: 'orange',
   },
   {
+    text: 'Admins',
+    to: '/manage/admin',
+    permission: 'Permission:Admin:Read',
+    icon: IconShield,
+    color: 'red',
+  },
+  {
     text: 'Employees',
     to: '/manage/employee',
     permission: 'Permission:Employee:Read',
@@ -57,6 +64,13 @@ const MENU_ITEMS = [
     color: 'lime',
   },
   {
+    text: 'Machines',
+    to: '/manage/machine',
+    permission: 'Permission:Machine:Read',
+    icon: IconDeviceDesktop,
+    color: 'gray',
+  },
+  {
     text: 'Menus',
     to: '/manage/menu',
     permission: 'Permission:Menu:Read',
@@ -73,7 +87,7 @@ const MENU_ITEMS = [
   {
     text: 'Create Order',
     to: '/employee/order',
-    permission: 'Permission:Order:Create',
+    permission: 'Permission:Order:CreateAtWorkplace',
     icon: IconShoppingCart,
     color: 'yellow',
   },

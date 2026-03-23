@@ -15,7 +15,6 @@ public class EmployeeMapper(
     UserManager<User> userManager)
     : UserMapper(roleManager, userManager), IMapper<Employee, EmployeeRequestDto, EmployeeResponseDto>
 {
-    protected override string UserType => "Employee";
 
     public EmployeeResponseDto ToDto(Employee entity)
     {
@@ -24,13 +23,14 @@ public class EmployeeMapper(
         {
             Id = userDto.Id,
             Name = userDto.Name,
-            Email = userDto.Email,
+            Email = entity.Email,
             UserName = userDto.UserName,
             ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
             UserType = userDto.UserType,
             ShiftIds = entity.Shifts.ConvertAll(shift => shift.Id),
-            StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id)
+            StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id),
+            WorksAtRestaurantId = entity.WorksAtRestaurantId
         };
     }
 
@@ -41,11 +41,12 @@ public class EmployeeMapper(
         {
             Id = userEntity.Id,
             Name = userEntity.Name,
-            Email = userEntity.Email,
+            Email = dto.Email,
             UserName = userEntity.UserName,
             ThemeId = userEntity.ThemeId,
             Shifts = dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList(),
-            StationCategories = dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList()
+            StationCategories = dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList(),
+            WorksAtRestaurantId = dto.WorksAtRestaurantId
         };
     }
 
@@ -53,11 +54,14 @@ public class EmployeeMapper(
     {
         User userEntity = entity;
         base.UpdateEntity(dto, userEntity);
+        entity.Email = dto.Email;
 
         entity.Shifts.Clear();
         entity.Shifts.AddRange(dbContext.Shifts.Where(s => dto.ShiftIds.Contains(s.Id)).ToList());
 
         entity.StationCategories.Clear();
         entity.StationCategories.AddRange(dbContext.StationCategories.Where(sc => dto.StationCategoryIds.Contains(sc.Id)).ToList());
+
+        entity.WorksAtRestaurantId = dto.WorksAtRestaurantId;
     }
 }

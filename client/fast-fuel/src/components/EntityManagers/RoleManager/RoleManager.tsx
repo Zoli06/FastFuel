@@ -5,6 +5,7 @@ import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
+import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 
 export const RoleManager = () => {
   const can = useSuspensePermissions();
@@ -37,12 +38,16 @@ export const RoleManager = () => {
     { header: 'Is Immutable', render: (r) => (r.isImmutable ? 'Yes' : 'No') },
   ];
 
+  const isEditingDefaultRole = (roleId: number | undefined, mode: 'create' | 'edit') => {
+    if (mode !== 'edit' || roleId == null) return false;
+    return !!roles.find((r) => r.id === roleId)?.isDefault;
+  };
+
   const editorFields: Field[] = [
     {
       type: 'custom',
       render: (form, mode) => {
-        const editedRole = roles.find((r) => r.id === form.getValues().id);
-        const disableName = mode === 'edit' && !!editedRole?.isDefault;
+        const disableName = isEditingDefaultRole(form.getValues().id as number | undefined, mode);
 
         return (
           <TextInput
@@ -76,17 +81,25 @@ export const RoleManager = () => {
     ...(can.User.Read
       ? [
           {
-            type: 'numericMultiSelect',
-            key: 'userIds',
-            label: 'Users',
-            initialValue: [],
-            nullable: 'never',
-            required: 'never',
-            fieldProps: {
-              data: userOptions,
-              placeholder: 'Search users...',
-              searchable: true,
-              clearable: true,
+            type: 'custom',
+            render: (form, mode) => {
+              const disableUsers = isEditingDefaultRole(
+                form.getValues().id as number | undefined,
+                mode,
+              );
+
+              return (
+                <NumericMultiSelect
+                  key={form.key('userIds')}
+                  label="Users"
+                  data={userOptions}
+                  placeholder="Search users..."
+                  searchable
+                  clearable
+                  disabled={disableUsers}
+                  {...form.getInputProps('userIds')}
+                />
+              );
             },
           } satisfies Field,
         ]
@@ -103,10 +116,10 @@ export const RoleManager = () => {
     onSuccess: () => refetchRoles(),
   });
 
-  const toRequestDto = (values: RoleFormValues) => ({
+  const toRequestDto = (values: RoleFormValues, fallbackRole?: Role) => ({
     name: values.name,
-    permissions: values.permissions,
-    userIds: values.userIds,
+    permissions: values.permissions ?? fallbackRole?.permissions ?? [],
+    userIds: values.userIds ?? fallbackRole?.userIds ?? [],
   });
 
   const canEditRole = (role: Role) => !role.isImmutable;
@@ -118,7 +131,7 @@ export const RoleManager = () => {
     } else {
       const role = roles.find((r) => r.id === values.id);
       if (role && !canEditRole(role)) return;
-      updateRole({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      updateRole({ params: { path: { id: values.id } }, body: toRequestDto(values, role) });
     }
   };
 

@@ -1,10 +1,12 @@
 using EntityFramework.Exceptions.MySQL.Pomelo;
+using FastFuel.Features.Admins.Entities;
 using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.Entities;
 using FastFuel.Features.Ingredients.Entities;
+using FastFuel.Features.Machines.Entities;
 using FastFuel.Features.MenuFoods.Entities;
 using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.OpeningHours.Entities;
@@ -26,12 +28,14 @@ namespace FastFuel.Features.Common.DbContexts;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<User, Role, uint>(options)
 {
+    public DbSet<Admin> Admins { get; set; }
     public DbSet<Allergy> Allergies { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<FoodIngredient> FoodIngredients { get; set; }
     public DbSet<Food> Foods { get; set; }
     public DbSet<Ingredient> Ingredients { get; set; }
+    public DbSet<Machine> Machines { get; set; }
     public DbSet<MenuFood> MenuFoods { get; set; }
     public DbSet<Menu> Menus { get; set; }
     public DbSet<OpeningHour> OpeningHours { get; set; }

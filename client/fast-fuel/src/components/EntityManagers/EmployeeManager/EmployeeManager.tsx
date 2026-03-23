@@ -8,11 +8,15 @@ import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSusp
 export const EmployeeManager = () => {
   const can = useSuspensePermissions();
 
-  const [{ data: stationCategories = [] }, { data: employees = [], refetch: refetchEmployees }] =
-    useConditionalSuspenseQueries([
-      can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-      apiClient.queryOptions('get', '/api/Employee'),
-    ]);
+  const [
+    { data: stationCategories = [] },
+    { data: restaurants = [] },
+    { data: employees = [], refetch: refetchEmployees },
+  ] = useConditionalSuspenseQueries([
+    can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    can.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    apiClient.queryOptions('get', '/api/Employee'),
+  ]);
 
   type Employee = (typeof employees)[number];
   type EmployeeFormValues = Employee & { password?: string | null };
@@ -21,12 +25,28 @@ export const EmployeeManager = () => {
     value: sc.id,
     label: sc.name,
   }));
+  const restaurantOptions = restaurants.map((r) => ({
+    value: r.id,
+    label: r.name,
+  }));
 
   const tableColumns: ColumnDefinition<Employee>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Username', accessor: 'userName' },
     { header: 'Email', accessor: 'email' },
     { header: 'User Type', accessor: 'userType' },
+    {
+      header: 'Works At',
+      render: (e: Employee) => {
+        if (can.Restaurant.Read) {
+          return (
+            restaurantOptions.find((o) => o.value === e.worksAtRestaurantId)?.label ??
+            `#${e.worksAtRestaurantId}`
+          );
+        }
+        return `#${e.worksAtRestaurantId}`;
+      },
+    },
     ...(can.StationCategory.Read
       ? [
           {
@@ -75,6 +95,19 @@ export const EmployeeManager = () => {
       nullable: 'edit',
       required: 'create',
     },
+    {
+      type: 'numericSelect',
+      key: 'worksAtRestaurantId',
+      label: 'Works At',
+      initialValue: null,
+      nullable: 'never',
+      required: 'always',
+      fieldProps: {
+        data: restaurantOptions,
+        placeholder: 'Select restaurant...',
+        searchable: true,
+      },
+    } satisfies Field,
     ...(can.StationCategory.Read
       ? [
           {
@@ -113,6 +146,7 @@ export const EmployeeManager = () => {
     password: values.password ?? null,
     shiftIds: values.shiftIds ?? [],
     stationCategoryIds: values.stationCategoryIds,
+    worksAtRestaurantId: values.worksAtRestaurantId,
   });
 
   const handleSubmit = (values: EmployeeFormValues, mode: 'create' | 'edit') => {

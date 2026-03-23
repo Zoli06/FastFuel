@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.Foods.Entities;
 using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.Orders.Common;
@@ -107,6 +108,33 @@ public class OrderService(
         var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * (menuPrices.TryGetValue(m.MenuId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Menu), m.MenuId)));
         var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * (foodPrices.TryGetValue(f.FoodId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Food), f.FoodId)));
         return menuPrice + foodPrice;
+    }
+
+    public async Task<OrderResponseDto> CreateOrderAtWorkplaceAsync(ClaimsPrincipal user,
+        OrderCreateAtWorkPlaceRequestDto requestDto,
+        CancellationToken cancellationToken = default)
+    {
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(user));
+
+        if (!uint.TryParse(userIdClaim.Value, out var userId))
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(userIdClaim));
+
+        var employee = await DbContext.Employees
+            .Include(e => e.WorksAtRestaurant)
+            .FirstOrDefaultAsync(e => e.Id == userId, cancellationToken);
+        if (employee == null)
+            throw new ResourceNotFoundAppException(nameof(Employee), userId);
+
+        var orderRequestDto = new OrderRequestDto
+        {
+            RestaurantId = employee.WorksAtRestaurantId,
+            Foods = requestDto.Foods,
+            Menus = requestDto.Menus
+        };
+
+        return await CreateOperation.ExecuteAsync(orderRequestDto, userId, cancellationToken);
     }
 
     private class Create(
