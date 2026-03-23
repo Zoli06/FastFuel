@@ -1,5 +1,4 @@
 using FastFuel.Features.Common.Controllers;
-using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Employees.DTOs;
 using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.Users.Controllers;
@@ -13,12 +12,10 @@ public class EmployeeController(
     IUserService<EmployeeRequestDto, EmployeeResponseDto> service)
     : CrudController<Employee, EmployeeRequestDto, EmployeeResponseDto>(service)
 {
-    public IUserService<EmployeeRequestDto, EmployeeResponseDto> UserService { get; } = service;
-
     [HttpGet("me")]
     public Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {
-        return UserControllerHelper.GetCurrentUser(UserService, User, cancellationToken);
+        return UserControllerHelper.GetCurrentUser(service, User, cancellationToken);
     }
 }

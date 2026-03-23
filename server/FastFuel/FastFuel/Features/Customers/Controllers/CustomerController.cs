@@ -16,13 +16,11 @@ public class CustomerController(
     IUserService<CustomerRequestDto, CustomerResponseDto> service)
     : CrudController<Customer, CustomerRequestDto, CustomerResponseDto>(service)
 {
-    public IUserService<CustomerRequestDto, CustomerResponseDto> UserService { get; } = service;
-
     [HttpGet("me")]
     public Task<Results<Ok<CustomerResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
     {
-        return UserControllerHelper.GetCurrentUser(UserService, User, cancellationToken);
+        return UserControllerHelper.GetCurrentUser(service, User, cancellationToken);
     }
 
     [AllowAnonymous]
