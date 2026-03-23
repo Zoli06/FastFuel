@@ -21,6 +21,7 @@ import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
 import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
 import { MachineManagerPage } from '../pages/EntityManagerPages/MachineManagerPage.tsx';
 import { AdminManagerPage } from '../pages/EntityManagerPages/AdminManagerPage.tsx';
+import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
           {
             path: 'allergy',
             element: <AllergyManagerPage />,
+          },
+          {
+            path: 'customer',
+            element: <CustomerManagerPage />,
           },
           {
             path: 'ingredient',

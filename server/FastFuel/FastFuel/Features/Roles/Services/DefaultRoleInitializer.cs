@@ -19,11 +19,13 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 "Permission:Ingredient:Read",
                 "Permission:Allergy:Read",
                 "Permission:Restaurant:Read",
-                "Permission:Order:ReadOwn"
+                "Permission:Order:ReadOwn",
+                "Permission:Restaurant:Read"
             ],
             [DefaultRole.Customer] =
             [
                 "Permission:Order:Create",
+                "Permission:Customer:UpdateSelf"
             ],
             [DefaultRole.Employee] =
             [
