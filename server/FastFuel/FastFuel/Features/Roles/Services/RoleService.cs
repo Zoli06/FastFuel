@@ -98,16 +98,24 @@ public class RoleService(
         UserManager<User> userManager)
         : Update<Role, RoleRequestDto, RoleResponseDto>(dbContext, dbSet, mapper)
     {
+        protected override Task UpdateEntityAsync(uint id, RoleRequestDto requestDto, Role entity, uint? userId = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (entity.IsImmutable)
+                throw new UnauthorizedAppException($"The role '{entity.Name}' is immutable and cannot be edited.");
+
+            if (entity.IsDefault && !string.Equals(entity.Name, requestDto.Name, StringComparison.Ordinal))
+                throw new UnauthorizedAppException($"The default role '{entity.Name}' cannot be renamed.");
+
+            return base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
+        }
+
         protected override async Task SaveEntityAsync(
             uint id, RoleRequestDto requestDto,
             Role entity,
             uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-            if (entity.IsDefault)
-                throw new UnauthorizedAppException(
-                    $"The default role '{entity.Name}' is immutable and its permissions cannot be modified.");
-
             await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
 
             await UpdateRoleClaimsAsync(roleManager, entity, requestDto.Permissions);
@@ -121,9 +129,13 @@ public class RoleService(
         protected override async Task DeleteEntityAsync(uint id, Role entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
+            if (entity.IsImmutable)
+                throw new UnauthorizedAppException(
+                    $"The role '{entity.Name}' is immutable and cannot be deleted.");
+
             if (entity.IsDefault)
                 throw new UnauthorizedAppException(
-                    $"The default role '{entity.Name}' is immutable and cannot be deleted.");
+                    $"The default role '{entity.Name}' cannot be deleted.");
 
             await base.DeleteEntityAsync(id, entity, userId, cancellationToken);
         }

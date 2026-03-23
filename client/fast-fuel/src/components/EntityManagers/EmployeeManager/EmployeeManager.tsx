@@ -1,26 +1,23 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
-import { apiClient } from '../../../apiClient.ts';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
-type Employee = components['schemas']['EmployeeResponseDto'];
-type StationCategory = components['schemas']['StationCategoryResponseDto'];
+export const EmployeeManager = () => {
+  const can = useSuspensePermissions();
 
-type EmployeeFormValues = Employee & { password?: string | null };
+  const [{ data: stationCategories = [] }, { data: employees = [], refetch: refetchEmployees }] =
+    useConditionalSuspenseQueries([
+      can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+      apiClient.queryOptions('get', '/api/Employee'),
+    ]);
 
-export type EmployeeManagerProps = {
-  employees: Employee[];
-  refetchEmployees: () => void;
-  stationCategories: StationCategory[];
-};
+  type Employee = (typeof employees)[number];
+  type EmployeeFormValues = Employee & { password?: string | null };
 
-export const EmployeeManager = ({
-  employees,
-  refetchEmployees,
-  stationCategories,
-}: EmployeeManagerProps) => {
-  const stationCategoryOptions = (stationCategories ?? []).map((sc) => ({
+  const stationCategoryOptions = stationCategories.map((sc) => ({
     value: sc.id,
     label: sc.name,
   }));
@@ -29,15 +26,20 @@ export const EmployeeManager = ({
     { header: 'Name', accessor: 'name' },
     { header: 'Username', accessor: 'userName' },
     { header: 'Email', accessor: 'email' },
-    {
-      header: 'Station Categories',
-      render: (e) => {
-        if (!e.stationCategoryIds?.length) return 'None';
-        return e.stationCategoryIds
-          .map((id) => stationCategoryOptions.find((o) => o.value === id)?.label ?? `#${id}`)
-          .join(', ');
-      },
-    },
+    { header: 'User Type', accessor: 'userType' },
+    ...(can.StationCategory.Read
+      ? [
+          {
+            header: 'Station Categories',
+            render: (e: Employee) => {
+              if (!e.stationCategoryIds?.length) return 'None';
+              return e.stationCategoryIds
+                .map((id) => stationCategoryOptions.find((o) => o.value === id)?.label ?? `#${id}`)
+                .join(', ');
+            },
+          },
+        ]
+      : []),
   ];
 
   const editorFields: Field[] = [
@@ -58,7 +60,7 @@ export const EmployeeManager = ({
       required: 'always',
     },
     {
-      type: 'text',
+      type: 'email',
       key: 'email',
       label: 'Email',
       initialValue: '',
@@ -66,27 +68,31 @@ export const EmployeeManager = ({
       required: 'always',
     },
     {
-      type: 'text',
+      type: 'password',
       key: 'password',
       label: 'Password',
       initialValue: '',
       nullable: 'edit',
       required: 'create',
     },
-    {
-      type: 'numericMultiSelect',
-      key: 'stationCategoryIds',
-      label: 'Station Categories',
-      initialValue: [],
-      nullable: 'never',
-      required: 'never',
-      fieldProps: {
-        data: stationCategoryOptions,
-        placeholder: 'Search station categories...',
-        searchable: true,
-        clearable: true,
-      },
-    },
+    ...(can.StationCategory.Read
+      ? [
+          {
+            type: 'numericMultiSelect',
+            key: 'stationCategoryIds',
+            label: 'Station Categories',
+            initialValue: [],
+            nullable: 'never',
+            required: 'never',
+            fieldProps: {
+              data: stationCategoryOptions,
+              placeholder: 'Search station categories...',
+              searchable: true,
+              clearable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
   ];
 
   const { mutate: createEmployee } = apiClient.useMutation('post', '/api/Employee', {
@@ -104,12 +110,15 @@ export const EmployeeManager = ({
     email: values.email,
     userName: values.userName,
     themeId: null,
-    password: values.password || null,
-    shiftIds: values.shiftIds,
+    password: values.password ?? null,
+    shiftIds: values.shiftIds ?? [],
     stationCategoryIds: values.stationCategoryIds,
   });
 
   const handleSubmit = (values: EmployeeFormValues, mode: 'create' | 'edit') => {
+    console.log(values);
+    console.log(toRequestDto(values));
+
     if (mode === 'create') {
       createEmployee({ body: toRequestDto(values) });
     } else {
@@ -126,6 +135,9 @@ export const EmployeeManager = ({
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(e) => deleteEmployee({ params: { path: { id: e.id } } })}
+      canCreate={can.Employee.Create}
+      canEdit={can.Employee.Update}
+      canDelete={can.Employee.Delete}
     />
   );
 };

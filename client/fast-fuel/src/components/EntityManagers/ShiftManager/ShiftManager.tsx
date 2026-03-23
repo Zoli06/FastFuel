@@ -1,25 +1,9 @@
-import type { components } from '../../../types/api';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import type { Field } from '../../EntityManager/EntityEditor';
-import { apiClient } from '../../../apiClient.ts';
+import type { Field } from '../../EntityManager/EntityEditor/types.ts';
+import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-
-type Shift = components['schemas']['ShiftResponseDto'];
-type Employee = components['schemas']['EmployeeResponseDto'];
-
-type ShiftFormValues = {
-  id: number;
-  employeeId: number;
-  startTime: string;
-  durationHours: number;
-  durationMinutes: number;
-};
-
-export type ShiftManagerProps = {
-  shifts: Shift[];
-  refetchShifts: () => void;
-  employees: Employee[];
-};
+import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 const getDuration = (start: Date, end: Date) => {
   const diffMs = end.getTime() - start.getTime();
@@ -30,25 +14,54 @@ const getDuration = (start: Date, end: Date) => {
   };
 };
 
-export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerProps) => {
-  const employeeOptions = (employees ?? []).map((e) => ({
+const normalizeDateTime = (value: string) => {
+  const trimmed = value.trim();
+  return trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
+};
+
+const parseAsUtcDate = (value: string) => {
+  const normalized = normalizeDateTime(value);
+  const hasTimeZone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(normalized);
+  return new Date(hasTimeZone ? normalized : `${normalized}Z`);
+};
+
+export const ShiftManager = () => {
+  const can = useSuspensePermissions();
+
+  const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
+    useConditionalSuspenseQueries([
+      can.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
+      apiClient.queryOptions('get', '/api/Shift'),
+    ]);
+
+  type Shift = (typeof shifts)[number];
+  type ShiftFormValues = Shift & {
+    durationHours: number;
+    durationMinutes: number;
+  };
+
+  const employeeOptions = employees.map((e) => ({
     value: e.id,
     label: e.name,
   }));
 
   const tableColumns: ColumnDefinition<Shift>[] = [
-    {
-      header: 'Employee',
-      render: (s) =>
-        employeeOptions.find((o) => o.value === s.employeeId)?.label ?? `#${s.employeeId}`,
-    },
+    ...(can.Employee.Read
+      ? [
+          {
+            header: 'Employee',
+            render: (s: Shift) =>
+              employeeOptions.find((o) => o.value === s.employeeId)?.label ?? `#${s.employeeId}`,
+          },
+        ]
+      : []),
     {
       header: 'Start',
-      render: (s) => new Date(s.startTime).toLocaleString(),
+      render: (s) => parseAsUtcDate(s.startTime).toLocaleString(),
     },
     {
       header: 'End',
-      render: (s) => new Date(s.endTime).toLocaleString(),
+      render: (s) => parseAsUtcDate(s.endTime).toLocaleString(),
     },
     {
       header: 'Duration',
@@ -60,19 +73,23 @@ export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerP
   ];
 
   const editorFields: Field[] = [
-    {
-      type: 'numericSelect',
-      key: 'employeeId',
-      label: 'Employee',
-      initialValue: null,
-      nullable: 'never',
-      required: 'always',
-      fieldProps: {
-        data: employeeOptions,
-        placeholder: 'Select employee...',
-        searchable: true,
-      },
-    },
+    ...(can.Employee.Read
+      ? [
+          {
+            type: 'numericSelect',
+            key: 'employeeId',
+            label: 'Employee',
+            initialValue: null,
+            nullable: 'never',
+            required: 'always',
+            fieldProps: {
+              data: employeeOptions,
+              placeholder: 'Select employee...',
+              searchable: true,
+            },
+          } satisfies Field,
+        ]
+      : []),
     {
       type: 'dateTime',
       key: 'startTime',
@@ -123,11 +140,6 @@ export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerP
     onSuccess: () => refetchShifts(),
   });
 
-  const normalizeDateTime = (value: string) => {
-    const trimmed = value.trim();
-    return trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
-  };
-
   const toRequestDto = (values: ShiftFormValues) => {
     const start = new Date(normalizeDateTime(values.startTime));
     const totalMinutes = (values.durationHours ?? 0) * 60 + (values.durationMinutes ?? 0);
@@ -145,6 +157,7 @@ export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerP
       id: shift.id,
       employeeId: shift.employeeId,
       startTime: shift.startTime,
+      endTime: shift.endTime,
       durationHours: hours,
       durationMinutes: minutes,
     };
@@ -167,10 +180,13 @@ export const ShiftManager = ({ shifts, refetchShifts, employees }: ShiftManagerP
       )}
       tableColumns={tableColumns}
       editorFields={editorFields}
-      sectionKey={(s) => new Date(s.startTime).toLocaleDateString()}
+      sectionKey={(s) => parseAsUtcDate(s.startTime).toLocaleDateString()}
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteShift({ params: { path: { id: s.id } } })}
+      canCreate={can.Shift.Create}
+      canEdit={can.Shift.Update}
+      canDelete={can.Shift.Delete}
     />
   );
 };

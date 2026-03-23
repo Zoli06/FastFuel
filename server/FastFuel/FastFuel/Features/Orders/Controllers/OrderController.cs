@@ -15,6 +15,7 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
     : CrudController<Order, OrderRequestDto, OrderResponseDto>(service)
 {
     [HttpGet("my")]
+    [PermissionCheck("ReadOwn")]
     public async Task<Results<Ok<List<OrderResponseDto>>, UnauthorizedHttpResult>> GetMyOrders(
         CancellationToken cancellationToken = default)
     {
@@ -24,14 +25,16 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
 
     [HttpGet]
     [SwaggerQueryParam("status", typeof(OrderStatus))]
+    [SwaggerQueryParam("restaurantId", typeof(uint))]
     [PermissionCheck(CrudOperation.Read)]
     public override async Task<Results<Ok<List<OrderResponseDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult,
         ForbidHttpResult>> GetAll(
         CancellationToken cancellationToken = default)
     {
         var status = HttpContext.Request.Query["status"].ToString();
+        var restaurantId = HttpContext.Request.Query["restaurantId"].ToString();
 
-        if (filterParamsFactory.TryParse(status, out var filterParams))
+        if (filterParamsFactory.TryParse(status, restaurantId, out var filterParams))
             return TypedResults.Ok(
                 await ((IOrderService)Service).GetAllOrdersWithFiltersAsync(filterParams, cancellationToken));
 

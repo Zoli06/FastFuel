@@ -8,13 +8,15 @@ import type {
   TextInputProps,
 } from '@mantine/core';
 import type { UseFormReturnType } from '@mantine/form';
-import type { NumericMultiSelectProps, NumericSelectProps } from '../../common/NumericCombobox';
+import type { NumericMultiSelectProps } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
+import type { NumericSelectProps } from '../../common/NumericCombobox/NumericSelect.tsx';
 import type { DateTimePickerProps, TimePickerProps } from '@mantine/dates';
 
 export type FormValues = Record<string, unknown>;
 
 export type FieldType =
   | 'text'
+  | 'email'
   | 'number'
   | 'bool'
   | 'password'
@@ -52,6 +54,7 @@ type BaseField<Type extends FieldType, InitialValueType, FieldProps> = {
 export type OmitUnnecessaryComboboxProps<T> = Omit<T, 'value' | 'onChange' | 'label' | 'required'>;
 
 export type TextField = BaseField<'text', string, TextInputProps>;
+export type EmailField = BaseField<'email', string, TextInputProps>;
 export type NumberField = BaseField<'number', number, NumberInputProps>;
 export type BoolField = BaseField<'bool', boolean, CheckboxProps>;
 export type PasswordField = BaseField<'password', string, PasswordInputProps>;
@@ -82,6 +85,7 @@ export type CustomField = {
 
 export type Field =
   | TextField
+  | EmailField
   | NumberField
   | BoolField
   | PasswordField

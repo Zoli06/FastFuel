@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Roles.DTOs;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Mappers;
@@ -160,20 +161,64 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     [Fact]
-    public async Task Update_DefaultRole_ShouldThrowException()
+    public async Task Update_ImmutableRole_ShouldThrowUnauthorizedAppException()
+    {
+        var role = new Role
+        {
+            Name = "Admin",
+            IsDefault = true,
+            IsImmutable = true
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        var request = BuildRequest("RenamedAdmin", new List<string> { "Permission:Test" });
+
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
+            _service.UpdateAsync(role.Id, request)
+        );
+    }
+
+    [Fact]
+    public async Task Update_DefaultRole_WhenMutable_ShouldUpdatePermissions()
     {
         var role = new Role
         {
             Name = "DefaultRole",
-            IsDefault = true
+            IsDefault = true,
+            IsImmutable = false
         };
 
-        _dbContext.Roles.Add(role);
-        await _dbContext.SaveChangesAsync();
+        await _roleManager.CreateAsync(role);
 
         var request = BuildRequest("DefaultRole", new List<string> { "Permission:Test" });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var updated = await _service.UpdateAsync(role.Id, request);
+
+        Assert.True(updated);
+
+        var refreshedRole = await _roleManager.FindByNameAsync("DefaultRole");
+        var claims = await _roleManager.GetClaimsAsync(refreshedRole!);
+
+        Assert.Single(claims);
+        Assert.Equal("Permission:Test", claims[0].Value);
+    }
+
+    [Fact]
+    public async Task Update_DefaultRole_WhenRenaming_ShouldThrowUnauthorizedAppException()
+    {
+        var role = new Role
+        {
+            Name = "Customer",
+            IsDefault = true,
+            IsImmutable = false
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        var request = BuildRequest("RenamedCustomer", new List<string> { "Permission:Test" });
+
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
             _service.UpdateAsync(role.Id, request)
         );
     }
@@ -192,18 +237,35 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     [Fact]
-    public async Task Delete_DefaultRole_ShouldThrowException()
+    public async Task Delete_ImmutableRole_ShouldThrowUnauthorizedAppException()
     {
         var role = new Role
         {
-            Name = "ProtectedRole",
-            IsDefault = true
+            Name = "Admin",
+            IsDefault = true,
+            IsImmutable = true
         };
 
-        _dbContext.Roles.Add(role);
-        await _dbContext.SaveChangesAsync();
+        await _roleManager.CreateAsync(role);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
+            _service.DeleteAsync(role.Id)
+        );
+    }
+
+    [Fact]
+    public async Task Delete_DefaultRole_WhenMutable_ShouldThrowUnauthorizedAppException()
+    {
+        var role = new Role
+        {
+            Name = "Customer",
+            IsDefault = true,
+            IsImmutable = false
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
             _service.DeleteAsync(role.Id)
         );
     }

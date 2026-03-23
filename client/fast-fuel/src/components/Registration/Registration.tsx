@@ -1,0 +1,130 @@
+import { Button, PasswordInput, Stack, TextInput } from '@mantine/core';
+import { Form, useForm } from '@mantine/form';
+import { Paper } from '../common/Paper/Paper';
+import { apiClient, triggerPermissionsRefresh } from '../../lib/api-client';
+import type { components } from '../../types/api';
+import { useNavigate } from 'react-router-dom';
+
+type RegisterFormValues = components['schemas']['CustomerRequestDto'] & {
+  password: string;
+  confirmPassword: string;
+};
+
+export const Register = () => {
+  const redirect = useNavigate();
+
+  const form = useForm<RegisterFormValues>({
+    mode: 'uncontrolled',
+    initialValues: {
+      name: '',
+      email: '',
+      userName: '',
+      themeId: null,
+      password: '',
+      confirmPassword: '',
+    } as RegisterFormValues,
+    validate: {
+      confirmPassword: (value, values) =>
+        value !== values.password ? 'Passwords do not match' : null,
+    },
+  });
+
+  const { mutateAsync: register, isPending: isRegistering } = apiClient.useMutation(
+    'post',
+    '/api/Customer',
+    {
+      onSuccess: () => {
+        form.reset();
+      },
+    },
+  );
+
+  const { mutateAsync: login, isPending: isLoggingIn } = apiClient.useMutation(
+    'post',
+    '/api/Auth/login',
+    {
+      onSuccess: () => {
+        triggerPermissionsRefresh();
+        redirect('/', { replace: true });
+      },
+    },
+  );
+
+  const handleSubmit = async (values: RegisterFormValues) => {
+    await register({
+      body: {
+        name: values.name,
+        email: values.email,
+        userName: values.userName,
+        themeId: values.themeId,
+        password: values.password,
+      } as components['schemas']['CustomerRequestDto'],
+    });
+
+    await login({
+      body: {
+        userName: values.userName,
+        password: values.password,
+      },
+      params: {
+        query: {
+          useCookies: true,
+          useSessionCookies: true,
+        },
+      },
+    });
+  };
+
+  return (
+    <Paper>
+      <Form form={form} onSubmit={handleSubmit}>
+        <Stack gap="xs">
+          <TextInput
+            key={form.key('name')}
+            label="Name"
+            placeholder="Enter your name"
+            required
+            {...form.getInputProps('name')}
+          />
+
+          <TextInput
+            type="email"
+            key={form.key('email')}
+            label="Email"
+            placeholder="Enter your email"
+            required
+            {...form.getInputProps('email')}
+          />
+
+          <TextInput
+            key={form.key('userName')}
+            label="Username"
+            placeholder="Enter username"
+            required
+            {...form.getInputProps('userName')}
+          />
+
+          <PasswordInput
+            key={form.key('password')}
+            label="Password"
+            placeholder="Enter password"
+            required
+            {...form.getInputProps('password')}
+          />
+
+          <PasswordInput
+            key={form.key('confirmPassword')}
+            label="Confirm Password"
+            placeholder="Confirm password"
+            required
+            {...form.getInputProps('confirmPassword')}
+          />
+
+          <Button type="submit" fullWidth loading={isRegistering || isLoggingIn}>
+            Register
+          </Button>
+        </Stack>
+      </Form>
+    </Paper>
+  );
+};

@@ -5,12 +5,7 @@ import { Header } from '../components/Header/Header.tsx';
 export const HomePage = () => {
   return (
     <>
-      <Header
-        title={'Fast Fuel'}
-        hideLeftButton={true}
-        rightButtonText={'Login'}
-        rightButtonNavigateTo={'/login'}
-      />
+      <Header title={'Admin Panel'} />
 
       <HomeMenu />
 

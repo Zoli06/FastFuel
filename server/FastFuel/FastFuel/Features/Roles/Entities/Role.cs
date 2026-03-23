@@ -12,4 +12,5 @@ public class Role : IdentityRole<uint>, IIdentifiable
     }
 
     public bool IsDefault { get; set; }
+    public bool IsImmutable { get; set; }
 }

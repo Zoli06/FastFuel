@@ -14,7 +14,8 @@ import {
 } from '@mantine/core';
 import { Form, useForm, type UseFormInput, type UseFormReturnType } from '@mantine/form';
 import { TimePicker, DateTimePicker } from '@mantine/dates';
-import { NumericMultiSelect, NumericSelect } from '../../common/NumericCombobox';
+import { NumericSelect } from '../../common/NumericCombobox/NumericSelect.tsx';
+import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 import type { EditorMode, Field, FormValues, ListField } from './types.ts';
 import { IconTrash } from '@tabler/icons-react';
 
@@ -85,6 +86,18 @@ function renderField(
           key={form.key(field.key)}
           label={field.label}
           required={isRequired(field, mode)}
+          {...field.fieldProps}
+          {...form.getInputProps(field.key)}
+        />
+      );
+
+    case 'email':
+      return (
+        <TextInput
+          key={form.key(field.key)}
+          label={field.label}
+          required={isRequired(field, mode)}
+          type="email"
           {...field.fieldProps}
           {...form.getInputProps(field.key)}
         />
