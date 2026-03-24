@@ -12,6 +12,12 @@ public class StationController(IStationService service)
 {
     private IStationService TasksService { get; } = service;
 
+    /// <summary>
+    /// Gets the task list for a station.
+    /// </summary>
+    /// <param name="id">The identifier of the station.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The station tasks when the station exists.</returns>
     [PermissionCheck("ViewTasks")]
     [HttpGet("{id:int}/tasks")]
     public async Task<ActionResult<List<StationTasksResponseDto>>> GetTasks(uint id,

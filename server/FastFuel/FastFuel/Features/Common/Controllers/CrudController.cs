@@ -16,6 +16,11 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
 {
     protected ICrudService<TRequest, TResponse> Service { get; } = service;
 
+    /// <summary>
+    /// Gets all entities.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The entities.</returns>
     [HttpGet]
     [PermissionCheck(CrudOperation.Read)]
     public virtual async Task<Results<
@@ -29,6 +34,12 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
         return TypedResults.Ok(dtos);
     }
 
+    /// <summary>
+    /// Gets one entity.
+    /// </summary>
+    /// <param name="id">The entity id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The entity.</returns>
     [HttpGet("{id:int}")]
     [PermissionCheck(CrudOperation.Read)]
     public virtual async Task<Results<
@@ -44,6 +55,12 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
         return TypedResults.Ok(dto);
     }
 
+    /// <summary>
+    /// Makes a new entity.
+    /// </summary>
+    /// <param name="requestDto">The entity data.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The created entity.</returns>
     [HttpPost]
     [PermissionCheck(CrudOperation.Create)]
     public virtual async Task<Results<
@@ -59,6 +76,13 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
         return TypedResults.Created(location!, responseDto);
     }
 
+    /// <summary>
+    /// Updates one entity.
+    /// </summary>
+    /// <param name="id">The entity id.</param>
+    /// <param name="requestDto">The entity data.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>No content.</returns>
     [HttpPut("{id:int}")]
     [PermissionCheck(CrudOperation.Update)]
     public virtual async Task<Results<
@@ -76,6 +100,12 @@ public abstract class CrudController<TEntity, TRequest, TResponse>(ICrudService<
         return TypedResults.NoContent();
     }
 
+    /// <summary>
+    /// Deletes one entity.
+    /// </summary>
+    /// <param name="id">The entity id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>No content.</returns>
     [HttpDelete("{id:int}")]
     [PermissionCheck(CrudOperation.Delete)]
     public virtual async Task<Results<

@@ -17,6 +17,16 @@ public class AuthController(
     IOptionsMonitor<BearerTokenOptions> bearerTokenOptions)
     : ControllerBase
 {
+    /// <summary>
+    /// Authenticates a user with a username and password.
+    /// </summary>
+    /// <param name="login">The login credentials.</param>
+    /// <param name="useCookies">Whether to use cookies for authentication.</param>
+    /// <param name="useSessionCookies">Whether to use session cookies for authentication.</param>
+    /// <returns>
+    /// An access token response for bearer authentication, an empty result for cookie authentication,
+    /// or a problem response when authentication fails.
+    /// </returns>
     [HttpPost("login")]
     public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Login(
         LoginRequestDto login,
@@ -36,6 +46,11 @@ public class AuthController(
         return TypedResults.Empty;
     }
 
+    /// <summary>
+    /// Refreshes an access token by using a refresh token.
+    /// </summary>
+    /// <param name="refreshRequest">The refresh token payload.</param>
+    /// <returns>A new bearer sign-in result when the refresh token is valid; otherwise a challenge response.</returns>
     [HttpPost("refresh")]
     public async Task<Results<UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>> Refresh(
         RefreshRequest refreshRequest)
@@ -53,6 +68,10 @@ public class AuthController(
         return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }
 
+    /// <summary>
+    /// Signs the current user out.
+    /// </summary>
+    /// <returns>An OK result when sign-out completes.</returns>
     [HttpPost("logout")]
     public async Task<Results<Ok, UnauthorizedHttpResult>> Logout()
     {

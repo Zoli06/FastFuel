@@ -18,6 +18,11 @@ public class EmployeeController(
     public IUserService<EmployeeRequestDto, EmployeeResponseDto> UserService { get; } = service;
     public UserManager<User> UserManager { get; } = userManager;
 
+    /// <summary>
+    /// Gets the profile of the currently authenticated employee.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The current employee profile when it exists.</returns>
     [HttpGet("me")]
     public Task<Results<Ok<EmployeeResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
