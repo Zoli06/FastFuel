@@ -1,6 +1,9 @@
 import { Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
-import { useFoods } from '../../hooks/useFoods.ts';
+import { apiClient } from '../../lib/api-client.ts';
 
+const useFoods = () => apiClient.useQuery('get', '/api/Food');
+
+type Food = NonNullable<ReturnType<typeof useFoods>['data']>[number];
 type MenuFood = { foodId: number; quantity: number };
 
 type MenuProps = {
@@ -29,8 +32,8 @@ export const Menu = ({
 }: MenuProps) => {
   const { data: allFoods } = useFoods();
 
-  const getFoodName = (foodId: number) =>
-    allFoods?.find((f) => f.id === foodId)?.name ?? `#${foodId}`;
+  const getFoodName = (foodId: number): string =>
+    allFoods?.find((f: Food) => f.id === foodId)?.name ?? `#${foodId}`;
 
   return (
     <Card
@@ -38,12 +41,7 @@ export const Menu = ({
       padding={0}
       withBorder
       onClick={onOpen}
-      style={{
-        cursor: 'pointer',
-        overflow: 'hidden',
-        width: '100%',
-        borderRadius: 0,
-      }}
+      style={{ cursor: 'pointer', overflow: 'hidden', width: '100%', borderRadius: 0 }}
     >
       <Card.Section>
         <Image
@@ -60,7 +58,6 @@ export const Menu = ({
           <Text fw={700} size="sm" lineClamp={1} style={{ flex: 1 }}>
             {name}
           </Text>
-
           {quantity > 0 && (
             <Badge color="darkred" size="sm" circle style={{ flexShrink: 0 }}>
               {quantity}
@@ -87,7 +84,6 @@ export const Menu = ({
                 {getFoodName(f.foodId)}
               </Badge>
             ))}
-
             {foods.length > 2 && (
               <Badge size="xs" variant="light" color="gray" style={{ fontSize: 9 }}>
                 +{foods.length - 2}
@@ -98,7 +94,7 @@ export const Menu = ({
 
         <Group justify="space-between" wrap="nowrap">
           <Text fw={700} c="darkred" size="sm">
-            {price.toFixed(2)} $
+            ${price.toFixed(2)}
           </Text>
           <Badge
             size="xs"

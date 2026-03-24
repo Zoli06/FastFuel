@@ -11,22 +11,16 @@ import {
   Textarea,
 } from '@mantine/core';
 import { useState } from 'react';
-import { useFoods } from '../../hooks/useFoods.ts';
+import { apiClient } from '../../lib/api-client.ts';
 
-type MenuFood = { foodId: number; quantity: number };
+const useFoods = () => apiClient.useQuery('get', '/api/Food');
+
+type Food = NonNullable<ReturnType<typeof useFoods>['data']>[number];
 
 type MenuDetailModalProps = {
   opened: boolean;
   onClose: () => void;
-  menu: {
-    id: number;
-    name: string;
-    price: number;
-    description: string | null;
-    imageUrl: string | null;
-    foods: MenuFood[];
-    type: 'food' | 'menu';
-  } | null;
+  menu: (Food & { foods: { foodId: number; quantity: number }[]; type: 'food' }) | null;
   onAddToCart: (
     menuId: number,
     quantity: number,
@@ -40,8 +34,8 @@ export const MenuDetailModal = ({ opened, onClose, menu, onAddToCart }: MenuDeta
   const [quantity, setQuantity] = useState(1);
   const [specialInstructions, setSpecialInstructions] = useState('');
 
-  const getFoodName = (foodId: number) =>
-    allFoods?.find((f) => f.id === foodId)?.name ?? `#${foodId}`;
+  const getFoodName = (foodId: number): string =>
+    allFoods?.find((f: Food) => f.id === foodId)?.name ?? `#${foodId}`;
 
   if (!menu) return null;
 
@@ -51,6 +45,8 @@ export const MenuDetailModal = ({ opened, onClose, menu, onAddToCart }: MenuDeta
     setSpecialInstructions('');
     onClose();
   };
+
+  const foods = 'foods' in menu ? menu.foods : [];
 
   return (
     <Modal
@@ -79,11 +75,11 @@ export const MenuDetailModal = ({ opened, onClose, menu, onAddToCart }: MenuDeta
             </Text>
           )}
 
-          {menu.foods.length > 0 && (
+          {foods.length > 0 && (
             <>
               <Divider label="Includes" labelPosition="left" />
               <Group gap={6} wrap="wrap">
-                {menu.foods.map((f) => (
+                {foods.map((f) => (
                   <Badge key={f.foodId} variant="light" color="orange">
                     {getFoodName(f.foodId)} x{f.quantity}
                   </Badge>
@@ -97,7 +93,6 @@ export const MenuDetailModal = ({ opened, onClose, menu, onAddToCart }: MenuDeta
           <NumberInput
             label="Quantity"
             min={1}
-            max={99}
             value={quantity}
             onChange={(v) => setQuantity(Number(v))}
           />
@@ -115,7 +110,7 @@ export const MenuDetailModal = ({ opened, onClose, menu, onAddToCart }: MenuDeta
 
           <Group justify="space-between">
             <Text fw={700} c="darkred" size="lg">
-              {(menu.price * quantity).toFixed(2)} $
+              ${(menu.price * quantity).toFixed(2)}
             </Text>
             <Button color="darkred" onClick={handleAdd}>
               Add to order

@@ -19,9 +19,6 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { Menu } from './Menu.tsx';
 import { MenuDetailModal } from './MenuDetailModal.tsx';
-import { useMenus } from '../../hooks/useMenus.ts';
-import { useRestaurants } from '../../hooks/useRestaurants.ts';
-import { useFoods } from '../../hooks/useFoods.ts';
 import { apiClient } from '../../lib/api-client.ts';
 import {
   IconBottleFilled,
@@ -34,6 +31,14 @@ import {
   IconArrowDown,
 } from '@tabler/icons-react';
 
+const useMenus = () => apiClient.useQuery('get', '/api/Menu');
+const useFoods = () => apiClient.useQuery('get', '/api/Food');
+const useRestaurants = () => apiClient.useQuery('get', '/api/Restaurant');
+
+type ApiMenu = NonNullable<ReturnType<typeof useMenus>['data']>[number];
+type ApiFood = NonNullable<ReturnType<typeof useFoods>['data']>[number];
+type ApiRestaurant = NonNullable<ReturnType<typeof useRestaurants>['data']>[number];
+
 type CartItem = {
   menuId: number;
   name: string;
@@ -43,25 +48,9 @@ type CartItem = {
   type: 'food' | 'menu';
 };
 
-type MenuShape = {
-  id: number;
-  name: string;
-  price: number;
-  description: string | null;
-  imageUrl: string | null;
-  foods: { foodId: number; quantity: number }[];
-  type: 'food' | 'menu';
-};
-
-type UnifiedItem = {
-  id: number;
-  name: string;
-  price: number;
-  description: string | null;
-  imageUrl: string | null;
-  foods: { foodId: number; quantity: number }[];
-  type: 'food' | 'menu';
-};
+type UnifiedItem =
+  | (ApiMenu & { type: 'menu' })
+  | (ApiFood & { foods: { foodId: number; quantity: number }[]; type: 'food' });
 
 const CATEGORIES = [
   { label: 'All', value: 'all', icons: [IconLayoutGrid] },
@@ -78,7 +67,7 @@ export const MenuList = () => {
 
   const [restaurantId, setRestaurantId] = useState<number | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<MenuShape | null>(null);
+  const [selectedMenu, setSelectedMenu] = useState<UnifiedItem | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
@@ -94,18 +83,18 @@ export const MenuList = () => {
     },
   });
 
-  const restaurantOptions = (restaurants ?? []).map((r) => ({
+  const restaurantOptions = (restaurants ?? []).map((r: ApiRestaurant) => ({
     value: String(r.id),
     label: r.name,
   }));
 
-  const unifiedMenus: UnifiedItem[] = (menus ?? []).map((m) => ({ ...m, type: 'menu' as const }));
-  const unifiedFoods: UnifiedItem[] = (foods ?? []).map((f) => ({
-    id: f.id,
-    name: f.name,
-    price: f.price,
-    description: f.description,
-    imageUrl: f.imageUrl,
+  const unifiedMenus: UnifiedItem[] = (menus ?? []).map((m: ApiMenu) => ({
+    ...m,
+    type: 'menu' as const,
+  }));
+
+  const unifiedFoods: UnifiedItem[] = (foods ?? []).map((f: ApiFood) => ({
+    ...f,
     foods: [],
     type: 'food' as const,
   }));
@@ -359,21 +348,40 @@ export const MenuList = () => {
             <Group gap={6}>
               {(
                 [
-                  { key: 'name-asc', icon: IconSortAscendingLetters, label: 'A–Z' },
-                  { key: 'name-desc', icon: IconSortDescendingLetters, label: 'Z–A' },
-                  { key: 'price-asc', icon: IconArrowUp, label: 'Price ↑' },
-                  { key: 'price-desc', icon: IconArrowDown, label: 'Price ↓' },
-                ] as { key: SortKey; icon: typeof IconArrowUp; label: string }[]
+                  {
+                    keyAsc: 'name-asc',
+                    keyDesc: 'name-desc',
+                    iconAsc: IconSortAscendingLetters,
+                    iconDesc: IconSortDescendingLetters,
+                    label: 'Name',
+                  },
+                  {
+                    keyAsc: 'price-asc',
+                    keyDesc: 'price-desc',
+                    iconAsc: IconArrowUp,
+                    iconDesc: IconArrowDown,
+                    label: 'Price',
+                  },
+                ] as {
+                  keyAsc: SortKey;
+                  keyDesc: SortKey;
+                  iconAsc: typeof IconArrowUp;
+                  iconDesc: typeof IconArrowUp;
+                  label: string;
+                }[]
               ).map((s) => {
-                const Icon = s.icon;
+                const isAsc = sortKey === s.keyAsc;
+                const isDesc = sortKey === s.keyDesc;
+                const isActive = isAsc || isDesc;
+                const Icon = isDesc ? s.iconDesc : s.iconAsc;
                 return (
                   <Button
-                    key={s.key}
+                    key={s.label}
                     size="xs"
-                    variant={sortKey === s.key ? 'filled' : 'light'}
+                    variant={isActive ? 'filled' : 'light'}
                     color="orange"
                     leftSection={<Icon size={14} />}
-                    onClick={() => setSortKey(s.key)}
+                    onClick={() => setSortKey(isAsc ? s.keyDesc : s.keyAsc)}
                   >
                     {s.label}
                   </Button>
@@ -415,7 +423,7 @@ export const MenuList = () => {
         </Stack>
       </Group>
 
-      {/* Cart panel — full width, fixed at bottom */}
+      {/* Cart panel */}
       {cart.length > 0 && (
         <Paper
           withBorder
@@ -468,17 +476,37 @@ export const MenuList = () => {
                         </Text>
                       )}
                     </Stack>
-                    <Group gap={8} wrap="nowrap" style={{ flexShrink: 0 }}>
+                    <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        color="gray"
+                        onClick={() => removeFromCart(c.menuId, c.type)}
+                      >
+                        −
+                      </Button>
                       <Badge color="orange" variant="light" size="sm">
                         ×{c.quantity}
                       </Badge>
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        color="gray"
+                        onClick={() => {
+                          const source = c.type === 'menu' ? unifiedMenus : unifiedFoods;
+                          const item = source.find((m) => m.id === c.menuId);
+                          if (item) addToCart(item);
+                        }}
+                      >
+                        +
+                      </Button>
                       <Text
                         size="sm"
                         fw={700}
                         c="darkred"
-                        style={{ minWidth: 70, textAlign: 'right' }}
+                        style={{ minWidth: 60, textAlign: 'right' }}
                       >
-                        {(c.price * c.quantity).toFixed(2)} $
+                        ${(c.price * c.quantity).toFixed(2)}
                       </Text>
                     </Group>
                   </Group>
@@ -494,7 +522,7 @@ export const MenuList = () => {
               Total
             </Text>
             <Text fw={800} size="lg" c="darkred">
-              {totalPrice.toFixed(2)} $
+              ${totalPrice.toFixed(2)}
             </Text>
           </Group>
 
