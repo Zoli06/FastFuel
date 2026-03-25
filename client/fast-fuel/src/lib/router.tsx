@@ -5,6 +5,7 @@ import { FoodManagerPage } from '../pages/EntityManagerPages/FoodManagerPage.tsx
 import { MenuManagerPage } from '../pages/EntityManagerPages/MenuManagerPage.tsx';
 import { OrderManagerPage } from '../pages/EntityManagerPages/OrderManagerPage.tsx';
 import { StationCategoryManagerPage } from '../pages/EntityManagerPages/StationCategoryManagerPage.tsx';
+import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
 import { StationManagerPage } from '../pages/EntityManagerPages/StationManagerPage.tsx';
 import { RestaurantManagerPage } from '../pages/EntityManagerPages/RestaurantManagerPage.tsx';
 import { LoginPage } from '../pages/LoginPage.tsx';
@@ -86,6 +87,10 @@ export const router = createBrowserRouter([
           {
             path: 'order',
             element: <OrderManagerPage />,
+          },
+          {
+            path: 'role',
+            element: <RoleManagerPage />,
           },
           {
             path: 'shift',
