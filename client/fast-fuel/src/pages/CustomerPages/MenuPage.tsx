@@ -1,12 +1,12 @@
 import { Footer } from '../../components/Footer/Footer.tsx';
 import { Header } from '../../components/Header/Header.tsx';
-import { MenuList } from '../../components/CustomerOrderCreator/MenuList.tsx';
+import { CustomerOrderList } from '../../components/CustomerOrderCreator/CustomerOrderList.tsx';
 
 export const MenuPage = () => {
   return (
     <>
       <Header title="Menu" />
-      <MenuList />
+      <CustomerOrderList />
       <Footer />
     </>
   );

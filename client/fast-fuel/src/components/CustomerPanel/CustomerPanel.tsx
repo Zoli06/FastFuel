@@ -18,7 +18,7 @@ const MenuLink = ({ text, to }: { text: string; to: string }) => {
   );
 };
 
-export const CustomerMenu = () => {
+export const CustomerPanel = () => {
   return (
     <Paper>
       <Box pb={40}>

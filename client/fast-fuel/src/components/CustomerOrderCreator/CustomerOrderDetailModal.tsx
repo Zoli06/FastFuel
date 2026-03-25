@@ -29,7 +29,12 @@ type MenuDetailModalProps = {
   ) => void;
 };
 
-export const MenuDetailModal = ({ opened, onClose, menu, onAddToCart }: MenuDetailModalProps) => {
+export const CustomerOrderDetailModal = ({
+  opened,
+  onClose,
+  menu,
+  onAddToCart,
+}: MenuDetailModalProps) => {
   const { data: allFoods } = useFoods();
   const [quantity, setQuantity] = useState(1);
   const [specialInstructions, setSpecialInstructions] = useState('');

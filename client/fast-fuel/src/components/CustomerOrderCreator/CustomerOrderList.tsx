@@ -17,8 +17,8 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { Menu } from './Menu.tsx';
-import { MenuDetailModal } from './MenuDetailModal.tsx';
+import { CustomerOrderCreate } from './CustomerOrderCreate.tsx';
+import { CustomerOrderDetailModal } from './CustomerOrderDetailModal.tsx';
 import { apiClient } from '../../lib/api-client.ts';
 import {
   IconBottleFilled,
@@ -60,7 +60,7 @@ const CATEGORIES = [
 
 type SortKey = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 
-export const MenuList = () => {
+export const CustomerOrderList = () => {
   const { data: menus, isLoading: menusLoading, isError: menusError } = useMenus();
   const { data: foods, isLoading: foodsLoading, isError: foodsError } = useFoods();
   const { data: restaurants } = useRestaurants();
@@ -407,7 +407,7 @@ export const MenuList = () => {
 
           <SimpleGrid cols={{ base: 1, sm: 3, md: 4, lg: 6 }} spacing={4}>
             {filteredAndSorted.map((item) => (
-              <Menu
+              <CustomerOrderCreate
                 key={`${item.type}-${item.id}`}
                 {...item}
                 quantity={getQuantity(item.id, item.type)}
@@ -532,7 +532,7 @@ export const MenuList = () => {
         </Paper>
       )}
 
-      <MenuDetailModal
+      <CustomerOrderDetailModal
         opened={opened}
         onClose={close}
         menu={selectedMenu}

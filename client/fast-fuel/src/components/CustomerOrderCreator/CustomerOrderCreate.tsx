@@ -20,7 +20,7 @@ type MenuProps = {
   onOpen: () => void;
 };
 
-export const Menu = ({
+export const CustomerOrderCreate = ({
   name,
   price,
   description,
