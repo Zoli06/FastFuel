@@ -17,7 +17,7 @@ public class RoleService(
     IMapper<Role, RoleRequestDto, RoleResponseDto> mapper,
     RoleManager<Role> roleManager,
     UserManager<User> userManager)
-    : CrudService<Role, RoleRequestDto, RoleResponseDto>(dbContext, mapper)
+    : CrudService<Role, RoleRequestDto, RoleResponseDto>(dbContext, mapper), IRoleService
 {
     protected override DbSet<Role> DbSet => DbContext.Roles;
 
@@ -29,6 +29,31 @@ public class RoleService(
 
     protected override Delete<Role> DeleteOperation =>
         new Delete(DbContext, DbSet);
+
+    public async Task<List<RoleResponseDto>> GetRolesForCurrentUserAsync(ClaimsPrincipal user,
+        CancellationToken cancellationToken = default)
+    {
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(user));
+
+        if (!uint.TryParse(userIdClaim.Value, out var userId))
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(userIdClaim));
+
+        var appUser = await userManager.FindByIdAsync(userId.ToString());
+        if (appUser == null)
+            throw new ResourceNotFoundAppException(nameof(User), userId);
+
+        var roleNames = await userManager.GetRolesAsync(appUser);
+        if (roleNames.Count == 0)
+            return [];
+
+        var roles = await DbSet
+            .Where(role => roleNames.Contains(role.Name))
+            .ToListAsync(cancellationToken);
+
+        return roles.ConvertAll(Mapper.ToDto);
+    }
 
     private static async Task UpdateRoleClaimsAsync(RoleManager<Role> roleManager, Role role,
         List<string> newPermissions)

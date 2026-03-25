@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Alert,
   Badge,
   Button,
   Card,
@@ -21,7 +22,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { useSuspensePermissions } from '../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 import { Paper } from '../common/Paper/Paper.tsx';
 
 type OrderMenuLine = components['schemas']['OrderMenuDto'];
@@ -36,17 +37,6 @@ type CartLine = {
   quantity: number;
   specialInstructions: string;
 };
-
-export type EmployeeOrderCreatorProps = {
-  restaurantId: number;
-};
-
-const requiredPermissions = [
-  'Permission:Food:Read',
-  'Permission:Menu:Read',
-  'Permission:Order:ReadOwn',
-  'Permission:Order:CreateAtWorkplace',
-] as const;
 
 const formatPrice = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -91,7 +81,6 @@ const InlineStepper = ({
   </Group>
 );
 
-// ─── Cart line ──────────────────────────────────────────────────────────────
 const CartLineCard = ({
   line,
   name,
@@ -191,7 +180,6 @@ const CartLineCard = ({
   );
 };
 
-// ─── Catalog item card ───────────────────────────────────────────────────────
 const CatalogItemCard = ({
   name,
   description,
@@ -267,32 +255,22 @@ const CatalogItemCard = ({
   );
 };
 
-// ─── Main component ──────────────────────────────────────────────────────────
 export const EmployeeOrderCreator = () => {
-  const can = useSuspensePermissions();
+  const { necessary } = usePagePermissions('EmployeeOrder', { split: true });
   const [catalogMode, setCatalogMode] = useState<CatalogMode>('food');
   const [search, setSearch] = useState('');
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   const [lastOrderNumber, setLastOrderNumber] = useState<number | null>(null);
   const nextLineId = useRef(1);
 
-  const missingPermissions = requiredPermissions.filter((permission) => {
-    switch (permission) {
-      case 'Permission:Food:Read':
-        return !can.Food.Read;
-      case 'Permission:Menu:Read':
-        return !can.Menu.Read;
-      case 'Permission:Order:ReadOwn':
-        return !can.Order.ReadOwn;
-      case 'Permission:Order:CreateAtWorkplace':
-        return !can.Order.CreateAtWorkplace;
-    }
-  });
+  const [{ data: currentUser }, { data: foods = [] }, { data: menus = [] }] =
+    useConditionalSuspenseQueries([
+      apiClient.queryOptions('get', '/api/User/me'),
+      necessary.Food.Read && apiClient.queryOptions('get', '/api/Food'),
+      necessary.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
+    ]);
 
-  const [{ data: foods = [] }, { data: menus = [] }] = useConditionalSuspenseQueries([
-    can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-    can.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-  ]);
+  const isNotEmployee = currentUser && currentUser.userType !== 'Employee';
 
   const { mutateAsync: createOrder, isPending: isSubmitting } = apiClient.useMutation(
     'post',
@@ -371,25 +349,21 @@ export const EmployeeOrderCreator = () => {
     }
   };
 
-  if (missingPermissions.length > 0) {
+  const catalogItems = catalogMode === 'food' ? filteredFoods : filteredMenus;
+
+  if (isNotEmployee) {
     return (
       <Paper>
-        <Stack gap="xs">
-          <Text fw={700}>Missing permissions to create orders.</Text>
-          <Text size="sm" c="dimmed">
-            Required: {missingPermissions.join(', ')}
-          </Text>
-        </Stack>
+        <Alert icon="⚠️" color="red" title="Access Denied">
+          This page is only for employees.
+        </Alert>
       </Paper>
     );
   }
 
-  const catalogItems = catalogMode === 'food' ? filteredFoods : filteredMenus;
-
   return (
     <Paper>
       <Stack gap="md">
-        {/* ── Header ───────────────────────────────────────────────────── */}
         <Group justify="space-between" align="center">
           <Stack gap={0}>
             <Title order={3} style={{ letterSpacing: '-0.02em' }}>
@@ -404,7 +378,6 @@ export const EmployeeOrderCreator = () => {
         </Group>
 
         <Grid gutter="md" align="stretch">
-          {/* ── Catalog ──────────────────────────────────────────────── */}
           <Grid.Col span={{ base: 12, lg: 7 }}>
             <Card withBorder radius="md" p="md" h="100%">
               <Stack gap="md" h="100%">
@@ -508,7 +481,6 @@ export const EmployeeOrderCreator = () => {
             </Card>
           </Grid.Col>
 
-          {/* ── Cart ─────────────────────────────────────────────────── */}
           <Grid.Col span={{ base: 12, lg: 5 }}>
             <Card withBorder radius="md" p="md" h="100%">
               <Stack gap="sm" h="100%" style={{ display: 'flex', flexDirection: 'column' }}>

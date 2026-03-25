@@ -2,16 +2,16 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import type { components } from '../../../types/api';
 
 export const AdminManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('AdminManager', { split: true });
 
-  const { data: admins = [], refetch: refetchAdmins } = apiClient.useSuspenseQuery(
-    'get',
-    '/api/Admin',
-  );
+  const [{ data: admins = [], refetch: refetchAdmins }] = useConditionalSuspenseQueries([
+    necessary.Admin.Read && apiClient.queryOptions('get', '/api/Admin'),
+  ]);
 
   type Admin = (typeof admins)[number];
   type AdminFormValues = Admin & { password?: string | null };
@@ -77,9 +77,6 @@ export const AdminManager = () => {
     }) as components['schemas']['AdminRequestDto'];
 
   const handleSubmit = (values: AdminFormValues, mode: 'create' | 'edit') => {
-    console.log(values);
-    console.log(toRequestDto(values));
-
     if (mode === 'create') {
       createAdmin({ body: toRequestDto(values) });
     } else {
@@ -96,9 +93,9 @@ export const AdminManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(a) => deleteAdmin({ params: { path: { id: a.id } } })}
-      canCreate={can.Admin.Create}
-      canEdit={can.Admin.Update}
-      canDelete={can.Admin.Delete}
+      canCreate={recommended.Admin.Create}
+      canEdit={recommended.Admin.Update}
+      canDelete={recommended.Admin.Delete}
     />
   );
 };

@@ -2,16 +2,16 @@
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const AllergyManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('AllergyManager', { split: true });
 
   const [{ data: ingredients = [] }, { data: allergies = [], refetch: refetchAllergies }] =
     useConditionalSuspenseQueries([
-      can.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-      apiClient.queryOptions('get', '/api/Allergy'),
+      recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
+      necessary.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
     ]);
 
   type Allergy = (typeof allergies)[number];
@@ -23,7 +23,7 @@ export const AllergyManager = () => {
 
   const tableColumns: ColumnDefinition<Allergy>[] = [
     { header: 'Name', accessor: 'name' },
-    ...(can.Ingredient.Read
+    ...(recommended.Ingredient.Read
       ? [
           {
             header: 'Ingredients',
@@ -56,7 +56,7 @@ export const AllergyManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(can.Ingredient.Read
+    ...(recommended.Ingredient.Read
       ? [
           {
             type: 'numericMultiSelect',
@@ -103,9 +103,9 @@ export const AllergyManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteAllergy({ params: { path: { id: r.id } } })}
-      canCreate={can.Allergy.Create}
-      canEdit={can.Allergy.Update}
-      canDelete={can.Allergy.Delete}
+      canCreate={recommended.Allergy.Create}
+      canEdit={recommended.Allergy.Update}
+      canDelete={recommended.Allergy.Delete}
     />
   );
 };

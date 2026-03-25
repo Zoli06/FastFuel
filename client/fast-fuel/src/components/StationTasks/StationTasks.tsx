@@ -19,7 +19,7 @@ import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
-import { useSuspensePermissions } from '../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 
 type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
@@ -189,7 +189,7 @@ const OrderCard = ({
 type Category = 'Pending' | 'InProgress' | 'Ready';
 
 export const StationTasks = ({ stationId }: StationTasksProps) => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('StationTasks', { split: true });
   const isWideScreen = useMediaQuery('(min-width: 1400px)');
   const [selectedCategory, setSelectedCategory] = useState<Category>('Pending');
 
@@ -279,7 +279,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                         key={order.id}
                         order={order}
                         onAdvance={handleAdvance}
-                        canAdvanceStatus={can.Order.UpdateStatus}
+                        canAdvanceStatus={recommended.Order.UpdateStatus}
                       />
                     ))
                   )}
@@ -306,7 +306,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                         key={order.id}
                         order={order}
                         onAdvance={handleAdvance}
-                        canAdvanceStatus={can.Order.UpdateStatus}
+                        canAdvanceStatus={recommended.Order.UpdateStatus}
                       />
                     ))
                   )}
@@ -333,7 +333,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                         key={order.id}
                         order={order}
                         onAdvance={handleAdvance}
-                        canAdvanceStatus={can.Order.UpdateStatus}
+                        canAdvanceStatus={recommended.Order.UpdateStatus}
                       />
                     ))
                   )}
@@ -363,7 +363,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                           key={order.id}
                           order={order}
                           onAdvance={handleAdvance}
-                          canAdvanceStatus={can.Order.UpdateStatus}
+                          canAdvanceStatus={recommended.Order.UpdateStatus}
                         />
                       ))
                     )}
@@ -392,7 +392,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                           key={order.id}
                           order={order}
                           onAdvance={handleAdvance}
-                          canAdvanceStatus={can.Order.UpdateStatus}
+                          canAdvanceStatus={recommended.Order.UpdateStatus}
                         />
                       ))
                     )}
@@ -421,7 +421,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                           key={order.id}
                           order={order}
                           onAdvance={handleAdvance}
-                          canAdvanceStatus={can.Order.UpdateStatus}
+                          canAdvanceStatus={recommended.Order.UpdateStatus}
                         />
                       ))
                     )}

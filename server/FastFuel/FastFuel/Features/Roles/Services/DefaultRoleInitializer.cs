@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Permissions.Services;
+using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -19,7 +20,6 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 "Permission:Ingredient:Read",
                 "Permission:Allergy:Read",
                 "Permission:Restaurant:Read",
-                "Permission:Order:ReadOwn",
                 "Permission:Restaurant:Read"
             ],
             [DefaultRole.Customer] =
@@ -29,9 +29,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             ],
             [DefaultRole.Employee] =
             [
-                "Permission:Shift:ReadOwn",
                 "Permission:StationCategory:Read",
-                "Permission:Employee:ReadOwn",
                 "Permission:Order:CreateAtWorkplace",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",
@@ -41,6 +39,15 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             [DefaultRole.Machine] =
             [
             ]
+        };
+
+    private static readonly IReadOnlyDictionary<DefaultRole, Page[]> DefaultRolePages =
+        new Dictionary<DefaultRole, Page[]>
+        {
+            [DefaultRole.User] = [],
+            [DefaultRole.Customer] = [],
+            [DefaultRole.Employee] = [Page.StationTasks, Page.EmployeeOrder, Page.OrderStatusDisplay],
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay]
         };
 
     public async Task InitializeAsync()
@@ -53,7 +60,13 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             if (await roleManager.RoleExistsAsync(roleName))
                 continue;
 
-            var role = new Role { Name = roleName, IsDefault = true, IsImmutable = false };
+            var role = new Role
+            {
+                Name = roleName,
+                IsDefault = true,
+                IsImmutable = false,
+                Pages = DefaultRolePages.TryGetValue(defaultRole, out var pages) ? pages.ToList() : []
+            };
             var roleResult = await roleManager.CreateAsync(role);
             if (!roleResult.Succeeded)
                 throw new ValidationAppException(
@@ -92,6 +105,13 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
         if (!adminRole.IsImmutable)
         {
             adminRole.IsImmutable = true;
+            shouldUpdate = true;
+        }
+
+        var allPages = Enum.GetValues<Page>().ToList();
+        if (!adminRole.Pages.SequenceEqual(allPages))
+        {
+            adminRole.Pages = allPages;
             shouldUpdate = true;
         }
 

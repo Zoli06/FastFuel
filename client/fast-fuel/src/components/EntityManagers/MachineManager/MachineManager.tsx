@@ -2,16 +2,16 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MachineManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('MachineManager', { split: true });
 
   const [{ data: restaurants = [] }, { data: machines = [], refetch: refetchMachines }] =
     useConditionalSuspenseQueries([
-      can.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-      apiClient.queryOptions('get', '/api/Machine'),
+      recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+      necessary.Machine.Read && apiClient.queryOptions('get', '/api/Machine'),
     ]);
 
   type Machine = (typeof machines)[number];
@@ -28,7 +28,7 @@ export const MachineManager = () => {
     {
       header: 'Located At',
       render: (m: Machine) => {
-        if (can.Restaurant.Read) {
+        if (recommended.Restaurant.Read) {
           return (
             restaurantOptions.find((o) => o.value === m.locatedAtRestaurantId)?.label ??
             `#${m.locatedAtRestaurantId}`
@@ -117,9 +117,9 @@ export const MachineManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(m) => deleteMachine({ params: { path: { id: m.id } } })}
-      canCreate={can.Machine.Create}
-      canEdit={can.Machine.Update}
-      canDelete={can.Machine.Delete}
+      canCreate={recommended.Machine.Create}
+      canEdit={recommended.Machine.Update}
+      canDelete={recommended.Machine.Delete}
     />
   );
 };

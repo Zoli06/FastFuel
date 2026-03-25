@@ -3,7 +3,7 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 type Customer = components['schemas']['CustomerResponseDto'];
@@ -11,10 +11,10 @@ type Customer = components['schemas']['CustomerResponseDto'];
 type CustomerFormValues = Customer & { password?: string | null };
 
 export const CustomerManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('CustomerManager', { split: true });
 
   const [{ data: customers = [], refetch: refetchCustomers }] = useConditionalSuspenseQueries([
-    apiClient.queryOptions('get', '/api/Customer'),
+    necessary.Customer.Read && apiClient.queryOptions('get', '/api/Customer'),
   ]);
 
   const tableColumns: ColumnDefinition<Customer>[] = [
@@ -96,8 +96,8 @@ export const CustomerManager = () => {
       onSubmit={handleSubmit}
       onDelete={(e) => deleteCustomer({ params: { path: { id: e.id } } })}
       canCreate={true}
-      canEdit={can.Customer.Update}
-      canDelete={can.Customer.Delete}
+      canEdit={recommended.Customer.Update}
+      canDelete={recommended.Customer.Delete}
     />
   );
 };

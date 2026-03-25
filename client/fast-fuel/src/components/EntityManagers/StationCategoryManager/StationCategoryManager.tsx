@@ -2,18 +2,18 @@ import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationCategoryManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('StationCategoryManager', { split: true });
 
   const [
     { data: ingredients = [] },
     { data: stationCategories = [], refetch: refetchStationCategories },
   ] = useConditionalSuspenseQueries([
-    can.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-    apiClient.queryOptions('get', '/api/StationCategory'),
+    recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
+    necessary.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
   ]);
 
   type StationCategory = (typeof stationCategories)[number];
@@ -25,7 +25,7 @@ export const StationCategoryManager = () => {
 
   const tableColumns: ColumnDefinition<StationCategory>[] = [
     { header: 'Name', accessor: 'name' },
-    ...(can.Ingredient.Read
+    ...(recommended.Ingredient.Read
       ? [
           {
             header: 'Ingredients',
@@ -49,7 +49,7 @@ export const StationCategoryManager = () => {
       nullable: 'never',
       required: 'always',
     },
-    ...(can.Ingredient.Read
+    ...(recommended.Ingredient.Read
       ? [
           {
             type: 'numericMultiSelect',
@@ -100,9 +100,9 @@ export const StationCategoryManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteStationCategory({ params: { path: { id: r.id } } })}
-      canCreate={can.StationCategory.Create}
-      canEdit={can.StationCategory.Update}
-      canDelete={can.StationCategory.Delete}
+      canCreate={recommended.StationCategory.Create}
+      canEdit={recommended.StationCategory.Update}
+      canDelete={recommended.StationCategory.Delete}
     />
   );
 };

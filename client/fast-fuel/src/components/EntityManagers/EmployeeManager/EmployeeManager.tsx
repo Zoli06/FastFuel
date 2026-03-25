@@ -2,20 +2,20 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('EmployeeManager', { split: true });
 
   const [
     { data: stationCategories = [] },
     { data: restaurants = [] },
     { data: employees = [], refetch: refetchEmployees },
   ] = useConditionalSuspenseQueries([
-    can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    can.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    apiClient.queryOptions('get', '/api/Employee'),
+    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    necessary.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
   ]);
 
   type Employee = (typeof employees)[number];
@@ -38,7 +38,7 @@ export const EmployeeManager = () => {
     {
       header: 'Works At',
       render: (e: Employee) => {
-        if (can.Restaurant.Read) {
+        if (recommended.Restaurant.Read) {
           return (
             restaurantOptions.find((o) => o.value === e.worksAtRestaurantId)?.label ??
             `#${e.worksAtRestaurantId}`
@@ -47,7 +47,7 @@ export const EmployeeManager = () => {
         return `#${e.worksAtRestaurantId}`;
       },
     },
-    ...(can.StationCategory.Read
+    ...(recommended.StationCategory.Read
       ? [
           {
             header: 'Station Categories',
@@ -108,7 +108,7 @@ export const EmployeeManager = () => {
         searchable: true,
       },
     } satisfies Field,
-    ...(can.StationCategory.Read
+    ...(recommended.StationCategory.Read
       ? [
           {
             type: 'numericMultiSelect',
@@ -169,9 +169,9 @@ export const EmployeeManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(e) => deleteEmployee({ params: { path: { id: e.id } } })}
-      canCreate={can.Employee.Create}
-      canEdit={can.Employee.Update}
-      canDelete={can.Employee.Delete}
+      canCreate={recommended.Employee.Create}
+      canEdit={recommended.Employee.Update}
+      canDelete={recommended.Employee.Delete}
     />
   );
 };

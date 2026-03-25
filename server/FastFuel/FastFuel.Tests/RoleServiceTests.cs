@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
+using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.DTOs;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Mappers;
@@ -96,12 +98,14 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     private static RoleRequestDto BuildRequest(
         string name = "TestRole",
         List<string>? permissions = null,
+        List<Page>? pages = null,
         List<uint>? userIds = null)
     {
         return new RoleRequestDto
         {
             Name = name,
             Permissions = permissions ?? new List<string>(),
+            Pages = pages ?? new List<Page>(),
             UserIds = userIds ?? new List<uint>()
         };
     }
@@ -137,6 +141,21 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         Assert.Equal(2, claims.Count);
         Assert.Contains(claims, c => c.Value == "Permission:Order:Read");
         Assert.Contains(claims, c => c.Value == "Permission:Order:Create");
+    }
+
+    [Fact]
+    public async Task CreateRole_WithPages_ShouldPersistPages()
+    {
+        var request = BuildRequest(
+            "Kitchen",
+            pages: new List<Page> { Page.StationTasks, Page.OrderStatusDisplay, Page.StationTasks }
+        );
+
+        var result = await _service.CreateAsync(request);
+
+        Assert.Equal(2, result.Pages.Count);
+        Assert.Contains(Page.StationTasks, result.Pages);
+        Assert.Contains(Page.OrderStatusDisplay, result.Pages);
     }
 
     [Fact]
@@ -242,7 +261,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         };
         await _userManager.CreateAsync(user);
 
-        var request = BuildRequest("Customer", new List<string>(), new List<uint> { user.Id });
+        var request = BuildRequest("Customer", new List<string>(), userIds: new List<uint> { user.Id });
 
         await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
             _service.UpdateAsync(role.Id, request)
@@ -278,6 +297,50 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         );
 
         Assert.True(await _userManager.IsInRoleAsync(user, role.Name));
+    }
+
+    [Fact]
+    public async Task GetRolesForCurrentUser_ShouldReturnOnlyCurrentUserRoles()
+    {
+        var user = new User
+        {
+            UserName = "my-roles-user@test.local",
+            Email = "my-roles-user@test.local"
+        };
+        await _userManager.CreateAsync(user);
+
+        var cashierRole = new Role { Name = "Cashier" };
+        var kitchenRole = new Role { Name = "Kitchen" };
+        var managerRole = new Role { Name = "Manager" };
+
+        await _roleManager.CreateAsync(cashierRole);
+        await _roleManager.CreateAsync(kitchenRole);
+        await _roleManager.CreateAsync(managerRole);
+
+        await _userManager.AddToRoleAsync(user, cashierRole.Name);
+        await _userManager.AddToRoleAsync(user, kitchenRole.Name);
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity([
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+        ]));
+
+        var roles = await _service.GetRolesForCurrentUserAsync(principal);
+        var roleNames = roles.Select(r => r.Name).ToList();
+
+        Assert.Equal(2, roles.Count);
+        Assert.Contains("Cashier", roleNames);
+        Assert.Contains("Kitchen", roleNames);
+        Assert.DoesNotContain("Manager", roleNames);
+    }
+
+    [Fact]
+    public async Task GetRolesForCurrentUser_WithoutNameIdentifierClaim_ShouldThrowResourceNotFound()
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        await Assert.ThrowsAsync<ResourceNotFoundAppException>(() =>
+            _service.GetRolesForCurrentUserAsync(principal)
+        );
     }
 
     [Fact]
