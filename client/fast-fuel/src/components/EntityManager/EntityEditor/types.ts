@@ -16,6 +16,7 @@ export type FormValues = Record<string, unknown>;
 
 export type FieldType =
   | 'text'
+  | 'email'
   | 'number'
   | 'bool'
   | 'password'
@@ -53,6 +54,7 @@ type BaseField<Type extends FieldType, InitialValueType, FieldProps> = {
 export type OmitUnnecessaryComboboxProps<T> = Omit<T, 'value' | 'onChange' | 'label' | 'required'>;
 
 export type TextField = BaseField<'text', string, TextInputProps>;
+export type EmailField = BaseField<'email', string, TextInputProps>;
 export type NumberField = BaseField<'number', number, NumberInputProps>;
 export type BoolField = BaseField<'bool', boolean, CheckboxProps>;
 export type PasswordField = BaseField<'password', string, PasswordInputProps>;
@@ -83,6 +85,7 @@ export type CustomField = {
 
 export type Field =
   | TextField
+  | EmailField
   | NumberField
   | BoolField
   | PasswordField

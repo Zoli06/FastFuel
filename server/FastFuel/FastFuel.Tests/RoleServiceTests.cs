@@ -224,6 +224,63 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     [Fact]
+    public async Task Update_DefaultRole_WhenAddingUser_ShouldThrowUnauthorizedAppException()
+    {
+        var role = new Role
+        {
+            Name = "Customer",
+            IsDefault = true,
+            IsImmutable = false
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        var user = new User
+        {
+            UserName = "default-role-add-user@test.local",
+            Email = "default-role-add-user@test.local"
+        };
+        await _userManager.CreateAsync(user);
+
+        var request = BuildRequest("Customer", new List<string>(), new List<uint> { user.Id });
+
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
+            _service.UpdateAsync(role.Id, request)
+        );
+
+        Assert.False(await _userManager.IsInRoleAsync(user, role.Name));
+    }
+
+    [Fact]
+    public async Task Update_DefaultRole_WhenRemovingUser_ShouldThrowUnauthorizedAppException()
+    {
+        var role = new Role
+        {
+            Name = "Customer",
+            IsDefault = true,
+            IsImmutable = false
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        var user = new User
+        {
+            UserName = "default-role-remove-user@test.local",
+            Email = "default-role-remove-user@test.local"
+        };
+        await _userManager.CreateAsync(user);
+        await _userManager.AddToRoleAsync(user, role.Name);
+
+        var request = BuildRequest("Customer");
+
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
+            _service.UpdateAsync(role.Id, request)
+        );
+
+        Assert.True(await _userManager.IsInRoleAsync(user, role.Name));
+    }
+
+    [Fact]
     public async Task DeleteRole_ShouldRemoveRole()
     {
         var created = await _service.CreateAsync(BuildRequest("TempRole"));

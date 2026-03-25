@@ -25,14 +25,16 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
 
     [HttpGet]
     [SwaggerQueryParam("status", typeof(OrderStatus))]
+    [SwaggerQueryParam("restaurantId", typeof(uint))]
     [PermissionCheck(CrudOperation.Read)]
     public override async Task<Results<Ok<List<OrderResponseDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult,
         ForbidHttpResult>> GetAll(
         CancellationToken cancellationToken = default)
     {
         var status = HttpContext.Request.Query["status"].ToString();
+        var restaurantId = HttpContext.Request.Query["restaurantId"].ToString();
 
-        if (filterParamsFactory.TryParse(status, out var filterParams))
+        if (filterParamsFactory.TryParse(status, restaurantId, out var filterParams))
             return TypedResults.Ok(
                 await ((IOrderService)Service).GetAllOrdersWithFiltersAsync(filterParams, cancellationToken));
 
@@ -62,5 +64,22 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
             return TypedResults.NoContent();
 
         return TypedResults.NotFound();
+    }
+
+    [HttpPost("at-workplace")]
+    [PermissionCheck("CreateAtWorkplace")]
+    public async Task<Results<
+            Created<OrderResponseDto>,
+            BadRequest<ProblemDetails>,
+            UnauthorizedHttpResult,
+            ForbidHttpResult>>
+        CreateOrderAtWorkplace(
+            [FromBody] OrderCreateAtWorkPlaceRequestDto requestDto,
+            CancellationToken cancellationToken = default
+        )
+    {
+        var responseDto = await ((IOrderService)Service).CreateOrderAtWorkplaceAsync(User, requestDto, cancellationToken);
+        var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
+        return TypedResults.Created(location!, responseDto);
     }
 }

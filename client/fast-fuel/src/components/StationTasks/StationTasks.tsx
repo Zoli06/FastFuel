@@ -6,12 +6,15 @@ import {
   Divider,
   Group,
   ScrollArea,
+  SegmentedControl,
   SimpleGrid,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
 import { useSuspenseQueries } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMediaQuery } from '@mantine/hooks';
 import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { Header } from '../Header/Header.tsx';
@@ -28,22 +31,26 @@ export type StationTasksProps = {
 
 const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
   Pending: 'InProgress',
-  InProgress: 'Completed',
+  InProgress: 'Ready',
+  Ready: 'Completed',
 };
 
 const statusColor: Record<string, string> = {
   Pending: 'yellow',
   InProgress: 'blue',
+  Ready: 'cyan',
 };
 
 const statusLabel: Record<string, string> = {
   Pending: 'Pending',
   InProgress: 'In Progress',
+  Ready: 'Ready',
 };
 
 const nextStatusLabel: Record<string, string> = {
   Pending: 'Start',
-  InProgress: 'Complete',
+  InProgress: 'Ready',
+  Ready: 'Complete',
 };
 
 const OrderCard = ({
@@ -179,8 +186,12 @@ const OrderCard = ({
   );
 };
 
+type Category = 'Pending' | 'InProgress' | 'Ready';
+
 export const StationTasks = ({ stationId }: StationTasksProps) => {
   const can = useSuspensePermissions();
+  const isWideScreen = useMediaQuery('(min-width: 1400px)');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('Pending');
 
   const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useSuspenseQueries({
     queries: [
@@ -212,6 +223,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
   const allOrders = tasksArray.flatMap((t) => t.orders);
   const pendingOrders = allOrders.filter((o) => o.status === 'Pending');
   const inProgressOrders = allOrders.filter((o) => o.status === 'InProgress');
+  const readyOrders = allOrders.filter((o) => o.status === 'Ready');
 
   if (allOrders.length === 0) {
     return (
@@ -231,61 +243,194 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
     <>
       <Header title={`Tasks: ${station.name}`} />
       <Box p="md" pb={80}>
-        <SimpleGrid cols={2} spacing="lg">
-          <Box>
-            <Group mb="sm" gap="xs">
-              <Title order={3}>Pending</Title>
-              <Badge color="yellow" variant="filled" size="lg">
-                {pendingOrders.length}
-              </Badge>
-            </Group>
-            <ScrollArea>
-              <Stack gap="sm">
-                {pendingOrders.length === 0 ? (
-                  <Text c="dimmed" ta="center" py="md">
-                    No pending orders
-                  </Text>
-                ) : (
-                  pendingOrders.map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      onAdvance={handleAdvance}
-                      canAdvanceStatus={can.Order.UpdateStatus}
-                    />
-                  ))
-                )}
-              </Stack>
-            </ScrollArea>
+        {!isWideScreen && (
+          <Box mb="md">
+            <SegmentedControl
+              fullWidth
+              value={selectedCategory}
+              onChange={(value) => setSelectedCategory(value as Category)}
+              data={[
+                { label: `Pending (${pendingOrders.length})`, value: 'Pending' },
+                { label: `In Progress (${inProgressOrders.length})`, value: 'InProgress' },
+                { label: `Ready (${readyOrders.length})`, value: 'Ready' },
+              ]}
+            />
           </Box>
+        )}
 
+        {isWideScreen ? (
+          <SimpleGrid cols={3} spacing="lg">
+            <Box>
+              <Group mb="sm" gap="xs">
+                <Title order={3}>Pending</Title>
+                <Badge color="yellow" variant="filled" size="lg">
+                  {pendingOrders.length}
+                </Badge>
+              </Group>
+              <ScrollArea>
+                <Stack gap="sm">
+                  {pendingOrders.length === 0 ? (
+                    <Text c="dimmed" ta="center" py="md">
+                      No pending orders
+                    </Text>
+                  ) : (
+                    pendingOrders.map((order) => (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        onAdvance={handleAdvance}
+                        canAdvanceStatus={can.Order.UpdateStatus}
+                      />
+                    ))
+                  )}
+                </Stack>
+              </ScrollArea>
+            </Box>
+
+            <Box>
+              <Group mb="sm" gap="xs">
+                <Title order={3}>In Progress</Title>
+                <Badge color="blue" variant="filled" size="lg">
+                  {inProgressOrders.length}
+                </Badge>
+              </Group>
+              <ScrollArea>
+                <Stack gap="sm">
+                  {inProgressOrders.length === 0 ? (
+                    <Text c="dimmed" ta="center" py="md">
+                      No orders in progress
+                    </Text>
+                  ) : (
+                    inProgressOrders.map((order) => (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        onAdvance={handleAdvance}
+                        canAdvanceStatus={can.Order.UpdateStatus}
+                      />
+                    ))
+                  )}
+                </Stack>
+              </ScrollArea>
+            </Box>
+
+            <Box>
+              <Group mb="sm" gap="xs">
+                <Title order={3}>Ready</Title>
+                <Badge color="cyan" variant="filled" size="lg">
+                  {readyOrders.length}
+                </Badge>
+              </Group>
+              <ScrollArea>
+                <Stack gap="sm">
+                  {readyOrders.length === 0 ? (
+                    <Text c="dimmed" ta="center" py="md">
+                      No ready orders
+                    </Text>
+                  ) : (
+                    readyOrders.map((order) => (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        onAdvance={handleAdvance}
+                        canAdvanceStatus={can.Order.UpdateStatus}
+                      />
+                    ))
+                  )}
+                </Stack>
+              </ScrollArea>
+            </Box>
+          </SimpleGrid>
+        ) : (
           <Box>
-            <Group mb="sm" gap="xs">
-              <Title order={3}>In Progress</Title>
-              <Badge color="blue" variant="filled" size="lg">
-                {inProgressOrders.length}
-              </Badge>
-            </Group>
-            <ScrollArea>
-              <Stack gap="sm">
-                {inProgressOrders.length === 0 ? (
-                  <Text c="dimmed" ta="center" py="md">
-                    No orders in progress
-                  </Text>
-                ) : (
-                  inProgressOrders.map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      onAdvance={handleAdvance}
-                      canAdvanceStatus={can.Order.UpdateStatus}
-                    />
-                  ))
-                )}
-              </Stack>
-            </ScrollArea>
+            {selectedCategory === 'Pending' && (
+              <>
+                <Group mb="sm" gap="xs">
+                  <Title order={3}>Pending</Title>
+                  <Badge color="yellow" variant="filled" size="lg">
+                    {pendingOrders.length}
+                  </Badge>
+                </Group>
+                <ScrollArea>
+                  <Stack gap="sm">
+                    {pendingOrders.length === 0 ? (
+                      <Text c="dimmed" ta="center" py="md">
+                        No pending orders
+                      </Text>
+                    ) : (
+                      pendingOrders.map((order) => (
+                        <OrderCard
+                          key={order.id}
+                          order={order}
+                          onAdvance={handleAdvance}
+                          canAdvanceStatus={can.Order.UpdateStatus}
+                        />
+                      ))
+                    )}
+                  </Stack>
+                </ScrollArea>
+              </>
+            )}
+
+            {selectedCategory === 'InProgress' && (
+              <>
+                <Group mb="sm" gap="xs">
+                  <Title order={3}>In Progress</Title>
+                  <Badge color="blue" variant="filled" size="lg">
+                    {inProgressOrders.length}
+                  </Badge>
+                </Group>
+                <ScrollArea>
+                  <Stack gap="sm">
+                    {inProgressOrders.length === 0 ? (
+                      <Text c="dimmed" ta="center" py="md">
+                        No orders in progress
+                      </Text>
+                    ) : (
+                      inProgressOrders.map((order) => (
+                        <OrderCard
+                          key={order.id}
+                          order={order}
+                          onAdvance={handleAdvance}
+                          canAdvanceStatus={can.Order.UpdateStatus}
+                        />
+                      ))
+                    )}
+                  </Stack>
+                </ScrollArea>
+              </>
+            )}
+
+            {selectedCategory === 'Ready' && (
+              <>
+                <Group mb="sm" gap="xs">
+                  <Title order={3}>Ready</Title>
+                  <Badge color="cyan" variant="filled" size="lg">
+                    {readyOrders.length}
+                  </Badge>
+                </Group>
+                <ScrollArea>
+                  <Stack gap="sm">
+                    {readyOrders.length === 0 ? (
+                      <Text c="dimmed" ta="center" py="md">
+                        No ready orders
+                      </Text>
+                    ) : (
+                      readyOrders.map((order) => (
+                        <OrderCard
+                          key={order.id}
+                          order={order}
+                          onAdvance={handleAdvance}
+                          canAdvanceStatus={can.Order.UpdateStatus}
+                        />
+                      ))
+                    )}
+                  </Stack>
+                </ScrollArea>
+              </>
+            )}
           </Box>
-        </SimpleGrid>
+        )}
       </Box>
       <Footer />
     </>

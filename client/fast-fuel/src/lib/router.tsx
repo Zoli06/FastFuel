@@ -5,7 +5,6 @@ import { FoodManagerPage } from '../pages/EntityManagerPages/FoodManagerPage.tsx
 import { MenuManagerPage } from '../pages/EntityManagerPages/MenuManagerPage.tsx';
 import { OrderManagerPage } from '../pages/EntityManagerPages/OrderManagerPage.tsx';
 import { StationCategoryManagerPage } from '../pages/EntityManagerPages/StationCategoryManagerPage.tsx';
-
 import { StationManagerPage } from '../pages/EntityManagerPages/StationManagerPage.tsx';
 import { RestaurantManagerPage } from '../pages/EntityManagerPages/RestaurantManagerPage.tsx';
 import { LoginPage } from '../pages/LoginPage.tsx';
@@ -20,6 +19,11 @@ import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 import { CustomerPage } from '../pages/CustomerPages/CustomerPage.tsx';
 import { MenuPage } from '../pages/CustomerPages/MenuPage.tsx';
+import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
+import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
+import { MachineManagerPage } from '../pages/EntityManagerPages/MachineManagerPage.tsx';
+import { AdminManagerPage } from '../pages/EntityManagerPages/AdminManagerPage.tsx';
+import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -62,6 +66,14 @@ export const router = createBrowserRouter([
         element: <StationTasksPage />,
       },
       {
+        path: 'restaurants/:id/status-display',
+        element: <OrderStatusDisplayPage />,
+      },
+      {
+        path: 'employee/order',
+        element: <EmployeeOrderPage />,
+      },
+      {
         path: 'manage',
         element: <Outlet />,
         children: [
@@ -70,12 +82,20 @@ export const router = createBrowserRouter([
             element: <AllergyManagerPage />,
           },
           {
+            path: 'customer',
+            element: <CustomerManagerPage />,
+          },
+          {
             path: 'ingredient',
             element: <IngredientManagerPage />,
           },
           {
             path: 'employee',
             element: <EmployeeManagerPage />,
+          },
+          {
+            path: 'machine',
+            element: <MachineManagerPage />,
           },
           {
             path: 'food',
@@ -108,6 +128,10 @@ export const router = createBrowserRouter([
           {
             path: 'restaurant',
             element: <RestaurantManagerPage />,
+          },
+          {
+            path: 'admin',
+            element: <AdminManagerPage />,
           },
         ],
       },

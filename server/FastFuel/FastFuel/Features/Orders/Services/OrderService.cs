@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.Foods.Entities;
 using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.Orders.Common;
@@ -42,7 +43,7 @@ public class OrderService(
         var orders = await DbSet
             .Include(o => o.Foods)
             .Include(o => o.Menus)
-            .Where(o => o.CustomerId == userId)
+            .Where(o => o.UserId == userId)
             .ToListAsync(cancellationToken);
 
         return orders.ConvertAll(Mapper.ToDto);
@@ -58,6 +59,9 @@ public class OrderService(
 
         if (filterParams.Status.HasValue)
             query = query.Where(o => o.Status == filterParams.Status.Value);
+
+        if (filterParams.RestaurantId.HasValue)
+            query = query.Where(o => o.RestaurantId == filterParams.RestaurantId.Value);
 
         var orders = await query.ToListAsync(cancellationToken);
         return orders.ConvertAll(Mapper.ToDto);
@@ -106,6 +110,33 @@ public class OrderService(
         return menuPrice + foodPrice;
     }
 
+    public async Task<OrderResponseDto> CreateOrderAtWorkplaceAsync(ClaimsPrincipal user,
+        OrderCreateAtWorkPlaceRequestDto requestDto,
+        CancellationToken cancellationToken = default)
+    {
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(user));
+
+        if (!uint.TryParse(userIdClaim.Value, out var userId))
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(userIdClaim));
+
+        var employee = await DbContext.Employees
+            .Include(e => e.WorksAtRestaurant)
+            .FirstOrDefaultAsync(e => e.Id == userId, cancellationToken);
+        if (employee == null)
+            throw new ResourceNotFoundAppException(nameof(Employee), userId);
+
+        var orderRequestDto = new OrderRequestDto
+        {
+            RestaurantId = employee.WorksAtRestaurantId,
+            Foods = requestDto.Foods,
+            Menus = requestDto.Menus
+        };
+
+        return await CreateOperation.ExecuteAsync(orderRequestDto, userId, cancellationToken);
+    }
+
     private class Create(
         ApplicationDbContext dbContext,
         DbSet<Order> dbSet,
@@ -144,8 +175,10 @@ public class OrderService(
                 .FirstOrDefaultAsync(cancellationToken);
             entity.OrderNumber = GetNextOrderNumber(lastOrder);
 
-            if (await DbContext.Customers.AnyAsync(c => c.Id == userId, cancellationToken))
-                entity.CustomerId = userId;
+            if (userId == null)
+                throw new AppException("User ID is required to create an order.");
+
+            entity.UserId = userId.Value;
 
             entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
 

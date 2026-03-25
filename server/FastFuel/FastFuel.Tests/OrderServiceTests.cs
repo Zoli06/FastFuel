@@ -225,11 +225,50 @@ public class OrderServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task GetAllOrdersWithFiltersAsync_ReturnsFilteredOrders()
     {
-        await CreateOrdersAsync(2);
+        var secondRestaurant = new Restaurant { Name = "Second Restaurant" };
+        _dbContext.Restaurants.Add(secondRestaurant);
+        await _dbContext.SaveChangesAsync();
 
-        var filter = new OrderFilterParams { Status = OrderStatus.Pending };
+        var firstOrder = await _service.CreateAsync(BuildRequest(_restaurant.Id));
+        await _service.UpdateOrderStatusAsync(firstOrder.Id, OrderStatus.Completed);
+        await _service.CreateAsync(BuildRequest(secondRestaurant.Id));
+
+        var filter = new OrderFilterParams { RestaurantId = _restaurant.Id, Status = OrderStatus.Completed };
         var result = await _service.GetAllOrdersWithFiltersAsync(filter);
 
-        Assert.NotNull(result);
+        Assert.Single(result);
+        Assert.Equal(_restaurant.Id, result[0].RestaurantId);
+        Assert.Equal(OrderStatus.Completed, result[0].Status);
+    }
+
+    [Fact]
+    public void OrderFilterParams_TryParse_WithValidRestaurantId_SetsRestaurantId()
+    {
+        var factory = new OrderFilterParams();
+
+        var parsed = factory.TryParse(null, _restaurant.Id.ToString(), out var filterParams);
+
+        Assert.True(parsed);
+        Assert.Equal(_restaurant.Id, filterParams.RestaurantId);
+    }
+
+    [Fact]
+    public void OrderFilterParams_TryParse_WithInvalidRestaurantId_ReturnsFalse()
+    {
+        var factory = new OrderFilterParams();
+
+        var parsed = factory.TryParse(null, "invalid", out _);
+
+        Assert.False(parsed);
+    }
+
+    [Fact]
+    public void OrderFilterParams_TryParse_WithInvalidStatus_ReturnsFalse()
+    {
+        var factory = new OrderFilterParams();
+
+        var parsed = factory.TryParse("invalid", null, out _);
+
+        Assert.False(parsed);
     }
 }
