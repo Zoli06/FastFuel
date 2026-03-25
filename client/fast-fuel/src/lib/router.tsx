@@ -5,7 +5,7 @@ import { FoodManagerPage } from '../pages/EntityManagerPages/FoodManagerPage.tsx
 import { MenuManagerPage } from '../pages/EntityManagerPages/MenuManagerPage.tsx';
 import { OrderManagerPage } from '../pages/EntityManagerPages/OrderManagerPage.tsx';
 import { StationCategoryManagerPage } from '../pages/EntityManagerPages/StationCategoryManagerPage.tsx';
-import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
+
 import { StationManagerPage } from '../pages/EntityManagerPages/StationManagerPage.tsx';
 import { RestaurantManagerPage } from '../pages/EntityManagerPages/RestaurantManagerPage.tsx';
 import { LoginPage } from '../pages/LoginPage.tsx';
@@ -15,6 +15,7 @@ import { LoadingPage } from '../pages/LoadingPage.tsx';
 import { ErrorPage } from '../pages/ErrorPage.tsx';
 import { EmployeeManagerPage } from '../pages/EntityManagerPages/EmployeeManagerPage.tsx';
 import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.tsx';
+import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 import { CustomerPage } from '../pages/CustomerPages/CustomerPage.tsx';
