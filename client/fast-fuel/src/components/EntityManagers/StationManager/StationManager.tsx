@@ -4,20 +4,20 @@ import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('StationManager', { split: true });
 
   const [
     { data: restaurants = [] },
     { data: stationCategories = [] },
     { data: stations = [], refetch: refetchStations },
   ] = useConditionalSuspenseQueries([
-    can.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    apiClient.queryOptions('get', '/api/Station'),
+    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    necessary.Station.Read && apiClient.queryOptions('get', '/api/Station'),
   ]);
 
   type Station = (typeof stations)[number];
@@ -31,7 +31,7 @@ export const StationManager = () => {
   const tableColumns: ColumnDefinition<Station>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'In Operation', render: (s) => (s.inOperation ? 'Yes' : 'No') },
-    ...(can.Restaurant.Read
+    ...(recommended.Restaurant.Read
       ? [
           {
             header: 'Restaurant',
@@ -39,7 +39,7 @@ export const StationManager = () => {
           },
         ]
       : []),
-    ...(can.StationCategory.Read
+    ...(recommended.StationCategory.Read
       ? [
           {
             header: 'Category',
@@ -48,7 +48,7 @@ export const StationManager = () => {
           },
         ]
       : []),
-    ...(can.Station.ViewTasks
+    ...(recommended.Station.ViewTasks
       ? [
           {
             header: 'Tasks',
@@ -79,7 +79,7 @@ export const StationManager = () => {
       nullable: 'never',
       required: 'always',
     },
-    ...(can.Restaurant.Read
+    ...(recommended.Restaurant.Read
       ? [
           {
             type: 'numericSelect',
@@ -96,7 +96,7 @@ export const StationManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(can.StationCategory.Read
+    ...(recommended.StationCategory.Read
       ? [
           {
             type: 'numericSelect',
@@ -142,9 +142,9 @@ export const StationManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteStation({ params: { path: { id: s.id } } })}
-      canCreate={can.Station.Create}
-      canEdit={can.Station.Update}
-      canDelete={can.Station.Delete}
+      canCreate={recommended.Station.Create}
+      canEdit={recommended.Station.Update}
+      canDelete={recommended.Station.Delete}
     />
   );
 };

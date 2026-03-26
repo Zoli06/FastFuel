@@ -100,6 +100,7 @@ public static class Program
             config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
             config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
+            config.OperationProcessors.Add(new PermissionSchemaOperationProcessor());
             config.DocumentProcessors.Add(new PermissionSchemaDocumentProcessor(serviceProvider));
             config.SchemaSettings.SchemaProcessors.Add(new MarkAsRequiredIfNonNullableSchemaProcessor());
 

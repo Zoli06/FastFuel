@@ -2,7 +2,7 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 const getDuration = (start: Date, end: Date) => {
@@ -26,12 +26,12 @@ const parseAsUtcDate = (value: string) => {
 };
 
 export const ShiftManager = () => {
-  const can = useSuspensePermissions();
+  const { necessary, recommended } = usePagePermissions('ShiftManager', { split: true });
 
   const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
     useConditionalSuspenseQueries([
-      can.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
-      apiClient.queryOptions('get', '/api/Shift'),
+      recommended.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
+      necessary.Shift.Read && apiClient.queryOptions('get', '/api/Shift'),
     ]);
 
   type Shift = (typeof shifts)[number];
@@ -46,7 +46,7 @@ export const ShiftManager = () => {
   }));
 
   const tableColumns: ColumnDefinition<Shift>[] = [
-    ...(can.Employee.Read
+    ...(recommended.Employee.Read
       ? [
           {
             header: 'Employee',
@@ -73,7 +73,7 @@ export const ShiftManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(can.Employee.Read
+    ...(recommended.Employee.Read
       ? [
           {
             type: 'numericSelect',
@@ -184,9 +184,9 @@ export const ShiftManager = () => {
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}
       onDelete={(s) => deleteShift({ params: { path: { id: s.id } } })}
-      canCreate={can.Shift.Create}
-      canEdit={can.Shift.Update}
-      canDelete={can.Shift.Delete}
+      canCreate={recommended.Shift.Create}
+      canEdit={recommended.Shift.Update}
+      canDelete={recommended.Shift.Delete}
     />
   );
 };

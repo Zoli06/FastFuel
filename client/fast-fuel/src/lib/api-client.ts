@@ -7,9 +7,22 @@ import { queryClient } from './query-client.ts';
 
 export const triggerPermissionsRefresh = () => {
   const permissionsQueryKey = myPermissionsQueryOptions().queryKey;
+  const rolePagesQueryKey = myRolePagesQueryOptions().queryKey;
   void queryClient.invalidateQueries({ queryKey: permissionsQueryKey });
+  void queryClient.invalidateQueries({ queryKey: rolePagesQueryKey });
   void queryClient.refetchQueries({ queryKey: permissionsQueryKey, type: 'all' });
+  void queryClient.refetchQueries({ queryKey: rolePagesQueryKey, type: 'all' });
 };
+
+export const clearAuthData = () => {
+  // Remove auth-scoped data without triggering new /my requests during logout.
+  const permissionsQueryKey = myPermissionsQueryOptions().queryKey;
+  const rolePagesQueryKey = myRolePagesQueryOptions().queryKey;
+  queryClient.removeQueries({ queryKey: permissionsQueryKey });
+  queryClient.removeQueries({ queryKey: rolePagesQueryKey });
+};
+
+const API_BASE_URL = 'http://localhost:5249';
 
 const authenticationMiddleware: Middleware = {
   async onResponse({ response }) {
@@ -46,7 +59,7 @@ const errorResponseMiddleware: Middleware = {
 
 const fetchClient = createFetchClient<paths>({
   // TODO: move this to .env
-  baseUrl: 'http://localhost:5249',
+  baseUrl: API_BASE_URL,
   credentials: 'include',
 });
 fetchClient.use(authenticationMiddleware, errorResponseMiddleware);
@@ -57,4 +70,11 @@ export const myPermissionsQueryOptions = () =>
   apiClient.queryOptions('get', '/api/Permission/my', undefined, {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+  });
+
+export const myRolePagesQueryOptions = () =>
+  apiClient.queryOptions('get', '/api/Role/my', undefined, {
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    select: (roles) => [...new Set(roles.flatMap((r) => r.pages))],
   });
