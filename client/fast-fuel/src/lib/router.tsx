@@ -17,6 +17,8 @@ import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.t
 import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
+import { CustomerPage } from '../pages/CustomerPages/CustomerPage.tsx';
+import { MenuPage } from '../pages/CustomerPages/MenuPage.tsx';
 import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
 import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
 import { MachineManagerPage } from '../pages/EntityManagerPages/MachineManagerPage.tsx';
@@ -44,6 +46,20 @@ export const router = createBrowserRouter([
       {
         path: 'register',
         element: <RegistrationPage />,
+      },
+      {
+        path: 'customer',
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <CustomerPage />,
+          },
+          {
+            path: 'menu',
+            element: <MenuPage />,
+          },
+        ],
       },
       {
         path: 'stations/:id/tasks',
