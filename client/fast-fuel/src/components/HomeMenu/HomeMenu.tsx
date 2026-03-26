@@ -11,14 +11,25 @@ import { Paper } from '../common/Paper/Paper.tsx';
 import { Link } from 'react-router-dom';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { IconChevronRight, IconShield } from '@tabler/icons-react';
-import { getHomeMenuDefinitions } from '../../lib/page-permissions.ts';
-import { myRolePagesQueryOptions } from '../../lib/api-client.ts';
+import { myPermissionsQueryOptions } from '../../lib/api-client.ts';
+import { buildPermissionMap } from '../../lib/buildPermissionMap.ts';
+import { pageDefinitions } from '../../lib/page-permissions.ts';
 
 export const HomeMenu = () => {
-  const { data: pages } = useSuspenseQuery(myRolePagesQueryOptions());
-  const pageDefinitions = getHomeMenuDefinitions(pages);
+  const { data: permissions } = useSuspenseQuery(myPermissionsQueryOptions());
+  const permissionMap = buildPermissionMap(permissions) as Record<string, Record<string, boolean>>;
+  const homePages = Object.values(pageDefinitions).filter((definition) => {
+    if (!definition.showInHomeMenu) {
+      return false;
+    }
 
-  const menuItems = pageDefinitions.map((definition) => ({
+    return definition.necessaryPermissions.every((permission) => {
+      const [, resource, action] = permission.split(':');
+      return permissionMap[resource][action];
+    });
+  });
+
+  const menuItems = homePages.map((definition) => ({
     text: definition.displayName,
     to: definition.routePath,
     icon: definition.icon,
