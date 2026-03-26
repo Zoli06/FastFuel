@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 
 // TODO: Remove this or at least extract to a helper
 const maxLength = 100;
-const getDisplayedDescription = (description: string | null) => {
+const getDisplayedDescription = (description: string | null | undefined) => {
   if (!description) return 'No description provided';
   return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
 };
