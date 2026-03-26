@@ -264,5 +264,30 @@ export const pageDefinitions = {
   },
 } as const satisfies Record<Page, PageDefinition>;
 
-export const getHomeMenuDefinitions = (pages: Page[]): PageDefinition[] =>
-  pages.map((page) => pageDefinitions[page]).filter((definition) => definition.showInHomeMenu);
+const homeMenuOrder: Page[] = [
+  'MenuManager',
+  'FoodManager',
+  'IngredientManager',
+  'AllergyManager',
+  'OrderManager',
+  'EmployeeOrder',
+  'StationCategoryManager',
+  'StationManager',
+  'RestaurantManager',
+  'AdminManager',
+  'CustomerManager',
+  'EmployeeManager',
+  'MachineManager',
+  'RoleManager',
+  'ShiftManager',
+];
+
+export const getHomeMenuDefinitions = (pages: Page[]): PageDefinition[] => {
+  const allowed = new Set(pages);
+  return homeMenuOrder
+    .filter((page) => allowed.has(page))
+    .map((page) => pageDefinitions[page])
+    .filter(
+      (definition): definition is PageDefinition => !!definition && definition.showInHomeMenu,
+    );
+};
