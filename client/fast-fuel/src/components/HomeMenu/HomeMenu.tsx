@@ -11,32 +11,28 @@ import { Paper } from '../common/Paper/Paper.tsx';
 import { Link } from 'react-router-dom';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { IconChevronRight, IconShield } from '@tabler/icons-react';
-import { myPermissionsQueryOptions } from '../../lib/api-client.ts';
-import { buildPermissionMap } from '../../lib/buildPermissionMap.ts';
-import { pageDefinitions } from '../../lib/page-permissions.ts';
+import {
+  type Group as PageGroup,
+  type PageDefinition,
+  getHomeMenuDefinitions,
+} from '../../lib/page-permissions.ts';
+import { myRolePagesQueryOptions } from '../../lib/api-client.ts';
 
 export const HomeMenu = () => {
-  const { data: permissions } = useSuspenseQuery(myPermissionsQueryOptions());
-  const permissionMap = buildPermissionMap(permissions) as Record<string, Record<string, boolean>>;
-  const homePages = Object.values(pageDefinitions).filter((definition) => {
-    if (!definition.showInHomeMenu) {
-      return false;
-    }
+  const { data: pages } = useSuspenseQuery(myRolePagesQueryOptions());
+  const groupedDefinitions = getHomeMenuDefinitions(pages);
 
-    return definition.necessaryPermissions.every((permission) => {
-      const [, resource, action] = permission.split(':');
-      return permissionMap[resource][action];
-    });
-  });
-
-  const menuItems = homePages.map((definition) => ({
-    text: definition.displayName,
-    to: definition.routePath,
-    icon: definition.icon,
-    color: definition.color,
-  }));
-
-  const MenuCard = ({ text, to, icon: Icon, color }: (typeof menuItems)[number]) => (
+  const MenuCard = ({
+    text,
+    to,
+    icon: Icon,
+    color,
+  }: {
+    text: string;
+    to: string;
+    icon: PageDefinition['icon'];
+    color: string;
+  }) => (
     <UnstyledButton component={Link} to={to} w="100%">
       <MantinePaper withBorder p="md" style={{ transition: 'box-shadow 0.15s' }}>
         <Group justify="space-between" wrap="nowrap">
@@ -58,7 +54,7 @@ export const HomeMenu = () => {
     </UnstyledButton>
   );
 
-  if (menuItems.length === 0) {
+  if (Object.keys(groupedDefinitions).length === 0) {
     return (
       <Paper>
         <Stack align="center" gap="xs" py="xl">
@@ -73,11 +69,28 @@ export const HomeMenu = () => {
 
   return (
     <Paper>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
-        {menuItems.map((item) => (
-          <MenuCard key={item.to} {...item} />
-        ))}
-      </SimpleGrid>
+      <Stack gap="md">
+        {(Object.entries(groupedDefinitions) as [PageGroup, PageDefinition[]][]).map(
+          ([group, defs]) => (
+            <Stack key={group} gap="xs">
+              <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                {group}
+              </Text>
+              <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+                {defs.map((def) => (
+                  <MenuCard
+                    key={def.routePath}
+                    text={def.displayName}
+                    to={def.routePath}
+                    icon={def.icon}
+                    color={def.color}
+                  />
+                ))}
+              </SimpleGrid>
+            </Stack>
+          ),
+        )}
+      </Stack>
     </Paper>
   );
 };
