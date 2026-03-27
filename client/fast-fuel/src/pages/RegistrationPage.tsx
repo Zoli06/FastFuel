@@ -4,7 +4,7 @@ import { Header } from '../components/Header/Header.tsx';
 export const RegistrationPage = () => {
   return (
     <div>
-      <Header title={'Registration'} />
+      <Header title={'Registration'} authButton={'Login'} />
 
       <Register />
     </div>

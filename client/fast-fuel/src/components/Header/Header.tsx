@@ -1,15 +1,20 @@
 import { Button, Center, Flex, Text } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { apiClient, clearAuthData } from '../../lib/api-client.ts';
+import { apiClient, clearAuthData, fetchClient } from '../../lib/api-client.ts';
+import { notifications } from '@mantine/notifications';
 
 interface HeaderProps {
   title: string;
   authButton?: 'Login' | 'Logout' | 'Register';
 }
 
-export const Header = ({ title, authButton }: HeaderProps) => {
-  authButton = authButton || 'Logout';
+const authButtonConfig = {
+  Login: { text: 'Login', color: 'green', path: '/login' },
+  Logout: { text: 'Logout', color: 'red', path: null },
+  Register: { text: 'Register', color: 'blue', path: '/register' },
+};
 
+export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const navigate = useNavigate();
   const { mutate: logout } = apiClient.useMutation('post', '/api/Auth/logout', {
     onSuccess: () => {
@@ -18,34 +23,40 @@ export const Header = ({ title, authButton }: HeaderProps) => {
     },
   });
 
-  const authButtonStates = {
-    Login: { text: 'Login', color: 'green', action: () => navigate('/login') },
-    Logout: { text: 'Logout', color: 'red', action: () => logout({}) },
-    Register: { text: 'Register', color: 'blue', action: () => navigate('/register') },
+  const handleHomeClick = async () => {
+    const { data: user } = await fetchClient.GET('/api/User/me').catch(() => ({ data: null }));
+    if (!user) {
+      notifications.show({
+        title: 'Not logged in',
+        message: 'Please login to access the home page',
+        color: 'red',
+      });
+      return;
+    }
+    navigate('/');
   };
 
-  return (
-    <>
-      <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
-        <Flex flex={1} justify="flex-start">
-          <Button variant="filled" onClick={() => navigate('/')} color={'gray'}>
-            Home
-          </Button>
-        </Flex>
-        <Center>
-          <Text fz="2rem">{title}</Text>
-        </Center>
+  const config = authButtonConfig[authButton];
 
-        <Flex flex={1} justify="flex-end">
-          <Button
-            variant="filled"
-            onClick={authButtonStates[authButton].action}
-            color={authButtonStates[authButton].color}
-          >
-            {authButtonStates[authButton].text}
-          </Button>
-        </Flex>
+  return (
+    <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
+      <Flex flex={1} justify="flex-start">
+        <Button variant="filled" onClick={handleHomeClick} color="gray">
+          Home
+        </Button>
       </Flex>
-    </>
+      <Center>
+        <Text fz="2rem">{title}</Text>
+      </Center>
+      <Flex flex={1} justify="flex-end">
+        <Button
+          variant="filled"
+          color={config.color}
+          onClick={() => (config.path ? navigate(config.path) : logout({}))}
+        >
+          {config.text}
+        </Button>
+      </Flex>
+    </Flex>
   );
 };

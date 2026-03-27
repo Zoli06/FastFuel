@@ -15,7 +15,6 @@ export const triggerPermissionsRefresh = () => {
 };
 
 export const clearAuthData = () => {
-  // Remove auth-scoped data without triggering new /my requests during logout.
   const permissionsQueryKey = myPermissionsQueryOptions().queryKey;
   const rolePagesQueryKey = myRolePagesQueryOptions().queryKey;
   queryClient.removeQueries({ queryKey: permissionsQueryKey });
@@ -26,7 +25,12 @@ const API_BASE_URL = 'http://localhost:5249';
 
 const authenticationMiddleware: Middleware = {
   async onResponse({ response }) {
-    if (response.status === 401) {
+    const skipPaths = ['/api/User/me', '/api/Auth/login', '/api/Customer'];
+    const shouldSkip = skipPaths.some((path) => response.url.includes(path));
+
+    const isOnRegister = router.state.location.pathname.startsWith('/register');
+
+    if (response.status === 401 && !shouldSkip && !isOnRegister) {
       await router.navigate('/login');
     }
     return response;
@@ -38,27 +42,29 @@ const errorResponseMiddleware: Middleware = {
     if (response.ok) {
       return response;
     }
-
     if (response.status === 403 && !response.url.includes('/api/Permission/my')) {
       triggerPermissionsRefresh();
     }
-
+    if (
+      response.url.includes('/api/User/me') ||
+      response.url.includes('/api/Auth/login') ||
+      response.url.includes('/api/Role/my')
+    ) {
+      return response;
+    }
     const error = (await response.json().catch(() => ({
       title: 'An unknown error occurred',
     }))) as components['schemas']['ProblemDetails'];
-
     notifications.show({
       title: 'Error',
       message: error.title,
       color: 'red',
     });
-
     return response;
   },
 };
 
-const fetchClient = createFetchClient<paths>({
-  // TODO: move this to .env
+export const fetchClient = createFetchClient<paths>({
   baseUrl: API_BASE_URL,
   credentials: 'include',
 });
