@@ -63,7 +63,6 @@ export const pageDefinitions = {
     showInHomeMenu: true,
     group: 'Operations',
     necessaryPermissions: [
-      'Permission:Order:Create',
       'Permission:Order:CreateAtWorkplace',
       'Permission:Order:Read',
       'Permission:Food:Read',
