@@ -57,7 +57,10 @@ public static class Program
     {
         builder.Services.AddAuthorization();
         builder.Services
-            .AddIdentityApiEndpoints<User>()
+            .AddIdentityApiEndpoints<User>(options =>
+            {
+                options.User.AllowedUserNameCharacters = null;
+            })
             .AddRoles<Role>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
     }
