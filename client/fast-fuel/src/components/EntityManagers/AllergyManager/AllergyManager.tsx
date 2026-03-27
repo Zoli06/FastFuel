@@ -6,12 +6,12 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const AllergyManager = () => {
-  const { necessary, recommended } = usePagePermissions('AllergyManager', { split: true });
+  const { recommended } = usePagePermissions('AllergyManager', { split: true });
 
   const [{ data: ingredients = [] }, { data: allergies = [], refetch: refetchAllergies }] =
     useConditionalSuspenseQueries([
       recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-      necessary.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
+      apiClient.queryOptions('get', '/api/Allergy'),
     ]);
 
   type Allergy = (typeof allergies)[number];

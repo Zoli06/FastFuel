@@ -8,7 +8,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
-  const { necessary, recommended } = usePagePermissions('StationManager', { split: true });
+  const { recommended } = usePagePermissions('StationManager', { split: true });
 
   const [
     { data: restaurants = [] },
@@ -17,7 +17,7 @@ export const StationManager = () => {
   ] = useConditionalSuspenseQueries([
     recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
     recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    necessary.Station.Read && apiClient.queryOptions('get', '/api/Station'),
+    apiClient.queryOptions('get', '/api/Station'),
   ]);
 
   type Station = (typeof stations)[number];

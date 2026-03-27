@@ -7,12 +7,12 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MenuManager = () => {
-  const { necessary, recommended } = usePagePermissions('MenuManager', { split: true });
+  const { recommended } = usePagePermissions('MenuManager', { split: true });
 
   const [{ data: foods = [] }, { data: menus = [], refetch: refetchMenus }] =
     useConditionalSuspenseQueries([
       recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-      necessary.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
+      apiClient.queryOptions('get', '/api/Menu'),
     ]);
 
   type Menu = (typeof menus)[number];

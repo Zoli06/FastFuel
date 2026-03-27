@@ -7,7 +7,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const IngredientManager = () => {
-  const { necessary, recommended } = usePagePermissions('IngredientManager', { split: true });
+  const { recommended } = usePagePermissions('IngredientManager', { split: true });
 
   const [
     { data: allergies = [] },
@@ -16,7 +16,7 @@ export const IngredientManager = () => {
   ] = useConditionalSuspenseQueries([
     recommended.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
     recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    necessary.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
+    apiClient.queryOptions('get', '/api/Ingredient'),
   ]);
 
   type Ingredient = (typeof ingredients)[number];

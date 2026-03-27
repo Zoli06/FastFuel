@@ -6,12 +6,12 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const FoodManager = () => {
-  const { necessary, recommended } = usePagePermissions('FoodManager', { split: true });
+  const { recommended } = usePagePermissions('FoodManager', { split: true });
 
   const [{ data: ingredients = [] }, { data: foods = [], refetch: refetchFoods }] =
     useConditionalSuspenseQueries([
       recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-      necessary.Food.Read && apiClient.queryOptions('get', '/api/Food'),
+      apiClient.queryOptions('get', '/api/Food'),
     ]);
 
   type Food = (typeof foods)[number];
