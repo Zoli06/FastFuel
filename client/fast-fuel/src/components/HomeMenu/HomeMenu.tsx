@@ -14,13 +14,14 @@ import { IconChevronRight, IconShield } from '@tabler/icons-react';
 import {
   type Group as PageGroup,
   type PageDefinition,
-  getHomeMenuDefinitions,
+  getPageDefinitions,
 } from '../../lib/page-permissions.ts';
-import { myRolePagesQueryOptions } from '../../lib/api-client.ts';
+import { myRolesQueryOptions } from '../../lib/api-client.ts';
 
 export const HomeMenu = () => {
-  const { data: pages } = useSuspenseQuery(myRolePagesQueryOptions());
-  const groupedDefinitions = getHomeMenuDefinitions(pages);
+  const { data: roles } = useSuspenseQuery(myRolesQueryOptions());
+  const accessiblePages = Array.from(new Set(roles.flatMap((role) => role.pages)));
+  const pageDefinitions = getPageDefinitions(accessiblePages);
 
   const MenuCard = ({
     text,
@@ -54,7 +55,7 @@ export const HomeMenu = () => {
     </UnstyledButton>
   );
 
-  if (Object.keys(groupedDefinitions).length === 0) {
+  if (Object.keys(pageDefinitions).length === 0) {
     return (
       <Paper>
         <Stack align="center" gap="xs" py="xl">
@@ -70,7 +71,7 @@ export const HomeMenu = () => {
   return (
     <Paper>
       <Stack gap="md">
-        {(Object.entries(groupedDefinitions) as [PageGroup, PageDefinition[]][]).map(
+        {(Object.entries(pageDefinitions) as [PageGroup, PageDefinition[]][]).map(
           ([group, defs]) => (
             <Stack key={group} gap="xs">
               <Text size="xs" fw={600} c="dimmed" tt="uppercase">
