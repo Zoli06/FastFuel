@@ -1,13 +1,5 @@
-import { Footer } from '../../components/Footer/Footer.tsx';
-import { Header } from '../../components/Header/Header.tsx';
-import { CustomerOrderCreator } from '../../components/CustomerOrderCreator/CustomerOrderCreator.tsx';
+import { CustomerOrderList } from '../../components/CustomerOrderCreator/CustomerOrderList.tsx';
 
 export const MenuPage = () => {
-  return (
-    <>
-      <Header title="Menu" />
-      <CustomerOrderCreator />
-      <Footer />
-    </>
-  );
+  return <CustomerOrderList />;
 };
