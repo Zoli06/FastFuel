@@ -18,6 +18,8 @@ export type Page = components['schemas']['Page'];
 export type Permission =
   operations['Permission_GetAll']['responses'][200]['content']['application/json'][number];
 
+export type Group = 'Edibles' | 'Restaurant' | 'Management' | 'Operations' | 'Display';
+
 type IconComponent = typeof IconShield;
 
 export interface PageDefinition {
@@ -26,6 +28,7 @@ export interface PageDefinition {
   icon: IconComponent;
   routePath: string;
   showInHomeMenu: boolean;
+  group: Group;
   necessaryPermissions: readonly Permission[];
   recommendedPermissions: readonly Permission[];
 }
@@ -37,6 +40,7 @@ export const pageDefinitions = {
     icon: IconClipboardList,
     routePath: '/stations/:id/tasks',
     showInHomeMenu: false,
+    group: 'Display',
     necessaryPermissions: ['Permission:Station:ViewTasks'],
     recommendedPermissions: ['Permission:Station:Read', 'Permission:Order:UpdateStatus'],
   },
@@ -46,6 +50,7 @@ export const pageDefinitions = {
     icon: IconClipboardList,
     routePath: '/restaurants/:id/status-display',
     showInHomeMenu: false,
+    group: 'Display',
     necessaryPermissions: ['Permission:Order:Read'],
     recommendedPermissions: ['Permission:Order:UpdateStatus', 'Permission:Restaurant:Read'],
   },
@@ -55,6 +60,7 @@ export const pageDefinitions = {
     icon: IconShoppingCart,
     routePath: '/employee/order',
     showInHomeMenu: true,
+    group: 'Operations',
     necessaryPermissions: [
       'Permission:Order:Create',
       'Permission:Order:CreateAtWorkplace',
@@ -70,6 +76,7 @@ export const pageDefinitions = {
     icon: IconShield,
     routePath: '/manage/admin',
     showInHomeMenu: true,
+    group: 'Management',
     necessaryPermissions: ['Permission:Admin:Read'],
     recommendedPermissions: [
       'Permission:Admin:Create',
@@ -83,6 +90,7 @@ export const pageDefinitions = {
     icon: IconAlertCircle,
     routePath: '/manage/allergy',
     showInHomeMenu: true,
+    group: 'Edibles',
     necessaryPermissions: ['Permission:Allergy:Read'],
     recommendedPermissions: [
       'Permission:Allergy:Create',
@@ -97,6 +105,7 @@ export const pageDefinitions = {
     icon: IconUsers,
     routePath: '/manage/customer',
     showInHomeMenu: true,
+    group: 'Management',
     necessaryPermissions: ['Permission:Customer:Read'],
     recommendedPermissions: ['Permission:Customer:Update', 'Permission:Customer:Delete'],
   },
@@ -106,6 +115,7 @@ export const pageDefinitions = {
     icon: IconLeaf,
     routePath: '/manage/ingredient',
     showInHomeMenu: true,
+    group: 'Edibles',
     necessaryPermissions: ['Permission:Ingredient:Read'],
     recommendedPermissions: [
       'Permission:Ingredient:Create',
@@ -121,6 +131,7 @@ export const pageDefinitions = {
     icon: IconUsers,
     routePath: '/manage/employee',
     showInHomeMenu: true,
+    group: 'Management',
     necessaryPermissions: ['Permission:Employee:Read'],
     recommendedPermissions: [
       'Permission:Employee:Create',
@@ -136,6 +147,7 @@ export const pageDefinitions = {
     icon: IconDeviceDesktop,
     routePath: '/manage/machine',
     showInHomeMenu: true,
+    group: 'Restaurant',
     necessaryPermissions: ['Permission:Machine:Read'],
     recommendedPermissions: [
       'Permission:Machine:Create',
@@ -150,6 +162,7 @@ export const pageDefinitions = {
     icon: IconToolsKitchen2,
     routePath: '/manage/food',
     showInHomeMenu: true,
+    group: 'Edibles',
     necessaryPermissions: ['Permission:Food:Read'],
     recommendedPermissions: [
       'Permission:Food:Create',
@@ -164,6 +177,7 @@ export const pageDefinitions = {
     icon: IconBook2,
     routePath: '/manage/menu',
     showInHomeMenu: true,
+    group: 'Edibles',
     necessaryPermissions: ['Permission:Menu:Read'],
     recommendedPermissions: [
       'Permission:Menu:Create',
@@ -178,6 +192,7 @@ export const pageDefinitions = {
     icon: IconClipboardList,
     routePath: '/manage/order',
     showInHomeMenu: true,
+    group: 'Operations',
     necessaryPermissions: ['Permission:Order:Read'],
     recommendedPermissions: [
       'Permission:Order:Create',
@@ -196,6 +211,7 @@ export const pageDefinitions = {
     icon: IconShield,
     routePath: '/manage/role',
     showInHomeMenu: true,
+    group: 'Management',
     necessaryPermissions: ['Permission:Role:Read'],
     recommendedPermissions: [
       'Permission:Role:Create',
@@ -211,6 +227,7 @@ export const pageDefinitions = {
     icon: IconClock,
     routePath: '/manage/shift',
     showInHomeMenu: true,
+    group: 'Management',
     necessaryPermissions: ['Permission:Shift:Read'],
     recommendedPermissions: [
       'Permission:Shift:Create',
@@ -225,6 +242,7 @@ export const pageDefinitions = {
     icon: IconLayoutGrid,
     routePath: '/manage/station-category',
     showInHomeMenu: true,
+    group: 'Restaurant',
     necessaryPermissions: ['Permission:StationCategory:Read'],
     recommendedPermissions: [
       'Permission:StationCategory:Create',
@@ -239,6 +257,7 @@ export const pageDefinitions = {
     icon: IconDeviceDesktop,
     routePath: '/manage/station',
     showInHomeMenu: true,
+    group: 'Restaurant',
     necessaryPermissions: ['Permission:Station:Read'],
     recommendedPermissions: [
       'Permission:Station:ViewTasks',
@@ -255,6 +274,7 @@ export const pageDefinitions = {
     icon: IconBuildingStore,
     routePath: '/manage/restaurant',
     showInHomeMenu: true,
+    group: 'Restaurant',
     necessaryPermissions: ['Permission:Restaurant:Read'],
     recommendedPermissions: [
       'Permission:Restaurant:Create',
@@ -264,30 +284,15 @@ export const pageDefinitions = {
   },
 } as const satisfies Record<Page, PageDefinition>;
 
-const homeMenuOrder: Page[] = [
-  'MenuManager',
-  'FoodManager',
-  'IngredientManager',
-  'AllergyManager',
-  'OrderManager',
-  'EmployeeOrder',
-  'StationCategoryManager',
-  'StationManager',
-  'RestaurantManager',
-  'AdminManager',
-  'CustomerManager',
-  'EmployeeManager',
-  'MachineManager',
-  'RoleManager',
-  'ShiftManager',
-];
-
-export const getHomeMenuDefinitions = (pages: Page[]): PageDefinition[] => {
+export const getHomeMenuDefinitions = (pages: Page[]): Partial<Record<Group, PageDefinition[]>> => {
   const allowed = new Set(pages);
-  return homeMenuOrder
-    .filter((page) => allowed.has(page))
-    .map((page) => pageDefinitions[page])
-    .filter(
-      (definition): definition is PageDefinition => !!definition && definition.showInHomeMenu,
-    );
+  const result: Partial<Record<Group, PageDefinition[]>> = {};
+
+  for (const page of Object.keys(pageDefinitions) as Page[]) {
+    const def = pageDefinitions[page];
+    if (!allowed.has(page) || !def.showInHomeMenu) continue;
+    (result[def.group] ??= []).push(def);
+  }
+
+  return result;
 };
