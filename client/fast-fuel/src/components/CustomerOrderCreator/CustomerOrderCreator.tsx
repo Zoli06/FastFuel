@@ -3,54 +3,33 @@ import {
   Badge,
   Box,
   Button,
-  Center,
   Divider,
   Group,
-  Loader,
-  Select,
+  Paper,
+  ScrollArea,
   SimpleGrid,
   Stack,
   Text,
-  Paper,
   UnstyledButton,
-  ScrollArea,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { CustomerOrderCreate } from './CustomerOrderCreate.tsx';
+import { OrderItemCard } from './OrderItemCard.tsx';
 import { CustomerOrderDetailModal } from './CustomerOrderDetailModal.tsx';
 import { apiClient } from '../../lib/api-client.ts';
 import {
+  IconArrowDown,
+  IconArrowUp,
   IconBottleFilled,
   IconBurger,
-  IconToolsKitchen3,
   IconLayoutGrid,
   IconSortAscendingLetters,
   IconSortDescendingLetters,
-  IconArrowUp,
-  IconArrowDown,
+  IconToolsKitchen3,
 } from '@tabler/icons-react';
-
-const useMenus = () => apiClient.useQuery('get', '/api/Menu');
-const useFoods = () => apiClient.useQuery('get', '/api/Food');
-const useRestaurants = () => apiClient.useQuery('get', '/api/Restaurant');
-
-type ApiMenu = NonNullable<ReturnType<typeof useMenus>['data']>[number];
-type ApiFood = NonNullable<ReturnType<typeof useFoods>['data']>[number];
-type ApiRestaurant = NonNullable<ReturnType<typeof useRestaurants>['data']>[number];
-
-type CartItem = {
-  menuId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  specialInstructions: string | null;
-  type: 'food' | 'menu';
-};
-
-type UnifiedItem =
-  | (ApiMenu & { type: 'menu' })
-  | (ApiFood & { foods: { foodId: number; quantity: number }[]; type: 'food' });
+import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
+import { NumericSelect } from '../common/NumericCombobox/NumericSelect.tsx';
+import type { CartItem, SortKey, UnifiedItem } from './types.ts';
 
 const CATEGORIES = [
   { label: 'All', value: 'all', icons: [IconLayoutGrid] },
@@ -58,16 +37,17 @@ const CATEGORIES = [
   { label: 'Menus', value: 'menu', icons: [IconBurger, IconBottleFilled] },
 ];
 
-type SortKey = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
-
-export const CustomerOrderList = () => {
-  const { data: menus, isLoading: menusLoading, isError: menusError } = useMenus();
-  const { data: foods, isLoading: foodsLoading, isError: foodsError } = useFoods();
-  const { data: restaurants } = useRestaurants();
+export const CustomerOrderCreator = () => {
+  const [{ data: menus = [] }, { data: foods = [] }, { data: restaurants = [] }] =
+    useConditionalSuspenseQueries([
+      apiClient.queryOptions('get', '/api/Menu'),
+      apiClient.queryOptions('get', '/api/Food'),
+      apiClient.queryOptions('get', '/api/Restaurant'),
+    ]);
 
   const [restaurantId, setRestaurantId] = useState<number | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<UnifiedItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
@@ -83,28 +63,25 @@ export const CustomerOrderList = () => {
     },
   });
 
-  const restaurantOptions = (restaurants ?? []).map((r: ApiRestaurant) => ({
-    value: String(r.id),
+  const restaurantOptions = restaurants.map((r) => ({
+    value: r.id,
     label: r.name,
   }));
 
-  const unifiedMenus: UnifiedItem[] = (menus ?? []).map((m: ApiMenu) => ({
+  const unifiedMenus: UnifiedItem[] = menus.map((m) => ({
     ...m,
     type: 'menu' as const,
   }));
 
-  const unifiedFoods: UnifiedItem[] = (foods ?? []).map((f: ApiFood) => ({
+  const unifiedFoods: UnifiedItem[] = foods.map((f) => ({
     ...f,
-    foods: [],
     type: 'food' as const,
   }));
 
-  const allItems: UnifiedItem[] =
-    activeCategory === 'all'
-      ? [...unifiedMenus, ...unifiedFoods]
-      : activeCategory === 'menu'
-        ? unifiedMenus
-        : unifiedFoods;
+  const allItems = [...unifiedMenus, ...unifiedFoods].filter((item) => {
+    if (activeCategory === 'all') return true;
+    return item.type === activeCategory;
+  });
 
   const filteredAndSorted = [...allItems].sort((a, b) => {
     if (sortKey === 'name-asc') return a.name.localeCompare(b.name);
@@ -114,66 +91,39 @@ export const CustomerOrderList = () => {
     return 0;
   });
 
-  const getQuantity = (id: number, type: 'food' | 'menu') =>
-    cart.find((c) => c.menuId === id && c.type === type)?.quantity ?? 0;
-
-  const addToCart = (item: UnifiedItem) => {
+  const addItemToCart = (item: CartItem) => {
     setCart((prev) => {
-      const existing = prev.find((c) => c.menuId === item.id && c.type === item.type);
+      const existing = prev.find(
+        (c) => c.item.id === item.item.id && c.item.type === item.item.type,
+      );
       if (existing)
         return prev.map((c) =>
-          c.menuId === item.id && c.type === item.type ? { ...c, quantity: c.quantity + 1 } : c,
-        );
-      return [
-        ...prev,
-        {
-          menuId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: 1,
-          specialInstructions: null,
-          type: item.type,
-        },
-      ];
-    });
-  };
-
-  const addToCartFromModal = (
-    menuId: number,
-    quantity: number,
-    specialInstructions: string | null,
-    type: 'food' | 'menu',
-  ) => {
-    const source = type === 'menu' ? unifiedMenus : unifiedFoods;
-    const item = source.find((m) => m.id === menuId);
-    if (!item) return;
-    setCart((prev) => {
-      const existing = prev.find((c) => c.menuId === menuId && c.type === type);
-      if (existing)
-        return prev.map((c) =>
-          c.menuId === menuId && c.type === type
-            ? { ...c, quantity: c.quantity + quantity, specialInstructions }
+          c.item.id === item.item.id && c.item.type === item.item.type
+            ? {
+                ...c,
+                quantity: c.quantity + item.quantity,
+                specialInstructions: item.specialInstructions || c.specialInstructions,
+              }
             : c,
         );
-      return [
-        ...prev,
-        { menuId, name: item.name, price: item.price, quantity, specialInstructions, type },
-      ];
+      return [...prev, item];
     });
   };
 
   const removeFromCart = (id: number, type: 'food' | 'menu') => {
     setCart((prev) => {
-      const existing = prev.find((c) => c.menuId === id && c.type === type);
-      if (!existing || existing.quantity <= 1)
-        return prev.filter((c) => !(c.menuId === id && c.type === type));
+      const existing = prev.find((c) => c.item.id === id && c.item.type === type);
+      if (!existing) return prev;
+      if (existing.quantity === 1) {
+        return prev.filter((c) => !(c.item.id === id && c.item.type === type));
+      }
       return prev.map((c) =>
-        c.menuId === id && c.type === type ? { ...c, quantity: c.quantity - 1 } : c,
+        c.item.id === id && c.item.type === type ? { ...c, quantity: c.quantity - 1 } : c,
       );
     });
   };
 
-  const totalPrice = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
+  const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
   const totalItems = cart.reduce((sum, c) => sum + c.quantity, 0);
 
   const CART_HEADER = 44;
@@ -199,38 +149,22 @@ export const CustomerOrderList = () => {
       body: {
         restaurantId,
         menus: cart
-          .filter((c) => c.type === 'menu')
+          .filter((c) => c.item.type === 'menu')
           .map((c) => ({
-            menuId: c.menuId,
+            menuId: c.item.id,
             quantity: c.quantity,
             specialInstructions: c.specialInstructions,
           })),
         foods: cart
-          .filter((c) => c.type === 'food')
+          .filter((c) => c.item.type === 'food')
           .map((c) => ({
-            foodId: c.menuId,
+            foodId: c.item.id,
             quantity: c.quantity,
             specialInstructions: c.specialInstructions,
           })),
       },
     });
   };
-
-  const isLoading = menusLoading || foodsLoading;
-  const isError = menusError || foodsError;
-
-  if (isLoading)
-    return (
-      <Center h={200}>
-        <Loader color="red" />
-      </Center>
-    );
-  if (isError)
-    return (
-      <Center h={200}>
-        <Text c="red">Failed to load items</Text>
-      </Center>
-    );
 
   return (
     <>
@@ -336,12 +270,12 @@ export const CustomerOrderList = () => {
           </Box>
 
           <Group justify="space-between" align="flex-end">
-            <Select
+            <NumericSelect
               label="Restaurant"
               placeholder="Where are you ordering from?"
               data={restaurantOptions}
-              value={restaurantId ? String(restaurantId) : null}
-              onChange={(v) => setRestaurantId(v ? Number(v) : null)}
+              value={restaurantId}
+              onChange={(val) => setRestaurantId(val)}
               searchable
               style={{ flex: 1, maxWidth: 320 }}
             />
@@ -407,14 +341,14 @@ export const CustomerOrderList = () => {
 
           <SimpleGrid cols={{ base: 1, sm: 3, md: 4, lg: 6 }} spacing={4}>
             {filteredAndSorted.map((item) => (
-              <CustomerOrderCreate
+              <OrderItemCard
                 key={`${item.type}-${item.id}`}
-                {...item}
-                quantity={getQuantity(item.id, item.type)}
-                onAdd={() => addToCart(item)}
+                item={item}
+                allFoods={foods}
+                onAdd={() => addItemToCart({ item, quantity: 1, specialInstructions: null })}
                 onRemove={() => removeFromCart(item.id, item.type)}
                 onOpen={() => {
-                  setSelectedMenu(item);
+                  setSelectedItem(item);
                   open();
                 }}
               />
@@ -453,21 +387,21 @@ export const CustomerOrderList = () => {
           <ScrollArea h={cartScrollHeight} scrollbarSize={4} mb="xs">
             <Stack gap={0}>
               {cart.map((c, idx) => (
-                <Box key={`${c.type}-${c.menuId}`}>
+                <Box key={`${c.item.type}-${c.item.id}`}>
                   {idx > 0 && <Divider my={6} />}
                   <Group justify="space-between" wrap="nowrap" gap="xs">
                     <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
                       <Group gap={6} wrap="nowrap">
                         <Text size="sm" fw={600} lineClamp={1} style={{ flex: 1 }}>
-                          {c.name}
+                          {c.item.name}
                         </Text>
                         <Badge
                           size="xs"
-                          color={c.type === 'menu' ? 'orange' : 'blue'}
+                          color={c.item.type === 'menu' ? 'orange' : 'blue'}
                           variant="light"
                           style={{ flexShrink: 0 }}
                         >
-                          {c.type}
+                          {c.item.type}
                         </Badge>
                       </Group>
                       {c.specialInstructions && (
@@ -481,7 +415,7 @@ export const CustomerOrderList = () => {
                         size="compact-xs"
                         variant="subtle"
                         color="gray"
-                        onClick={() => removeFromCart(c.menuId, c.type)}
+                        onClick={() => removeFromCart(c.item.id, c.item.type)}
                       >
                         −
                       </Button>
@@ -493,9 +427,14 @@ export const CustomerOrderList = () => {
                         variant="subtle"
                         color="gray"
                         onClick={() => {
-                          const source = c.type === 'menu' ? unifiedMenus : unifiedFoods;
-                          const item = source.find((m) => m.id === c.menuId);
-                          if (item) addToCart(item);
+                          const source = c.item.type === 'menu' ? unifiedMenus : unifiedFoods;
+                          const item = source.find((m) => m.id === c.item.id);
+                          if (item)
+                            addItemToCart({
+                              item,
+                              quantity: 1,
+                              specialInstructions: c.specialInstructions,
+                            });
                         }}
                       >
                         +
@@ -506,7 +445,7 @@ export const CustomerOrderList = () => {
                         c="darkred"
                         style={{ minWidth: 60, textAlign: 'right' }}
                       >
-                        ${(c.price * c.quantity).toFixed(2)}
+                        ${(c.item.price * c.quantity).toFixed(2)}
                       </Text>
                     </Group>
                   </Group>
@@ -532,12 +471,19 @@ export const CustomerOrderList = () => {
         </Paper>
       )}
 
-      <CustomerOrderDetailModal
-        opened={opened}
-        onClose={close}
-        menu={selectedMenu}
-        onAddToCart={addToCartFromModal}
-      />
+      {/* Item detail modal */}
+      {selectedItem && (
+        <CustomerOrderDetailModal
+          item={selectedItem}
+          allFoods={foods}
+          opened={opened}
+          onClose={() => {
+            setSelectedItem(null);
+            close();
+          }}
+          onAddToCart={addItemToCart}
+        />
+      )}
     </>
   );
 };
