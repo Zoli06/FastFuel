@@ -15,7 +15,7 @@ import {
   type Group as PageGroup,
   type PageDefinition,
   getPageDefinitions,
-} from '../../lib/page-permissions.ts';
+} from '../../lib/page-definitions.ts';
 import { myRolesQueryOptions } from '../../lib/api-client.ts';
 
 export const HomeMenu = () => {

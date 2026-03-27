@@ -17,7 +17,7 @@ import {
   type Page,
   type PageDefinition,
   type Permission,
-} from '../../../lib/page-permissions.ts';
+} from '../../../lib/page-definitions.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
