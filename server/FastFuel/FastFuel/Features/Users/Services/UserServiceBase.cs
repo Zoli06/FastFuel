@@ -27,13 +27,13 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
     protected override Update<TUser, TUserRequestDto, TUserResponseDto> UpdateOperation =>
         new Update(DbContext, DbSet, Mapper, userManager);
 
-    protected virtual DefaultRole[] DefaultRoles => [DefaultRole.User];
+    protected abstract DefaultRole[] DefaultRoles { get; }
 
     private async Task SetDefaultRoles(TUser user)
     {
         foreach (var role in DefaultRoles)
         {
-            var userResult = await userManager.AddToRoleAsync(user, role.ToRoleName());
+            var userResult = await userManager.AddToRoleAsync(user, role.ToString());
             if (!userResult.Succeeded)
                 throw new ValidationAppException(string.Join("; ", userResult.Errors.Select(e => e.Description)));
         }

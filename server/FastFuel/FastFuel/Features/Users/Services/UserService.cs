@@ -1,5 +1,6 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -14,4 +15,5 @@ public class UserService(
     : UserServiceBase<User, UserRequestDto, UserResponseDto>(dbContext, mapper, userManager)
 {
     protected override DbSet<User> DbSet { get; } = dbContext.Users;
+    protected override DefaultRole[] DefaultRoles { get; } = [];
 }

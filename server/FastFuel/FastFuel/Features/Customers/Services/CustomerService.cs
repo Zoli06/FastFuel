@@ -20,7 +20,6 @@ public class CustomerService(
 
     protected override DefaultRole[] DefaultRoles =>
     [
-        ..base.DefaultRoles,
         DefaultRole.Customer
     ];
 }

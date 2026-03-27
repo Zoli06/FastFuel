@@ -20,7 +20,6 @@ public class AdminService(
 
     protected override DefaultRole[] DefaultRoles =>
     [
-        ..base.DefaultRoles,
         DefaultRole.Admin
     ];
 }
