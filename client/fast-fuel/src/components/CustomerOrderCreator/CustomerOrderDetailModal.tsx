@@ -11,7 +11,7 @@ import {
   Textarea,
 } from '@mantine/core';
 import { useState } from 'react';
-import type { CartItem, Food, UnifiedItem } from './CustomerOrderCreator.tsx';
+import type { CartItem, Food, UnifiedItem } from './types.ts';
 
 type MenuDetailModalProps = {
   opened: boolean;
