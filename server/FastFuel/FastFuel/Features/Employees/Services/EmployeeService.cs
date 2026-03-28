@@ -20,7 +20,6 @@ public class EmployeeService(
 
     protected override DefaultRole[] DefaultRoles =>
     [
-        ..base.DefaultRoles,
         DefaultRole.Employee
     ];
 }

@@ -6,12 +6,12 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MachineManager = () => {
-  const { necessary, recommended } = usePagePermissions('MachineManager', { split: true });
+  const { recommended } = usePagePermissions('MachineManager', { split: true });
 
   const [{ data: restaurants = [] }, { data: machines = [], refetch: refetchMachines }] =
     useConditionalSuspenseQueries([
       recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-      necessary.Machine.Read && apiClient.queryOptions('get', '/api/Machine'),
+      apiClient.queryOptions('get', '/api/Machine'),
     ]);
 
   type Machine = (typeof machines)[number];

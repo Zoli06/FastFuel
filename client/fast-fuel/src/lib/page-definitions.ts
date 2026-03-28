@@ -29,6 +29,7 @@ export interface PageDefinition {
   routePath: string;
   showInHomeMenu: boolean;
   group: Group;
+  requiresDefaultRole?: readonly string[];
   necessaryPermissions: readonly Permission[];
   recommendedPermissions: readonly Permission[];
 }
@@ -62,13 +63,13 @@ export const pageDefinitions = {
     showInHomeMenu: true,
     group: 'Operations',
     necessaryPermissions: [
-      'Permission:Order:Create',
       'Permission:Order:CreateAtWorkplace',
       'Permission:Order:Read',
       'Permission:Food:Read',
       'Permission:Menu:Read',
     ],
     recommendedPermissions: [],
+    requiresDefaultRole: ['Employee'],
   },
   AdminManager: {
     displayName: 'Admins',
@@ -284,7 +285,7 @@ export const pageDefinitions = {
   },
 } as const satisfies Record<Page, PageDefinition>;
 
-export const getHomeMenuDefinitions = (pages: Page[]): Partial<Record<Group, PageDefinition[]>> => {
+export const getPageDefinitions = (pages: Page[]): Partial<Record<Group, PageDefinition[]>> => {
   const allowed = new Set(pages);
   const result: Partial<Record<Group, PageDefinition[]>> = {};
 

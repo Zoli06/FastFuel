@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { myPermissionsQueryOptions } from '../lib/api-client.ts';
-import { pageDefinitions } from '../lib/page-permissions.ts';
+import { pageDefinitions } from '../lib/page-definitions.ts';
 import { buildPermissionMap, type PermissionMap } from '../lib/buildPermissionMap.ts';
 
 type Page = keyof typeof pageDefinitions;

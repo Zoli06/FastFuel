@@ -26,12 +26,12 @@ const parseAsUtcDate = (value: string) => {
 };
 
 export const ShiftManager = () => {
-  const { necessary, recommended } = usePagePermissions('ShiftManager', { split: true });
+  const { recommended } = usePagePermissions('ShiftManager', { split: true });
 
   const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
     useConditionalSuspenseQueries([
       recommended.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
-      necessary.Shift.Read && apiClient.queryOptions('get', '/api/Shift'),
+      apiClient.queryOptions('get', '/api/Shift'),
     ]);
 
   type Shift = (typeof shifts)[number];

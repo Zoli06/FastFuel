@@ -38,7 +38,7 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) => {
-  const { necessary, recommended } = usePagePermissions('OrderStatusDisplay', { split: true });
+  const { recommended } = usePagePermissions('OrderStatusDisplay', { split: true });
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
   const hideExitButtonTimeoutRef = useRef<number | null>(null);
@@ -54,28 +54,26 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
         apiClient.queryOptions('get', '/api/Restaurant/{id}', {
           params: { path: { id: restaurantId } },
         }),
-      necessary.Order.Read &&
-        apiClient.queryOptions(
-          'get',
-          '/api/Order',
-          {
-            params: { query: buildOrderQuery('InProgress') },
-          },
-          {
-            refetchInterval: 2500,
-          },
-        ),
-      necessary.Order.Read &&
-        apiClient.queryOptions(
-          'get',
-          '/api/Order',
-          {
-            params: { query: buildOrderQuery('Ready') },
-          },
-          {
-            refetchInterval: 2500,
-          },
-        ),
+      apiClient.queryOptions(
+        'get',
+        '/api/Order',
+        {
+          params: { query: buildOrderQuery('InProgress') },
+        },
+        {
+          refetchInterval: 2500,
+        },
+      ),
+      apiClient.queryOptions(
+        'get',
+        '/api/Order',
+        {
+          params: { query: buildOrderQuery('Ready') },
+        },
+        {
+          refetchInterval: 2500,
+        },
+      ),
     ]);
 
   const toggleFullscreen = async () => {

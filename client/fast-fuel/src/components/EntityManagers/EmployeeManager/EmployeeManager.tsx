@@ -6,7 +6,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const { necessary, recommended } = usePagePermissions('EmployeeManager', { split: true });
+  const { recommended } = usePagePermissions('EmployeeManager', { split: true });
 
   const [
     { data: stationCategories = [] },
@@ -15,7 +15,7 @@ export const EmployeeManager = () => {
   ] = useConditionalSuspenseQueries([
     recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
     recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    necessary.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
+    apiClient.queryOptions('get', '/api/Employee'),
   ]);
 
   type Employee = (typeof employees)[number];

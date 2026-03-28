@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Alert,
   Badge,
   Button,
   Card,
@@ -22,7 +21,6 @@ import { useMemo, useRef, useState } from 'react';
 import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 import { Paper } from '../common/Paper/Paper.tsx';
 
 type OrderMenuLine = components['schemas']['OrderMenuDto'];
@@ -256,21 +254,16 @@ const CatalogItemCard = ({
 };
 
 export const EmployeeOrderCreator = () => {
-  const { necessary } = usePagePermissions('EmployeeOrder', { split: true });
   const [catalogMode, setCatalogMode] = useState<CatalogMode>('food');
   const [search, setSearch] = useState('');
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   const [lastOrderNumber, setLastOrderNumber] = useState<number | null>(null);
   const nextLineId = useRef(1);
 
-  const [{ data: currentUser }, { data: foods = [] }, { data: menus = [] }] =
-    useConditionalSuspenseQueries([
-      apiClient.queryOptions('get', '/api/User/me'),
-      necessary.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-      necessary.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-    ]);
-
-  const isNotEmployee = currentUser && currentUser.userType !== 'Employee';
+  const [{ data: foods = [] }, { data: menus = [] }] = useConditionalSuspenseQueries([
+    apiClient.queryOptions('get', '/api/Food'),
+    apiClient.queryOptions('get', '/api/Menu'),
+  ]);
 
   const { mutateAsync: createOrder, isPending: isSubmitting } = apiClient.useMutation(
     'post',
@@ -350,16 +343,6 @@ export const EmployeeOrderCreator = () => {
   };
 
   const catalogItems = catalogMode === 'food' ? filteredFoods : filteredMenus;
-
-  if (isNotEmployee) {
-    return (
-      <Paper>
-        <Alert icon="⚠️" color="red" title="Access Denied">
-          This page is only for employees.
-        </Alert>
-      </Paper>
-    );
-  }
 
   return (
     <Paper>

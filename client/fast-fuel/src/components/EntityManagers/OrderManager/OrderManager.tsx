@@ -6,7 +6,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const OrderManager = () => {
-  const { necessary, recommended } = usePagePermissions('OrderManager', { split: true });
+  const { recommended } = usePagePermissions('OrderManager', { split: true });
 
   const [
     { data: menus = [] },
@@ -19,7 +19,7 @@ export const OrderManager = () => {
     recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
     recommended.User.Read && apiClient.queryOptions('get', '/api/User'),
     recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    necessary.Order.Read && apiClient.queryOptions('get', '/api/Order'),
+    apiClient.queryOptions('get', '/api/Order'),
   ]);
 
   type Order = (typeof orders)[number];
