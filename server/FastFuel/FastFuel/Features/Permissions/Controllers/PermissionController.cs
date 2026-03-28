@@ -11,6 +11,10 @@ namespace FastFuel.Features.Permissions.Controllers;
 [Route("api/[controller]")]
 public class PermissionController(IPermissionService permissionService) : ControllerBase
 {
+    /// <summary>
+    /// Gets all permissions available in the system.
+    /// </summary>
+    /// <returns>The full list of permission names.</returns>
     [HttpGet]
     [PermissionCheck(CrudOperation.Read)]
     public async Task<Results<
@@ -22,6 +26,10 @@ public class PermissionController(IPermissionService permissionService) : Contro
         return TypedResults.Ok(await permissionService.GetAllPermissionsAsync());
     }
 
+    /// <summary>
+    /// Gets the permissions of the currently authenticated user.
+    /// </summary>
+    /// <returns>The current user's permission names.</returns>
     [HttpGet("my")]
     public async Task<Results<
             Ok<List<string>>,
