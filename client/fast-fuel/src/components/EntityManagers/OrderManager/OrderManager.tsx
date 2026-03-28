@@ -2,11 +2,11 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const OrderManager = () => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('OrderManager', { split: true });
 
   const [
     { data: menus = [] },
@@ -15,10 +15,10 @@ export const OrderManager = () => {
     { data: restaurants = [] },
     { data: orders = [], refetch: refetchOrders },
   ] = useConditionalSuspenseQueries([
-    can.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-    can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-    can.User.Read && apiClient.queryOptions('get', '/api/User'),
-    can.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    recommended.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
+    recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
+    recommended.User.Read && apiClient.queryOptions('get', '/api/User'),
+    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
     apiClient.queryOptions('get', '/api/Order'),
   ]);
 
@@ -35,7 +35,7 @@ export const OrderManager = () => {
 
   const tableColumns: ColumnDefinition<Order>[] = [
     { header: 'Order #', accessor: 'orderNumber' },
-    ...(can.User.Read
+    ...(recommended.User.Read
       ? [
           {
             header: 'Ordered By',
@@ -43,7 +43,7 @@ export const OrderManager = () => {
           },
         ]
       : []),
-    ...(can.Restaurant.Read
+    ...(recommended.Restaurant.Read
       ? [
           {
             header: 'Restaurant',
@@ -54,7 +54,7 @@ export const OrderManager = () => {
       : []),
     { header: 'Status', accessor: 'status' },
     { header: 'Price', render: (order) => `${order.price.toFixed(2)}` },
-    ...(can.Menu.Read
+    ...(recommended.Menu.Read
       ? [
           {
             header: 'Menus',
@@ -70,7 +70,7 @@ export const OrderManager = () => {
           },
         ]
       : []),
-    ...(can.Food.Read
+    ...(recommended.Food.Read
       ? [
           {
             header: 'Foods',
@@ -93,7 +93,7 @@ export const OrderManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(can.Restaurant.Read
+    ...(recommended.Restaurant.Read
       ? [
           {
             type: 'numericSelect',
@@ -110,7 +110,7 @@ export const OrderManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(can.Menu.Read
+    ...(recommended.Menu.Read
       ? [
           {
             type: 'fieldset',
@@ -164,7 +164,7 @@ export const OrderManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(can.Food.Read
+    ...(recommended.Food.Read
       ? [
           {
             type: 'fieldset',
@@ -247,9 +247,9 @@ export const OrderManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(o) => deleteOrder({ params: { path: { id: o.id } } })}
-      canCreate={can.Order.Create}
-      canEdit={can.Order.Update}
-      canDelete={can.Order.Delete}
+      canCreate={recommended.Order.Create}
+      canEdit={recommended.Order.Update}
+      canDelete={recommended.Order.Delete}
     />
   );
 };

@@ -3,19 +3,19 @@ import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const IngredientManager = () => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('IngredientManager', { split: true });
 
   const [
     { data: allergies = [] },
     { data: stationCategories = [] },
     { data: ingredients = [], refetch: refetchIngredients },
   ] = useConditionalSuspenseQueries([
-    can.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
-    can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    recommended.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
+    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
     apiClient.queryOptions('get', '/api/Ingredient'),
   ]);
 
@@ -32,7 +32,7 @@ export const IngredientManager = () => {
           'No image'
         ),
     },
-    ...(can.Allergy.Read
+    ...(recommended.Allergy.Read
       ? [
           {
             header: 'Allergies',
@@ -45,7 +45,7 @@ export const IngredientManager = () => {
           },
         ]
       : []),
-    ...(can.StationCategory.Read
+    ...(recommended.StationCategory.Read
       ? [
           {
             header: 'Station Categories',
@@ -82,7 +82,7 @@ export const IngredientManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(can.Allergy.Read
+    ...(recommended.Allergy.Read
       ? [
           {
             type: 'numericMultiSelect',
@@ -99,7 +99,7 @@ export const IngredientManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(can.StationCategory.Read
+    ...(recommended.StationCategory.Read
       ? [
           {
             type: 'numericMultiSelect',
@@ -153,9 +153,9 @@ export const IngredientManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteIngredient({ params: { path: { id: r.id } } })}
-      canCreate={can.Ingredient.Create}
-      canEdit={can.Ingredient.Update}
-      canDelete={can.Ingredient.Delete}
+      canCreate={recommended.Ingredient.Create}
+      canEdit={recommended.Ingredient.Update}
+      canDelete={recommended.Ingredient.Delete}
     />
   );
 };

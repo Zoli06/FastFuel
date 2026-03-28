@@ -3,15 +3,15 @@ import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MenuManager = () => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('MenuManager', { split: true });
 
   const [{ data: foods = [] }, { data: menus = [], refetch: refetchMenus }] =
     useConditionalSuspenseQueries([
-      can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
+      recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
       apiClient.queryOptions('get', '/api/Menu'),
     ]);
 
@@ -36,7 +36,7 @@ export const MenuManager = () => {
           'No image'
         ),
     },
-    ...(can.Food.Read
+    ...(recommended.Food.Read
       ? [
           {
             header: 'Foods',
@@ -87,7 +87,7 @@ export const MenuManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(can.Food.Read
+    ...(recommended.Food.Read
       ? [
           {
             type: 'fieldset',
@@ -162,9 +162,9 @@ export const MenuManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteMenu({ params: { path: { id: r.id } } })}
-      canCreate={can.Menu.Create}
-      canEdit={can.Menu.Update}
-      canDelete={can.Menu.Delete}
+      canCreate={recommended.Menu.Create}
+      canEdit={recommended.Menu.Update}
+      canDelete={recommended.Menu.Delete}
     />
   );
 };

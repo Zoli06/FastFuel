@@ -4,7 +4,7 @@ import type { components, paths } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
-import { useSuspensePermissions } from '../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 
 type Order = components['schemas']['OrderResponseDto'];
@@ -38,7 +38,7 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('OrderStatusDisplay', { split: true });
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
   const hideExitButtonTimeoutRef = useRef<number | null>(null);
@@ -50,32 +50,30 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
 
   const [{ data: restaurant }, { data: inProgressOrders = [] }, { data: readyOrders = [] }] =
     useConditionalSuspenseQueries([
-      can.Restaurant.Read &&
+      recommended.Restaurant.Read &&
         apiClient.queryOptions('get', '/api/Restaurant/{id}', {
           params: { path: { id: restaurantId } },
         }),
-      can.Order.Read &&
-        apiClient.queryOptions(
-          'get',
-          '/api/Order',
-          {
-            params: { query: buildOrderQuery('InProgress') },
-          },
-          {
-            refetchInterval: 2500,
-          },
-        ),
-      can.Order.Read &&
-        apiClient.queryOptions(
-          'get',
-          '/api/Order',
-          {
-            params: { query: buildOrderQuery('Ready') },
-          },
-          {
-            refetchInterval: 2500,
-          },
-        ),
+      apiClient.queryOptions(
+        'get',
+        '/api/Order',
+        {
+          params: { query: buildOrderQuery('InProgress') },
+        },
+        {
+          refetchInterval: 2500,
+        },
+      ),
+      apiClient.queryOptions(
+        'get',
+        '/api/Order',
+        {
+          params: { query: buildOrderQuery('Ready') },
+        },
+        {
+          refetchInterval: 2500,
+        },
+      ),
     ]);
 
   const toggleFullscreen = async () => {
@@ -140,7 +138,8 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
     };
   }, [isFullscreen, showExitButton]);
 
-  const headerTitle = can.Restaurant.Read && restaurant ? `Orders - ${restaurant.name}` : 'Orders';
+  const headerTitle =
+    recommended.Restaurant.Read && restaurant ? `Orders - ${restaurant.name}` : 'Orders';
 
   return (
     <>

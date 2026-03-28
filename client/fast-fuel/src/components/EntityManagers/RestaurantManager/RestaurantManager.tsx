@@ -5,13 +5,13 @@ import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.t
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 
 // TODO: Remove this or at least extract to a helper
 const maxLength = 100;
-const getDisplayedDescription = (description: string | null) => {
+const getDisplayedDescription = (description: string | null | undefined) => {
   if (!description) return 'No description provided';
   return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
 };
@@ -32,7 +32,7 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('RestaurantManager', { split: true });
 
   const { data: restaurants, refetch: refetchRestaurants } = useSuspenseQuery(
     apiClient.queryOptions('get', '/api/Restaurant'),
@@ -204,9 +204,9 @@ export const RestaurantManager = () => {
       }}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteRestaurant({ params: { path: { id: r.id } } })}
-      canCreate={can.Restaurant.Create}
-      canEdit={can.Restaurant.Update}
-      canDelete={can.Restaurant.Delete}
+      canCreate={recommended.Restaurant.Create}
+      canEdit={recommended.Restaurant.Update}
+      canDelete={recommended.Restaurant.Delete}
     />
   );
 };

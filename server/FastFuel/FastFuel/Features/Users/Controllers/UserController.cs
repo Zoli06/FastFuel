@@ -14,8 +14,6 @@ public class UserController(
     IUserService<UserRequestDto, UserResponseDto> service)
     : ControllerBase
 {
-    protected IUserService<UserRequestDto, UserResponseDto> UserService { get; } = service;
-
     /// <summary>
     /// Gets all users.
     /// </summary>
@@ -30,7 +28,7 @@ public class UserController(
             ForbidHttpResult>>
         GetAll(CancellationToken cancellationToken = default)
     {
-        var dtos = await UserService.GetAllAsync(UserControllerHelper.GetUserId(User), cancellationToken);
+        var dtos = await service.GetAllAsync(UserControllerHelper.GetUserId(User), cancellationToken);
         return TypedResults.Ok(dtos);
     }
 
@@ -49,7 +47,7 @@ public class UserController(
             ForbidHttpResult>>
         GetById(uint id, CancellationToken cancellationToken = default)
     {
-        var dto = await UserService.GetByIdAsync(id, UserControllerHelper.GetUserId(User), cancellationToken);
+        var dto = await service.GetByIdAsync(id, UserControllerHelper.GetUserId(User), cancellationToken);
         if (dto == null)
             return TypedResults.NotFound();
         return TypedResults.Ok(dto);
@@ -64,6 +62,6 @@ public class UserController(
     public Task<Results<Ok<UserResponseDto>, NotFound, UnauthorizedHttpResult>>
         GetCurrentUser(CancellationToken cancellationToken = default)
     {
-        return UserControllerHelper.GetCurrentUser(UserService, User, cancellationToken);
+        return UserControllerHelper.GetCurrentUser(service, User, cancellationToken);
     }
 }

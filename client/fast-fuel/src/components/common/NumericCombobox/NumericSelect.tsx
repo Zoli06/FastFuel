@@ -10,7 +10,7 @@ export type NumericSelectProps = Omit<
     | ReadonlyArray<number | NumericComboboxItem | NumericComboboxItemGroup>;
   value?: number | null;
   defaultValue?: number | null;
-  onChange?: (value: number | null, option: NumericComboboxItem) => void;
+  onChange?: (value: number | null, option: NumericComboboxItem | null) => void;
 };
 
 export const NumericSelect = ({
@@ -35,10 +35,10 @@ export const NumericSelect = ({
   const defaultValueStr =
     defaultValue !== undefined && defaultValue !== null ? defaultValue.toString() : undefined;
 
-  const handleChange = (value: string | null, option: ComboboxItem) => {
+  const handleChange = (value: string | null, option: ComboboxItem | null) => {
     if (onChange) {
-      const numericValue = value !== null ? parseFloat(value) : null;
-      const numericOption = { ...option, value: parseFloat(option.value) };
+      const numericValue = value !== null ? parseInt(value) : null;
+      const numericOption = option ? { ...option, value: parseInt(option.value) } : null;
       onChange(numericValue, numericOption);
     }
   };

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Permissions.Services;
+using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -12,30 +13,43 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
     private static readonly IReadOnlyDictionary<DefaultRole, string[]> DefaultRoles =
         new Dictionary<DefaultRole, string[]>
         {
-            [DefaultRole.User] =
+            [DefaultRole.Customer] =
             [
                 "Permission:Menu:Read",
                 "Permission:Food:Read",
                 "Permission:Ingredient:Read",
                 "Permission:Allergy:Read",
-                "Permission:Restaurant:Read"
-            ],
-            [DefaultRole.Customer] =
-            [
+                "Permission:Restaurant:Read",
+                "Permission:Restaurant:Read",
                 "Permission:Order:Create",
-                "Permission:Order:ReadOwn"
+                "Permission:Customer:UpdateSelf"
             ],
             [DefaultRole.Employee] =
             [
-                "Permission:Shift:ReadOwn",
+                "Permission:Menu:Read",
+                "Permission:Food:Read",
+                "Permission:Ingredient:Read",
+                "Permission:Allergy:Read",
+                "Permission:Restaurant:Read",
+                "Permission:Restaurant:Read",
                 "Permission:StationCategory:Read",
-                "Permission:Employee:ReadOwn",
-                "Permission:Order:Create",
+                "Permission:Order:CreateAtWorkplace",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",
                 "Permission:Station:Read",
                 "Permission:Station:ViewTasks"
+            ],
+            [DefaultRole.Machine] =
+            [
             ]
+        };
+
+    private static readonly IReadOnlyDictionary<DefaultRole, Page[]> DefaultRolePages =
+        new Dictionary<DefaultRole, Page[]>
+        {
+            [DefaultRole.Customer] = [],
+            [DefaultRole.Employee] = [Page.StationTasks, Page.EmployeeOrder, Page.OrderStatusDisplay],
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay]
         };
 
     public async Task InitializeAsync()
@@ -44,11 +58,17 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
 
         foreach (var (defaultRole, permissions) in DefaultRoles)
         {
-            var roleName = defaultRole.ToRoleName();
+            var roleName = defaultRole.ToString();
             if (await roleManager.RoleExistsAsync(roleName))
                 continue;
 
-            var role = new Role { Name = roleName, IsDefault = true, IsImmutable = false };
+            var role = new Role
+            {
+                Name = roleName,
+                IsDefault = true,
+                IsImmutable = false,
+                Pages = DefaultRolePages.TryGetValue(defaultRole, out var pages) ? pages.ToList() : []
+            };
             var roleResult = await roleManager.CreateAsync(role);
             if (!roleResult.Succeeded)
                 throw new ValidationAppException(
@@ -66,25 +86,15 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
 
     private async Task InitializeAdminRoleAsync()
     {
-        var adminRole = await roleManager.FindByNameAsync("Admin");
+        var adminRoleName = nameof(DefaultRole.Admin);
+        var adminRole = await roleManager.FindByNameAsync(adminRoleName);
         if (adminRole == null)
         {
-            adminRole = new Role { Name = "Admin", IsDefault = true, IsImmutable = true };
+            adminRole = new Role { Name = adminRoleName, IsDefault = true, IsImmutable = true };
             var createResult = await roleManager.CreateAsync(adminRole);
             if (!createResult.Succeeded)
                 throw new ValidationAppException(
                     string.Join("; ", createResult.Errors.Select(e => e.Description)));
-
-            var allPermissions = await permissionService.GetAllPermissionsAsync();
-            foreach (var permission in allPermissions)
-            {
-                var claimResult = await roleManager.AddClaimAsync(adminRole, new Claim("Permission", permission));
-                if (!claimResult.Succeeded)
-                    throw new ValidationAppException(
-                        string.Join("; ", claimResult.Errors.Select(e => e.Description)));
-            }
-
-            return;
         }
 
         var shouldUpdate = false;
@@ -100,12 +110,43 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             shouldUpdate = true;
         }
 
+        var allPages = Enum.GetValues<Page>().ToList();
+        if (!adminRole.Pages.SequenceEqual(allPages))
+        {
+            adminRole.Pages = allPages;
+            shouldUpdate = true;
+        }
+
         if (shouldUpdate)
         {
             var updateResult = await roleManager.UpdateAsync(adminRole);
             if (!updateResult.Succeeded)
                 throw new ValidationAppException(
                     string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+        }
+
+        var allPermissions = await permissionService.GetAllPermissionsAsync();
+        var currentPermissionClaims = (await roleManager.GetClaimsAsync(adminRole))
+            .Where(claim => claim.Type == "Permission")
+            .Select(claim => claim.Value)
+            .ToHashSet();
+
+        var requiredPermissions = allPermissions.ToHashSet();
+
+        foreach (var permission in requiredPermissions.Except(currentPermissionClaims))
+        {
+            var claimResult = await roleManager.AddClaimAsync(adminRole, new Claim("Permission", permission));
+            if (!claimResult.Succeeded)
+                throw new ValidationAppException(
+                    string.Join("; ", claimResult.Errors.Select(e => e.Description)));
+        }
+
+        foreach (var permission in currentPermissionClaims.Except(requiredPermissions))
+        {
+            var claimResult = await roleManager.RemoveClaimAsync(adminRole, new Claim("Permission", permission));
+            if (!claimResult.Succeeded)
+                throw new ValidationAppException(
+                    string.Join("; ", claimResult.Errors.Select(e => e.Description)));
         }
     }
 }

@@ -2,7 +2,8 @@ namespace FastFuel.Features.Roles.Services;
 
 public enum DefaultRole
 {
-    User,
+    Admin,
     Customer,
-    Employee
+    Employee,
+    Machine
 }

@@ -2,24 +2,25 @@
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const FoodManager = () => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('FoodManager', { split: true });
 
   const [{ data: ingredients = [] }, { data: foods = [], refetch: refetchFoods }] =
     useConditionalSuspenseQueries([
-      can.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
+      recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
       apiClient.queryOptions('get', '/api/Food'),
     ]);
 
   type Food = (typeof foods)[number];
+  type Ingredient = { id: number; name: string };
 
   const ingredientNameById = new Map(
-    ingredients.map((ingredient) => [ingredient.id, ingredient.name]),
+    ingredients.map((ingredient: Ingredient) => [ingredient.id, ingredient.name]),
   );
-  const ingredientOptions = ingredients.map((ingredient) => ({
+  const ingredientOptions = ingredients.map((ingredient: Ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
   }));
@@ -28,14 +29,17 @@ export const FoodManager = () => {
     { header: 'Name', accessor: 'name' },
     { header: 'Price', accessor: 'price' },
     { header: 'Description', accessor: 'description' },
-    ...(can.Ingredient.Read
+    ...(recommended.Ingredient.Read
       ? [
           {
             header: 'Ingredients',
             render: (food: Food) => {
               if (!food.ingredients?.length) return 'None';
               return food.ingredients
-                .map((fi) => ingredientNameById.get(fi.ingredientId) ?? `#${fi.ingredientId}`)
+                .map(
+                  (fi: { ingredientId: number }) =>
+                    ingredientNameById.get(fi.ingredientId) ?? `#${fi.ingredientId}`,
+                )
                 .join(', ');
             },
           },
@@ -76,7 +80,7 @@ export const FoodManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(can.Ingredient.Read
+    ...(recommended.Ingredient.Read
       ? [
           {
             type: 'fieldset',
@@ -159,9 +163,9 @@ export const FoodManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(r) => deleteFood({ params: { path: { id: r.id } } })}
-      canCreate={can.Food.Create}
-      canEdit={can.Food.Update}
-      canDelete={can.Food.Delete}
+      canCreate={recommended.Food.Create}
+      canEdit={recommended.Food.Update}
+      canDelete={recommended.Food.Delete}
     />
   );
 };

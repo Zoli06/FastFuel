@@ -2,17 +2,21 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { apiClient } from '../../../lib/api-client.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { useSuspensePermissions } from '../../../hooks/useSuspensePermissions.ts';
+import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const can = useSuspensePermissions();
+  const { recommended } = usePagePermissions('EmployeeManager', { split: true });
 
-  const [{ data: stationCategories = [] }, { data: employees = [], refetch: refetchEmployees }] =
-    useConditionalSuspenseQueries([
-      can.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-      apiClient.queryOptions('get', '/api/Employee'),
-    ]);
+  const [
+    { data: stationCategories = [] },
+    { data: restaurants = [] },
+    { data: employees = [], refetch: refetchEmployees },
+  ] = useConditionalSuspenseQueries([
+    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    apiClient.queryOptions('get', '/api/Employee'),
+  ]);
 
   type Employee = (typeof employees)[number];
   type EmployeeFormValues = Employee & { password?: string | null };
@@ -21,13 +25,29 @@ export const EmployeeManager = () => {
     value: sc.id,
     label: sc.name,
   }));
+  const restaurantOptions = restaurants.map((r) => ({
+    value: r.id,
+    label: r.name,
+  }));
 
   const tableColumns: ColumnDefinition<Employee>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Username', accessor: 'userName' },
     { header: 'Email', accessor: 'email' },
     { header: 'User Type', accessor: 'userType' },
-    ...(can.StationCategory.Read
+    {
+      header: 'Works At',
+      render: (e: Employee) => {
+        if (recommended.Restaurant.Read) {
+          return (
+            restaurantOptions.find((o) => o.value === e.worksAtRestaurantId)?.label ??
+            `#${e.worksAtRestaurantId}`
+          );
+        }
+        return `#${e.worksAtRestaurantId}`;
+      },
+    },
+    ...(recommended.StationCategory.Read
       ? [
           {
             header: 'Station Categories',
@@ -75,7 +95,20 @@ export const EmployeeManager = () => {
       nullable: 'edit',
       required: 'create',
     },
-    ...(can.StationCategory.Read
+    {
+      type: 'numericSelect',
+      key: 'worksAtRestaurantId',
+      label: 'Works At',
+      initialValue: null,
+      nullable: 'never',
+      required: 'always',
+      fieldProps: {
+        data: restaurantOptions,
+        placeholder: 'Select restaurant...',
+        searchable: true,
+      },
+    } satisfies Field,
+    ...(recommended.StationCategory.Read
       ? [
           {
             type: 'numericMultiSelect',
@@ -113,6 +146,7 @@ export const EmployeeManager = () => {
     password: values.password ?? null,
     shiftIds: values.shiftIds ?? [],
     stationCategoryIds: values.stationCategoryIds,
+    worksAtRestaurantId: values.worksAtRestaurantId,
   });
 
   const handleSubmit = (values: EmployeeFormValues, mode: 'create' | 'edit') => {
@@ -135,9 +169,9 @@ export const EmployeeManager = () => {
       editorFields={editorFields}
       onSubmit={handleSubmit}
       onDelete={(e) => deleteEmployee({ params: { path: { id: e.id } } })}
-      canCreate={can.Employee.Create}
-      canEdit={can.Employee.Update}
-      canDelete={can.Employee.Delete}
+      canCreate={recommended.Employee.Create}
+      canEdit={recommended.Employee.Update}
+      canDelete={recommended.Employee.Delete}
     />
   );
 };

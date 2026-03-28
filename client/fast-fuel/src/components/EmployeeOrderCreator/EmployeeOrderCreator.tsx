@@ -21,7 +21,6 @@ import { useMemo, useRef, useState } from 'react';
 import type { components } from '../../types/api';
 import { apiClient } from '../../lib/api-client.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { useSuspensePermissions } from '../../hooks/useSuspensePermissions.ts';
 import { Paper } from '../common/Paper/Paper.tsx';
 
 type OrderMenuLine = components['schemas']['OrderMenuDto'];
@@ -36,17 +35,6 @@ type CartLine = {
   quantity: number;
   specialInstructions: string;
 };
-
-export type EmployeeOrderCreatorProps = {
-  restaurantId: number;
-};
-
-const requiredPermissions = [
-  'Permission:Food:Read',
-  'Permission:Menu:Read',
-  'Permission:Order:ReadOwn',
-  'Permission:Order:Create',
-] as const;
 
 const formatPrice = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -91,7 +79,6 @@ const InlineStepper = ({
   </Group>
 );
 
-// ─── Cart line ──────────────────────────────────────────────────────────────
 const CartLineCard = ({
   line,
   name,
@@ -191,7 +178,6 @@ const CartLineCard = ({
   );
 };
 
-// ─── Catalog item card ───────────────────────────────────────────────────────
 const CatalogItemCard = ({
   name,
   description,
@@ -267,41 +253,21 @@ const CatalogItemCard = ({
   );
 };
 
-// ─── Main component ──────────────────────────────────────────────────────────
-export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps) => {
-  const can = useSuspensePermissions();
+export const EmployeeOrderCreator = () => {
   const [catalogMode, setCatalogMode] = useState<CatalogMode>('food');
   const [search, setSearch] = useState('');
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   const [lastOrderNumber, setLastOrderNumber] = useState<number | null>(null);
   const nextLineId = useRef(1);
 
-  const missingPermissions = requiredPermissions.filter((permission) => {
-    switch (permission) {
-      case 'Permission:Food:Read':
-        return !can.Food.Read;
-      case 'Permission:Menu:Read':
-        return !can.Menu.Read;
-      case 'Permission:Order:ReadOwn':
-        return !can.Order.ReadOwn;
-      case 'Permission:Order:Create':
-        return !can.Order.Create;
-    }
-  });
-
-  const [{ data: restaurant }, { data: foods = [] }, { data: menus = [] }] =
-    useConditionalSuspenseQueries([
-      can.Restaurant.Read &&
-        apiClient.queryOptions('get', '/api/Restaurant/{id}', {
-          params: { path: { id: restaurantId } },
-        }),
-      can.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-      can.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-    ]);
+  const [{ data: foods = [] }, { data: menus = [] }] = useConditionalSuspenseQueries([
+    apiClient.queryOptions('get', '/api/Food'),
+    apiClient.queryOptions('get', '/api/Menu'),
+  ]);
 
   const { mutateAsync: createOrder, isPending: isSubmitting } = apiClient.useMutation(
     'post',
-    '/api/Order',
+    '/api/Order/at-workplace',
   );
 
   const foodPriceById = useMemo(() => new Map(foods.map((f) => [f.id, f.price])), [foods]);
@@ -367,7 +333,7 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
 
     try {
       const created = await createOrder({
-        body: { restaurantId, foods: foodsPayload, menus: menusPayload },
+        body: { foods: foodsPayload, menus: menusPayload },
       });
       setLastOrderNumber(created.orderNumber);
       setCartLines([]);
@@ -376,33 +342,16 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
     }
   };
 
-  if (missingPermissions.length > 0) {
-    return (
-      <Paper>
-        <Stack gap="xs">
-          <Text fw={700}>Missing permissions to create orders.</Text>
-          <Text size="sm" c="dimmed">
-            Required: {missingPermissions.join(', ')}
-          </Text>
-        </Stack>
-      </Paper>
-    );
-  }
-
   const catalogItems = catalogMode === 'food' ? filteredFoods : filteredMenus;
 
   return (
     <Paper>
       <Stack gap="md">
-        {/* ── Header ───────────────────────────────────────────────────── */}
         <Group justify="space-between" align="center">
           <Stack gap={0}>
             <Title order={3} style={{ letterSpacing: '-0.02em' }}>
-              {can.Restaurant.Read && restaurant ? restaurant.name : 'New Order'}
+              New Order
             </Title>
-            <Text size="xs" c="dimmed">
-              Restaurant #{restaurantId}
-            </Text>
           </Stack>
           {lastOrderNumber !== null && (
             <Badge color="green" variant="light" size="lg" radius="sm">
@@ -412,7 +361,6 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
         </Group>
 
         <Grid gutter="md" align="stretch">
-          {/* ── Catalog ──────────────────────────────────────────────── */}
           <Grid.Col span={{ base: 12, lg: 7 }}>
             <Card withBorder radius="md" p="md" h="100%">
               <Stack gap="md" h="100%">
@@ -516,7 +464,6 @@ export const EmployeeOrderCreator = ({ restaurantId }: EmployeeOrderCreatorProps
             </Card>
           </Grid.Col>
 
-          {/* ── Cart ─────────────────────────────────────────────────── */}
           <Grid.Col span={{ base: 12, lg: 5 }}>
             <Card withBorder radius="md" p="md" h="100%">
               <Stack gap="sm" h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
