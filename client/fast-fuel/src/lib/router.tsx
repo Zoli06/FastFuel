@@ -22,6 +22,7 @@ import { AdminManagerPage } from '../pages/EntityManagerPages/AdminManagerPage.t
 import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 import { Layout } from '../components/Layout/Layout.tsx';
 import type { HeaderAuthButton } from '../components/Header/Header.tsx';
+import { CustomerOrderPage } from '../pages/CustomerOrderPage.tsx';
 
 type RouteHandle = {
   header?: {
@@ -62,6 +63,11 @@ export const router = createBrowserRouter([
         path: 'employee/order',
         element: <EmployeeOrderPage />,
         handle: withHeader('Create Order'),
+      },
+      {
+        path: 'customer/order',
+        element: <CustomerOrderPage />,
+        handle: withHeader('Place Order'),
       },
       {
         path: 'manage',
