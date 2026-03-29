@@ -10,6 +10,8 @@ using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.Entities;
 using FastFuel.Features.Ingredients.Entities;
+using FastFuel.Features.Machines.DTOs;
+using FastFuel.Features.Machines.Entities;
 using FastFuel.Features.MenuFoods.Entities;
 using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.OpeningHours.Entities;
@@ -40,6 +42,9 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
+
+    private readonly ICrudService<MachineRequestDto, MachineResponseDto> _machineService =
+        serviceProvider.GetRequiredService<ICrudService<MachineRequestDto, MachineResponseDto>>();
 
     private readonly UserManager<User> _userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
@@ -187,6 +192,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
         await SeedAdmin();
         await SeedEmployee(restaurant);
+        await SeedMachine(restaurant);
         var customer = await SeedCustomer();
 
         // Place an order
@@ -288,5 +294,25 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
         var adminUser = await _userManager.FindByNameAsync(userName);
         return Task.FromResult(adminUser as Admin).Result!;
+    }
+
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<Machine> SeedMachine(Restaurant locatedAt)
+    {
+        var userName = "machine";
+
+        var machineRequestDto = new MachineRequestDto
+        {
+            UserName = userName,
+            LocatedAtRestaurantId = locatedAt.Id,
+            Name = "Machine User",
+            ThemeId = null,
+            Password = "Machine123!"
+        };
+
+        await _machineService.CreateAsync(machineRequestDto);
+
+        var machineUser = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(machineUser as Machine).Result!;
     }
 }
