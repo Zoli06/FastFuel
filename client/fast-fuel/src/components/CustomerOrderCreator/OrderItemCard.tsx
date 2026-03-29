@@ -1,5 +1,5 @@
 import { Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
-import type { Food, UnifiedItem } from './CustomerOrderCreator.tsx';
+import type { Food, UnifiedItem } from './types.ts';
 
 type OrderItemCardProps = {
   item: UnifiedItem;

@@ -15,8 +15,6 @@ import { ShiftManagerPage } from '../pages/EntityManagerPages/ShiftManagerPage.t
 import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx';
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
-import { CustomerPage } from '../pages/CustomerPages/CustomerPage.tsx';
-import { MenuPage } from '../pages/CustomerPages/MenuPage.tsx';
 import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
 import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
 import { MachineManagerPage } from '../pages/EntityManagerPages/MachineManagerPage.tsx';
@@ -24,6 +22,7 @@ import { AdminManagerPage } from '../pages/EntityManagerPages/AdminManagerPage.t
 import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 import { Layout } from '../components/Layout/Layout.tsx';
 import type { HeaderAuthButton } from '../components/Header/Header.tsx';
+import { CustomerOrderPage } from '../pages/CustomerOrderPage.tsx';
 
 type RouteHandle = {
   header?: {
@@ -61,25 +60,14 @@ export const router = createBrowserRouter([
         handle: withHeader('Registration', 'Login'),
       },
       {
-        path: 'customer',
-        element: <Outlet />,
-        children: [
-          {
-            index: true,
-            element: <CustomerPage />,
-            handle: withHeader('Customer Panel'),
-          },
-          {
-            path: 'menu',
-            element: <MenuPage />,
-            handle: withHeader('Menu'),
-          },
-        ],
-      },
-      {
         path: 'employee/order',
         element: <EmployeeOrderPage />,
         handle: withHeader('Create Order'),
+      },
+      {
+        path: 'customer/order',
+        element: <CustomerOrderPage />,
+        handle: withHeader('Place Order'),
       },
       {
         path: 'manage',
