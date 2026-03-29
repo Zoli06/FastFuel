@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
-  Badge,
   Box,
   Button,
   Divider,
   Group,
   Modal,
+  NumberInput,
   Paper,
   ScrollArea,
   SimpleGrid,
   Stack,
   Text,
+  Textarea,
+  TextInput,
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -25,13 +27,13 @@ import {
   IconBottleFilled,
   IconBurger,
   IconLayoutGrid,
+  IconSearch,
   IconSortAscendingLetters,
   IconSortDescendingLetters,
   IconToolsKitchen3,
 } from '@tabler/icons-react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { NumericSelect } from '../common/NumericCombobox/NumericSelect.tsx';
 import type { CartItem, SortKey, UnifiedItem } from './types.ts';
 import { myCurrentUserQueryOptions } from '../../lib/api-client.ts';
 
@@ -41,11 +43,17 @@ const CATEGORIES = [
   { label: 'Menus', value: 'menu', icons: [IconBurger, IconBottleFilled] },
 ];
 
+type CheckoutStep = 'idle' | 'confirm' | 'payment' | 'thankyou';
+type CartEntry = CartItem & { cartKey: string };
+
 export const OrderCreator = () => {
   const { data: currentUser } = useSuspenseQuery(myCurrentUserQueryOptions());
   const currentUserType = currentUser.userType.toLowerCase();
   const isEmployeeUser = currentUserType === 'employee';
   const isMachineUser = currentUserType === 'machine';
+  const isCustomer = currentUserType === 'customer';
+  const isAdmin = currentUserType === 'admin';
+  const needsRestaurantPicker = isCustomer || isAdmin;
 
   const [
     { data: employeeProfile },
@@ -66,15 +74,26 @@ export const OrderCreator = () => {
     : isMachineUser
       ? (machineProfile?.locatedAtRestaurantId ?? null)
       : null;
-  const isRestaurantLocked = lockedRestaurantId !== null;
 
   const [restaurantId, setRestaurantId] = useState<number | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [restaurantPickerOpen, setRestaurantPickerOpen] = useState(false);
+  const [restaurantSearch, setRestaurantSearch] = useState('');
+
+  const [cart, setCart] = useState<CartEntry[]>([]);
   const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('idle');
   const [placedOrderNumber, setPlacedOrderNumber] = useState<number | null>(null);
+  const [editingEntry, setEditingEntry] = useState<CartEntry | null>(null);
+
+  useEffect(() => {
+    if (needsRestaurantPicker && restaurantId === null) {
+      setRestaurantPickerOpen(true);
+    }
+  }, [needsRestaurantPicker]);
 
   useEffect(() => {
     if (lockedRestaurantId !== null) {
@@ -84,24 +103,18 @@ export const OrderCreator = () => {
 
   const { mutateAsync: createOrder, isPending } = apiClient.useMutation('post', '/api/Order');
 
-  const restaurantOptions = restaurants.map((r) => ({
-    value: r.id,
-    label: r.name,
-  }));
+  const selectedRestaurant = restaurants.find((r) => r.id === restaurantId);
+  const filteredRestaurants = restaurants.filter((r) =>
+    r.name.toLowerCase().includes(restaurantSearch.toLowerCase()),
+  );
 
-  const unifiedMenus: UnifiedItem[] = menus.map((m) => ({
-    ...m,
-    type: 'menu' as const,
-  }));
-
-  const unifiedFoods: UnifiedItem[] = foods.map((f) => ({
-    ...f,
-    type: 'food' as const,
-  }));
+  const unifiedMenus: UnifiedItem[] = menus.map((m) => ({ ...m, type: 'menu' as const }));
+  const unifiedFoods: UnifiedItem[] = foods.map((f) => ({ ...f, type: 'food' as const }));
 
   const allItems = [...unifiedMenus, ...unifiedFoods].filter((item) => {
-    if (activeCategory === 'all') return true;
-    return item.type === activeCategory;
+    if (activeCategory !== 'all' && item.type !== activeCategory) return false;
+    if (searchQuery.trim()) return item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return true;
   });
 
   const filteredAndSorted = [...allItems].sort((a, b) => {
@@ -112,43 +125,47 @@ export const OrderCreator = () => {
     return 0;
   });
 
+  // Every "Add to order" is always a NEW separate row — never merged.
   const addItemToCart = (item: CartItem) => {
+    const cartKey = `${item.item.type}-${item.item.id}-${Date.now()}-${Math.random()}`;
+    setCart((prev) => [...prev, { ...item, cartKey }]);
+  };
+
+  const removeOneFromCart = (cartKey: string) => {
     setCart((prev) => {
-      const existing = prev.find(
-        (c) => c.item.id === item.item.id && c.item.type === item.item.type,
-      );
-      if (existing)
-        return prev.map((c) =>
-          c.item.id === item.item.id && c.item.type === item.item.type
-            ? {
-                ...c,
-                quantity: c.quantity + item.quantity,
-                specialInstructions: item.specialInstructions || c.specialInstructions,
-              }
-            : c,
-        );
-      return [...prev, item];
+      const entry = prev.find((c) => c.cartKey === cartKey);
+      if (!entry) return prev;
+      if (entry.quantity === 1) return prev.filter((c) => c.cartKey !== cartKey);
+      return prev.map((c) => (c.cartKey === cartKey ? { ...c, quantity: c.quantity - 1 } : c));
     });
   };
 
-  const removeFromCart = (id: number, type: 'food' | 'menu') => {
-    setCart((prev) => {
-      const existing = prev.find((c) => c.item.id === id && c.item.type === type);
-      if (!existing) return prev;
-      if (existing.quantity === 1) {
-        return prev.filter((c) => !(c.item.id === id && c.item.type === type));
-      }
-      return prev.map((c) =>
-        c.item.id === id && c.item.type === type ? { ...c, quantity: c.quantity - 1 } : c,
-      );
-    });
+  const addOneToCart = (cartKey: string) => {
+    setCart((prev) =>
+      prev.map((c) => (c.cartKey === cartKey ? { ...c, quantity: c.quantity + 1 } : c)),
+    );
+  };
+
+  const removeEntireEntry = (cartKey: string) => {
+    setCart((prev) => prev.filter((c) => c.cartKey !== cartKey));
+  };
+
+  const saveEditedEntry = (
+    cartKey: string,
+    quantity: number,
+    specialInstructions: string | null,
+  ) => {
+    setCart((prev) =>
+      prev.map((c) => (c.cartKey === cartKey ? { ...c, quantity, specialInstructions } : c)),
+    );
+    setEditingEntry(null);
   };
 
   const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
   const totalItems = cart.reduce((sum, c) => sum + c.quantity, 0);
 
   const CART_HEADER = 44;
-  const CART_ITEM_HEIGHT = 52;
+  const CART_ITEM_HEIGHT = 64;
   const CART_FOOTER = 90;
   const CART_PADDING = 32;
   const MAX_VISIBLE_ITEMS = 3;
@@ -157,7 +174,7 @@ export const OrderCreator = () => {
   const cartPanelHeight =
     cart.length > 0 ? CART_HEADER + cartScrollHeight + CART_FOOTER + CART_PADDING : 0;
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (!restaurantId) {
       notifications.show({ title: 'Select a restaurant', message: '', color: 'orange' });
       return;
@@ -166,10 +183,15 @@ export const OrderCreator = () => {
       notifications.show({ title: 'Your cart is empty', message: '', color: 'orange' });
       return;
     }
+    setCheckoutStep('confirm');
+  };
 
+  const handleConfirmOrder = () => setCheckoutStep('payment');
+
+  const handleFakePayment = async () => {
     const created = await createOrder({
       body: {
-        restaurantId,
+        restaurantId: restaurantId!,
         menus: cart
           .filter((c) => c.item.type === 'menu')
           .map((c) => ({
@@ -188,12 +210,13 @@ export const OrderCreator = () => {
     });
     setCart([]);
     setPlacedOrderNumber(created.orderNumber);
+    setCheckoutStep('thankyou');
   };
 
   return (
     <>
       <Group align="flex-start" gap={0} style={{ minHeight: '100vh' }}>
-        {/* Sidebar — tablet and desktop only */}
+        {/* Sidebar */}
         <Stack
           visibleFrom="sm"
           gap={4}
@@ -293,42 +316,75 @@ export const OrderCreator = () => {
             </Group>
           </Box>
 
-          <Group justify="space-between" align="flex-end">
-            <NumericSelect
-              label="Restaurant"
-              placeholder="Where are you ordering from?"
-              data={restaurantOptions}
-              value={restaurantId}
-              onChange={(val) => setRestaurantId(val)}
-              searchable
-              disabled={isRestaurantLocked}
-              style={{ flex: 1, maxWidth: 320 }}
-            />
-            <Group gap={6}>
-              {(
-                [
-                  {
-                    keyAsc: 'name-asc',
-                    keyDesc: 'name-desc',
-                    iconAsc: IconSortAscendingLetters,
-                    iconDesc: IconSortDescendingLetters,
-                    label: 'Name',
-                  },
-                  {
-                    keyAsc: 'price-asc',
-                    keyDesc: 'price-desc',
-                    iconAsc: IconArrowUp,
-                    iconDesc: IconArrowDown,
-                    label: 'Price',
-                  },
-                ] as {
-                  keyAsc: SortKey;
-                  keyDesc: SortKey;
-                  iconAsc: typeof IconArrowUp;
-                  iconDesc: typeof IconArrowUp;
-                  label: string;
-                }[]
-              ).map((s) => {
+          <Group justify="space-between" align="flex-end" wrap="wrap" gap="sm">
+            {/* Restaurant indicator */}
+            <Group gap="xs" align="center">
+              {selectedRestaurant ? (
+                <>
+                  <Text size="sm" c="dimmed">
+                    Ordering from:
+                  </Text>
+                  <Text fw={700} size="sm" c="orange">
+                    {selectedRestaurant.name}
+                  </Text>
+                  {needsRestaurantPicker && (
+                    <Button
+                      size="compact-xs"
+                      variant="subtle"
+                      color="orange"
+                      onClick={() => {
+                        setRestaurantSearch('');
+                        setRestaurantPickerOpen(true);
+                      }}
+                    >
+                      Change
+                    </Button>
+                  )}
+                </>
+              ) : (
+                needsRestaurantPicker && (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="orange"
+                    onClick={() => {
+                      setRestaurantSearch('');
+                      setRestaurantPickerOpen(true);
+                    }}
+                  >
+                    Select a restaurant
+                  </Button>
+                )
+              )}
+            </Group>
+
+            <Group gap="sm" wrap="wrap">
+              {/* Search bar */}
+              <TextInput
+                placeholder="Search food & menus..."
+                leftSection={<IconSearch size={18} />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                size="md"
+                style={{ width: 260 }}
+              />
+              {/* Sort buttons — size="sm" */}
+              {[
+                {
+                  keyAsc: 'name-asc' as SortKey,
+                  keyDesc: 'name-desc' as SortKey,
+                  iconAsc: IconSortAscendingLetters,
+                  iconDesc: IconSortDescendingLetters,
+                  label: 'Name',
+                },
+                {
+                  keyAsc: 'price-asc' as SortKey,
+                  keyDesc: 'price-desc' as SortKey,
+                  iconAsc: IconArrowUp,
+                  iconDesc: IconArrowDown,
+                  label: 'Price',
+                },
+              ].map((s) => {
                 const isAsc = sortKey === s.keyAsc;
                 const isDesc = sortKey === s.keyDesc;
                 const isActive = isAsc || isDesc;
@@ -336,10 +392,10 @@ export const OrderCreator = () => {
                 return (
                   <Button
                     key={s.label}
-                    size="xs"
+                    size="sm"
                     variant={isActive ? 'filled' : 'light'}
                     color="orange"
-                    leftSection={<Icon size={14} />}
+                    leftSection={<Icon size={15} />}
                     onClick={() => setSortKey(isAsc ? s.keyDesc : s.keyAsc)}
                   >
                     {s.label}
@@ -371,7 +427,7 @@ export const OrderCreator = () => {
                 item={item}
                 allFoods={foods}
                 onAdd={() => addItemToCart({ item, quantity: 1, specialInstructions: null })}
-                onRemove={() => removeFromCart(item.id, item.type)}
+                onRemove={() => {}}
                 onOpen={() => {
                   setSelectedItem(item);
                   open();
@@ -412,55 +468,44 @@ export const OrderCreator = () => {
           <ScrollArea h={cartScrollHeight} scrollbarSize={4} mb="xs">
             <Stack gap={0}>
               {cart.map((c, idx) => (
-                <Box key={`${c.item.type}-${c.item.id}`}>
+                <Box key={c.cartKey}>
                   {idx > 0 && <Divider my={6} />}
                   <Group justify="space-between" wrap="nowrap" gap="xs">
                     <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                      <Group gap={6} wrap="nowrap">
-                        <Text size="sm" fw={600} lineClamp={1} style={{ flex: 1 }}>
-                          {c.item.name}
-                        </Text>
-                        <Badge
-                          size="xs"
-                          color={c.item.type === 'menu' ? 'orange' : 'blue'}
-                          variant="light"
-                          style={{ flexShrink: 0 }}
-                        >
-                          {c.item.type}
-                        </Badge>
-                      </Group>
+                      <Text size="sm" fw={600} lineClamp={1}>
+                        {c.item.name}
+                      </Text>
                       {c.specialInstructions && (
                         <Text size="xs" c="dimmed" fs="italic" lineClamp={1}>
                           {c.specialInstructions}
                         </Text>
                       )}
                     </Stack>
-                    <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+                    <Group gap={12} wrap="nowrap" style={{ flexShrink: 0 }} align="center">
                       <Button
-                        size="compact-xs"
-                        variant="subtle"
+                        size="sm"
+                        variant="outline"
                         color="gray"
-                        onClick={() => removeFromCart(c.item.id, c.item.type)}
+                        w={38}
+                        h={38}
+                        p={0}
+                        style={{ fontSize: 20, fontWeight: 700, borderRadius: 8, flexShrink: 0 }}
+                        onClick={() => removeOneFromCart(c.cartKey)}
                       >
                         −
                       </Button>
-                      <Badge color="orange" variant="light" size="sm">
-                        ×{c.quantity}
-                      </Badge>
+                      <Text fw={800} size="md" style={{ minWidth: 24, textAlign: 'center' }}>
+                        {c.quantity}
+                      </Text>
                       <Button
-                        size="compact-xs"
-                        variant="subtle"
+                        size="sm"
+                        variant="filled"
                         color="gray"
-                        onClick={() => {
-                          const source = c.item.type === 'menu' ? unifiedMenus : unifiedFoods;
-                          const item = source.find((m) => m.id === c.item.id);
-                          if (item)
-                            addItemToCart({
-                              item,
-                              quantity: 1,
-                              specialInstructions: c.specialInstructions,
-                            });
-                        }}
+                        w={38}
+                        h={38}
+                        p={0}
+                        style={{ fontSize: 20, fontWeight: 700, borderRadius: 8, flexShrink: 0 }}
+                        onClick={() => addOneToCart(c.cartKey)}
                       >
                         +
                       </Button>
@@ -480,7 +525,6 @@ export const OrderCreator = () => {
           </ScrollArea>
 
           <Divider mb="sm" />
-
           <Group justify="space-between" mb="sm">
             <Text fw={700} size="md">
               Total
@@ -489,7 +533,6 @@ export const OrderCreator = () => {
               ${totalPrice.toFixed(2)}
             </Text>
           </Group>
-
           <Button fullWidth color="darkred" loading={isPending} onClick={handlePlaceOrder}>
             Place order
           </Button>
@@ -510,24 +553,306 @@ export const OrderCreator = () => {
         />
       )}
 
+      {/* Restaurant picker modal */}
       <Modal
-        opened={placedOrderNumber !== null}
-        onClose={() => setPlacedOrderNumber(null)}
-        title="Order placed"
+        opened={restaurantPickerOpen}
+        onClose={() => {
+          if (restaurantId !== null) setRestaurantPickerOpen(false);
+        }}
+        title="Where are you ordering from?"
         centered
+        size="md"
+        closeOnClickOutside={restaurantId !== null}
+        closeOnEscape={restaurantId !== null}
+        withCloseButton={restaurantId !== null}
       >
-        <Stack gap="xs">
+        <Stack gap="sm">
+          <TextInput
+            placeholder="Search restaurants..."
+            leftSection={<IconSearch size={15} />}
+            value={restaurantSearch}
+            onChange={(e) => setRestaurantSearch(e.currentTarget.value)}
+            autoFocus
+          />
+          <ScrollArea h={320}>
+            <Stack gap={4}>
+              {filteredRestaurants.length === 0 && (
+                <Text c="dimmed" size="sm" ta="center" py="md">
+                  No restaurants found
+                </Text>
+              )}
+              {filteredRestaurants.map((r) => (
+                <UnstyledButton
+                  key={r.id}
+                  onClick={() => {
+                    setRestaurantId(r.id);
+                    setRestaurantPickerOpen(false);
+                  }}
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 8,
+                    background:
+                      restaurantId === r.id
+                        ? 'var(--mantine-color-orange-5)'
+                        : 'var(--mantine-color-blue-9)',
+                    border:
+                      restaurantId === r.id
+                        ? '2px solid var(--mantine-color-blue-4)'
+                        : '2px solid var(--mantine-color-blue-8)',
+                    transition: 'all 0.12s',
+                  }}
+                >
+                  <Text
+                    fw={restaurantId === r.id ? 700 : 500}
+                    size="sm"
+                    c={restaurantId === r.id ? 'blue.2' : 'blue.1'}
+                  >
+                    {r.name}
+                  </Text>
+                </UnstyledButton>
+              ))}
+            </Stack>
+          </ScrollArea>
+        </Stack>
+      </Modal>
+
+      {/* Confirmation modal */}
+      <Modal
+        opened={checkoutStep === 'confirm'}
+        onClose={() => setCheckoutStep('idle')}
+        title="Confirm your order"
+        centered
+        size="sm"
+      >
+        <Stack gap="sm">
           <Text size="sm" c="dimmed">
+            Ordering from:{' '}
+            <Text span fw={700} c="orange">
+              {selectedRestaurant?.name}
+            </Text>
+          </Text>
+          <Divider />
+          <Stack gap={6}>
+            {cart.map((c) => (
+              <Group key={c.cartKey} justify="space-between" align="flex-start" wrap="nowrap">
+                <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                  <Text size="sm">
+                    {c.item.name}{' '}
+                    <Text span c="dimmed">
+                      ×{c.quantity}
+                    </Text>
+                  </Text>
+                  {c.specialInstructions && (
+                    <Text size="xs" c="dimmed" fs="italic">
+                      {c.specialInstructions}
+                    </Text>
+                  )}
+                </Stack>
+                <Group gap={6} align="center" style={{ flexShrink: 0 }}>
+                  <Text size="sm" fw={600} c="darkred">
+                    ${(c.item.price * c.quantity).toFixed(2)}
+                  </Text>
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    color="orange"
+                    onClick={() => {
+                      setEditingEntry({ ...c });
+                      setCheckoutStep('idle');
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => removeEntireEntry(c.cartKey)}
+                  >
+                    Remove
+                  </Button>
+                </Group>
+              </Group>
+            ))}
+          </Stack>
+          <Divider />
+          <Group justify="space-between">
+            <Text fw={700}>Total</Text>
+            <Text fw={800} c="darkred" size="lg">
+              ${totalPrice.toFixed(2)}
+            </Text>
+          </Group>
+          <Group justify="flex-end" gap="sm" mt="xs">
+            <Button variant="subtle" color="gray" onClick={() => setCheckoutStep('idle')}>
+              Back
+            </Button>
+            <Button color="darkred" onClick={handleConfirmOrder} disabled={cart.length === 0}>
+              Confirm & Pay
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      {/* Edit entry modal — opened from confirm */}
+      {editingEntry && (
+        <EditCartEntryModal
+          entry={editingEntry}
+          onSave={(qty, instr) => {
+            saveEditedEntry(editingEntry.cartKey, qty, instr);
+            setCheckoutStep('confirm');
+          }}
+          onCancel={() => {
+            setEditingEntry(null);
+            setCheckoutStep('confirm');
+          }}
+        />
+      )}
+
+      {/* Fake payment modal */}
+      <Modal
+        opened={checkoutStep === 'payment'}
+        onClose={() => setCheckoutStep('idle')}
+        title="Payment"
+        centered
+        size="sm"
+        closeOnClickOutside={false}
+        closeOnEscape={false}
+        withCloseButton={false}
+      >
+        <Stack gap="md">
+          <Text size="sm" c="dimmed">
+            Total to pay:
+          </Text>
+          <Text fw={800} size="xl" c="darkred" ta="center">
+            ${totalPrice.toFixed(2)}
+          </Text>
+          <Divider label="Mock card details" labelPosition="center" />
+          <TextInput label="Card number" disabled value="4242 4242 4242 4242" />
+          <Group grow>
+            <TextInput label="Expiry" disabled value="12/28" />
+            <TextInput label="CVV" disabled value="123" />
+          </Group>
+          <Button fullWidth color="darkred" loading={isPending} onClick={handleFakePayment}>
+            Pay ${totalPrice.toFixed(2)}
+          </Button>
+          <Button variant="subtle" color="gray" onClick={() => setCheckoutStep('confirm')}>
+            Back
+          </Button>
+        </Stack>
+      </Modal>
+
+      {/* Thank you modal */}
+      <Modal
+        opened={checkoutStep === 'thankyou'}
+        onClose={() => setCheckoutStep('idle')}
+        title="Order placed!"
+        centered
+        size="sm"
+        withCloseButton={false}
+        closeOnClickOutside={false}
+        closeOnEscape={false}
+      >
+        <Stack gap="sm" align="center">
+          <Text size="xl">🎉</Text>
+          <Text size="sm" c="dimmed" ta="center">
             Your order has been submitted successfully.
           </Text>
           <Text fw={700} size="xl" c="orange">
             Order #{placedOrderNumber}
           </Text>
-          <Button onClick={() => setPlacedOrderNumber(null)} color="darkred">
-            Close
+          <Text size="xs" c="dimmed" ta="center">
+            Sit back and relax — your food is on its way!
+          </Text>
+          <Button fullWidth color="darkred" mt="sm" onClick={() => setCheckoutStep('idle')}>
+            OK
           </Button>
         </Stack>
       </Modal>
     </>
+  );
+};
+
+// ─── Edit cart entry modal ────────────────────────────────────────────────────
+
+type EditCartEntryModalProps = {
+  entry: CartEntry;
+  onSave: (quantity: number, specialInstructions: string | null) => void;
+  onCancel: () => void;
+};
+
+const EditCartEntryModal = ({ entry, onSave, onCancel }: EditCartEntryModalProps) => {
+  const [quantity, setQuantity] = useState(entry.quantity);
+  const [instructions, setInstructions] = useState(entry.specialInstructions ?? '');
+
+  return (
+    <Modal opened onClose={onCancel} title={`Edit — ${entry.item.name}`} centered size="sm">
+      <Stack gap="md">
+        <Stack gap={4}>
+          <Text size="sm" fw={500}>
+            Quantity
+          </Text>
+          <Group justify="space-between" align="center" px="md">
+            <Button
+              variant="outline"
+              color="darkred"
+              size="lg"
+              w={56}
+              h={56}
+              p={0}
+              style={{ fontSize: 28, fontWeight: 700, borderRadius: 12 }}
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={quantity <= 1}
+            >
+              −
+            </Button>
+            <NumberInput
+              value={quantity}
+              onChange={(v) => setQuantity(Math.max(1, Number(v) || 1))}
+              min={1}
+              style={{ width: 80 }}
+              styles={{ input: { textAlign: 'center', fontWeight: 800, fontSize: 20 } }}
+              hideControls
+            />
+            <Button
+              variant="filled"
+              color="darkred"
+              size="lg"
+              w={56}
+              h={56}
+              p={0}
+              style={{ fontSize: 28, fontWeight: 700, borderRadius: 12 }}
+              onClick={() => setQuantity((q) => q + 1)}
+            >
+              +
+            </Button>
+          </Group>
+        </Stack>
+
+        <Textarea
+          label="Special instructions"
+          placeholder="e.g. no onions, extra sauce..."
+          value={instructions}
+          onChange={(e) => setInstructions(e.currentTarget.value)}
+          minRows={2}
+          autosize
+        />
+
+        <Divider />
+
+        <Group justify="space-between" align="center">
+          <Text fw={700} c="darkred" size="lg">
+            ${(entry.item.price * quantity).toFixed(2)}
+          </Text>
+          <Group gap="sm">
+            <Button variant="subtle" color="gray" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button color="darkred" onClick={() => onSave(quantity, instructions || null)}>
+              Save
+            </Button>
+          </Group>
+        </Group>
+      </Stack>
+    </Modal>
   );
 };
