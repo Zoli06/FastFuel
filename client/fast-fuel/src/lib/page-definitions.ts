@@ -53,7 +53,7 @@ export const pageDefinitions = {
     showInHomeMenu: false,
     group: 'Display',
     necessaryPermissions: ['Permission:Order:Read'],
-    recommendedPermissions: ['Permission:Order:UpdateStatus', 'Permission:Restaurant:Read'],
+    recommendedPermissions: ['Permission:Restaurant:Read'],
   },
   OrderCreator: {
     displayName: 'Create Order',
@@ -64,7 +64,7 @@ export const pageDefinitions = {
     group: 'Orders',
     necessaryPermissions: [
       'Permission:Order:Create',
-      'Permission:Order:Read',
+      'Permission:Restaurant:Read',
       'Permission:Food:Read',
       'Permission:Menu:Read',
     ],
