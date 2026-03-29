@@ -61,6 +61,8 @@ export const OrderCreator = () => {
     apiClient.queryOptions('get', '/api/Restaurant'),
   ]);
 
+  const { mutateAsync: createOrder, isPending } = apiClient.useMutation('post', '/api/Order');
+
   const lockedRestaurantId = isEmployeeUser
     ? (employeeProfile?.worksAtRestaurantId ?? null)
     : isMachineUser
@@ -81,8 +83,6 @@ export const OrderCreator = () => {
       setRestaurantId((prev) => (prev === lockedRestaurantId ? prev : lockedRestaurantId));
     }
   }, [lockedRestaurantId]);
-
-  const { mutateAsync: createOrder, isPending } = apiClient.useMutation('post', '/api/Order');
 
   const restaurantOptions = restaurants.map((r) => ({
     value: r.id,
