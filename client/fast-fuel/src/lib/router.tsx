@@ -16,13 +16,12 @@ import { RoleManagerPage } from '../pages/EntityManagerPages/RoleManagerPage.tsx
 import { StationTasksPage } from '../pages/StationTasksPage.tsx';
 import { RegistrationPage } from '../pages/RegistrationPage.tsx';
 import { OrderStatusDisplayPage } from '../pages/OrderStatusDisplayPage.tsx';
-import { EmployeeOrderPage } from '../pages/EmployeeOrderPage.tsx';
 import { MachineManagerPage } from '../pages/EntityManagerPages/MachineManagerPage.tsx';
 import { AdminManagerPage } from '../pages/EntityManagerPages/AdminManagerPage.tsx';
 import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManagerPage.tsx';
 import { Layout } from '../components/Layout/Layout.tsx';
 import type { HeaderAuthButton } from '../components/Header/Header.tsx';
-import { CustomerOrderPage } from '../pages/CustomerOrderPage.tsx';
+import { OrderCreator } from '../components/OrderCreator/OrderCreator.tsx';
 
 type RouteHandle = {
   header?: {
@@ -60,13 +59,8 @@ export const router = createBrowserRouter([
         handle: withHeader('Registration', 'Login'),
       },
       {
-        path: 'employee/order',
-        element: <EmployeeOrderPage />,
-        handle: withHeader('Create Order'),
-      },
-      {
-        path: 'customer/order',
-        element: <CustomerOrderPage />,
+        path: 'order',
+        element: <OrderCreator />,
         handle: withHeader('Place Order'),
       },
       {

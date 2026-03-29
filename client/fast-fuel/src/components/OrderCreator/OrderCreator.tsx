@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Badge,
   Box,
   Button,
   Divider,
   Group,
+  Modal,
   Paper,
   ScrollArea,
   SimpleGrid,
@@ -15,9 +16,10 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { OrderItemCard } from './OrderItemCard.tsx';
-import { CustomerOrderDetailModal } from './CustomerOrderDetailModal.tsx';
+import { OrderDetailModal } from './OrderDetailModal.tsx';
 import { apiClient } from '../../lib/api-client.ts';
 import {
+  IconArrowsSort,
   IconArrowDown,
   IconArrowUp,
   IconBottleFilled,
@@ -27,9 +29,11 @@ import {
   IconSortDescendingLetters,
   IconToolsKitchen3,
 } from '@tabler/icons-react';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import { NumericSelect } from '../common/NumericCombobox/NumericSelect.tsx';
 import type { CartItem, SortKey, UnifiedItem } from './types.ts';
+import { myCurrentUserQueryOptions } from '../../lib/api-client.ts';
 
 const CATEGORIES = [
   { label: 'All', value: 'all', icons: [IconLayoutGrid] },
@@ -37,13 +41,32 @@ const CATEGORIES = [
   { label: 'Menus', value: 'menu', icons: [IconBurger, IconBottleFilled] },
 ];
 
-export const CustomerOrderCreator = () => {
-  const [{ data: menus = [] }, { data: foods = [] }, { data: restaurants = [] }] =
-    useConditionalSuspenseQueries([
-      apiClient.queryOptions('get', '/api/Menu'),
-      apiClient.queryOptions('get', '/api/Food'),
-      apiClient.queryOptions('get', '/api/Restaurant'),
-    ]);
+export const OrderCreator = () => {
+  const { data: currentUser } = useSuspenseQuery(myCurrentUserQueryOptions());
+  const currentUserType = currentUser.userType.toLowerCase();
+  const isEmployeeUser = currentUserType === 'employee';
+  const isMachineUser = currentUserType === 'machine';
+
+  const [
+    { data: employeeProfile },
+    { data: machineProfile },
+    { data: menus = [] },
+    { data: foods = [] },
+    { data: restaurants = [] },
+  ] = useConditionalSuspenseQueries([
+    isEmployeeUser ? apiClient.queryOptions('get', '/api/Employee/me') : false,
+    isMachineUser ? apiClient.queryOptions('get', '/api/Machine/me') : false,
+    apiClient.queryOptions('get', '/api/Menu'),
+    apiClient.queryOptions('get', '/api/Food'),
+    apiClient.queryOptions('get', '/api/Restaurant'),
+  ]);
+
+  const lockedRestaurantId = isEmployeeUser
+    ? (employeeProfile?.worksAtRestaurantId ?? null)
+    : isMachineUser
+      ? (machineProfile?.locatedAtRestaurantId ?? null)
+      : null;
+  const isRestaurantLocked = lockedRestaurantId !== null;
 
   const [restaurantId, setRestaurantId] = useState<number | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -51,17 +74,15 @@ export const CustomerOrderCreator = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
+  const [placedOrderNumber, setPlacedOrderNumber] = useState<number | null>(null);
 
-  const { mutate: createOrder, isPending } = apiClient.useMutation('post', '/api/Order', {
-    onSuccess: () => {
-      setCart([]);
-      notifications.show({
-        title: 'Order placed!',
-        message: 'Your order has been submitted.',
-        color: 'green',
-      });
-    },
-  });
+  useEffect(() => {
+    if (lockedRestaurantId !== null) {
+      setRestaurantId((prev) => (prev === lockedRestaurantId ? prev : lockedRestaurantId));
+    }
+  }, [lockedRestaurantId]);
+
+  const { mutateAsync: createOrder, isPending } = apiClient.useMutation('post', '/api/Order');
 
   const restaurantOptions = restaurants.map((r) => ({
     value: r.id,
@@ -136,7 +157,7 @@ export const CustomerOrderCreator = () => {
   const cartPanelHeight =
     cart.length > 0 ? CART_HEADER + cartScrollHeight + CART_FOOTER + CART_PADDING : 0;
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!restaurantId) {
       notifications.show({ title: 'Select a restaurant', message: '', color: 'orange' });
       return;
@@ -145,7 +166,8 @@ export const CustomerOrderCreator = () => {
       notifications.show({ title: 'Your cart is empty', message: '', color: 'orange' });
       return;
     }
-    createOrder({
+
+    const created = await createOrder({
       body: {
         restaurantId,
         menus: cart
@@ -164,6 +186,8 @@ export const CustomerOrderCreator = () => {
           })),
       },
     });
+    setCart([]);
+    setPlacedOrderNumber(created.orderNumber);
   };
 
   return (
@@ -277,6 +301,7 @@ export const CustomerOrderCreator = () => {
               value={restaurantId}
               onChange={(val) => setRestaurantId(val)}
               searchable
+              disabled={isRestaurantLocked}
               style={{ flex: 1, maxWidth: 320 }}
             />
             <Group gap={6}>
@@ -307,7 +332,7 @@ export const CustomerOrderCreator = () => {
                 const isAsc = sortKey === s.keyAsc;
                 const isDesc = sortKey === s.keyDesc;
                 const isActive = isAsc || isDesc;
-                const Icon = isDesc ? s.iconDesc : s.iconAsc;
+                const Icon = isActive ? (isDesc ? s.iconDesc : s.iconAsc) : IconArrowsSort;
                 return (
                   <Button
                     key={s.label}
@@ -473,7 +498,7 @@ export const CustomerOrderCreator = () => {
 
       {/* Item detail modal */}
       {selectedItem && (
-        <CustomerOrderDetailModal
+        <OrderDetailModal
           item={selectedItem}
           allFoods={foods}
           opened={opened}
@@ -484,6 +509,25 @@ export const CustomerOrderCreator = () => {
           onAddToCart={addItemToCart}
         />
       )}
+
+      <Modal
+        opened={placedOrderNumber !== null}
+        onClose={() => setPlacedOrderNumber(null)}
+        title="Order placed"
+        centered
+      >
+        <Stack gap="xs">
+          <Text size="sm" c="dimmed">
+            Your order has been submitted successfully.
+          </Text>
+          <Text fw={700} size="xl" c="orange">
+            Order #{placedOrderNumber}
+          </Text>
+          <Button onClick={() => setPlacedOrderNumber(null)} color="darkred">
+            Close
+          </Button>
+        </Stack>
+      </Modal>
     </>
   );
 };

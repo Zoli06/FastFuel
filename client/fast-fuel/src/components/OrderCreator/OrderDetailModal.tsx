@@ -21,7 +21,7 @@ type MenuDetailModalProps = {
   onAddToCart: (cartItem: CartItem) => void;
 };
 
-export const CustomerOrderDetailModal = ({
+export const OrderDetailModal = ({
   opened,
   onClose,
   item,

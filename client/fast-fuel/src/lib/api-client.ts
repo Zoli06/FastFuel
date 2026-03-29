@@ -40,7 +40,7 @@ const authenticationMiddleware: Middleware = {
 
 const errorResponseMiddleware: Middleware = {
   async onResponse({ response }) {
-    if (response.ok) {
+    if (response.ok || response.status === 401) {
       return response;
     }
 
