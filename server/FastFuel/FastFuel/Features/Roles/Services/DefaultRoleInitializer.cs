@@ -33,7 +33,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 "Permission:Restaurant:Read",
                 "Permission:Restaurant:Read",
                 "Permission:StationCategory:Read",
-                "Permission:Order:CreateAtWorkplace",
+                "Permission:Order:Create",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",
                 "Permission:Station:Read",
@@ -47,9 +47,9 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
     private static readonly IReadOnlyDictionary<DefaultRole, Page[]> DefaultRolePages =
         new Dictionary<DefaultRole, Page[]>
         {
-            [DefaultRole.Customer] = [],
-            [DefaultRole.Employee] = [Page.StationTasks, Page.EmployeeOrder, Page.OrderStatusDisplay],
-            [DefaultRole.Machine] = [Page.OrderStatusDisplay]
+            [DefaultRole.Customer] = [Page.OrderCreator],
+            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay],
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.OrderCreator]
         };
 
     public async Task InitializeAsync()

@@ -4,7 +4,7 @@ public enum Page
 {
     StationTasks,
     OrderStatusDisplay,
-    EmployeeOrder,
+    OrderCreator,
     AdminManager,
     AllergyManager,
     CustomerManager,

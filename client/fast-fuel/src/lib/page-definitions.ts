@@ -18,7 +18,7 @@ export type Page = components['schemas']['Page'];
 export type Permission =
   operations['Permission_GetAll']['responses'][200]['content']['application/json'][number];
 
-export type Group = 'Edibles' | 'Restaurant' | 'Management' | 'Operations' | 'Display';
+export type Group = 'Edibles' | 'Restaurant' | 'Management' | 'Orders' | 'Display';
 
 type IconComponent = typeof IconShield;
 
@@ -55,21 +55,20 @@ export const pageDefinitions = {
     necessaryPermissions: ['Permission:Order:Read'],
     recommendedPermissions: ['Permission:Order:UpdateStatus', 'Permission:Restaurant:Read'],
   },
-  EmployeeOrder: {
+  OrderCreator: {
     displayName: 'Create Order',
-    color: 'yellow',
+    color: 'green',
     icon: IconShoppingCart,
-    routePath: '/employee/order',
+    routePath: '/order',
     showInHomeMenu: true,
-    group: 'Operations',
+    group: 'Orders',
     necessaryPermissions: [
-      'Permission:Order:CreateAtWorkplace',
+      'Permission:Order:Create',
       'Permission:Order:Read',
       'Permission:Food:Read',
       'Permission:Menu:Read',
     ],
     recommendedPermissions: [],
-    requiresDefaultRole: ['Employee'],
   },
   AdminManager: {
     displayName: 'Admins',
@@ -193,7 +192,7 @@ export const pageDefinitions = {
     icon: IconClipboardList,
     routePath: '/manage/order',
     showInHomeMenu: true,
-    group: 'Operations',
+    group: 'Orders',
     necessaryPermissions: ['Permission:Order:Read'],
     recommendedPermissions: [
       'Permission:Order:Create',
