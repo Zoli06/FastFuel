@@ -40,7 +40,6 @@ export const Register = () => {
   );
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    triggerPermissionsRefresh();
     await register({
       body: {
         name: values.name,
@@ -58,8 +57,8 @@ export const Register = () => {
       },
       params: { query: { useCookies: true, useSessionCookies: true } },
     });
-
-    navigate('/Customer', { replace: true });
+    triggerPermissionsRefresh();
+    navigate('/', { replace: true });
     form.reset();
   };
 
