@@ -5,7 +5,6 @@ type OrderItemCardProps = {
   item: UnifiedItem;
   allFoods: Food[];
   onAdd: () => void;
-  onRemove: () => void;
   onOpen: () => void;
 };
 
