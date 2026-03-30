@@ -4,5 +4,5 @@ namespace FastFuel.Features.Customers.DTOs;
 
 public record CustomerResponseDto : UserResponseDto
 {
-    public required List<uint> OrderIds { get; init; }
+    public required string Email { get; init; }
 }

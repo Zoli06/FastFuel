@@ -16,6 +16,8 @@ public class RoleMapper(RoleManager<Role> roleManager, UserManager<User> userMan
             Id = entity.Id,
             Name = entity.Name,
             IsDefault = entity.IsDefault,
+            IsImmutable = entity.IsImmutable,
+            Pages = entity.Pages.ToList(),
             Permissions = roleManager.GetClaimsAsync(new Role { Id = entity.Id, Name = entity.Name }).Result
                 .Where(c => c.Type == "Permission")
                 .Select(c => c.Value)
@@ -28,12 +30,14 @@ public class RoleMapper(RoleManager<Role> roleManager, UserManager<User> userMan
     {
         return new Role
         {
-            Name = dto.Name
+            Name = dto.Name,
+            Pages = dto.Pages.Distinct().ToList()
         };
     }
 
     public void UpdateEntity(RoleRequestDto dto, Role entity)
     {
         entity.Name = dto.Name;
+        entity.Pages = dto.Pages.Distinct().ToList();
     }
 }

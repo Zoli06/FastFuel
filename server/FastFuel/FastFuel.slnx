@@ -1,3 +1,4 @@
 <Solution>
+    <Project Path="FastFuel.Tests/FastFuel.Tests.csproj"/>
     <Project Path="FastFuel/FastFuel.csproj"/>
 </Solution>

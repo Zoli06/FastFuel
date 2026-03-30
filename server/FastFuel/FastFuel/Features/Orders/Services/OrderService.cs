@@ -1,8 +1,11 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Foods.Entities;
+using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
@@ -26,22 +29,20 @@ public class OrderService(
     protected override Update<Order, OrderRequestDto, OrderResponseDto> UpdateOperation =>
         new Update(DbContext, DbSet, Mapper);
 
-    protected override Delete<Order> DeleteOperation => new Delete(DbContext, DbSet);
-
     public async Task<List<OrderResponseDto>> GetOrdersForCurrentUserAsync(ClaimsPrincipal user,
         CancellationToken cancellationToken = default)
     {
-        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
-            throw new InvalidOperationException("User ID claim not found.");
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(user));
 
         if (!uint.TryParse(userIdClaim.Value, out var userId))
-            throw new InvalidOperationException("Invalid user ID claim value.");
+            throw new ResourceNotFoundAppException(nameof(ClaimsPrincipal), nameof(userIdClaim));
 
         var orders = await DbSet
             .Include(o => o.Foods)
             .Include(o => o.Menus)
-            .Where(o => o.CustomerId == userId)
+            .Where(o => o.UserId == userId)
             .ToListAsync(cancellationToken);
 
         return orders.ConvertAll(Mapper.ToDto);
@@ -57,6 +58,9 @@ public class OrderService(
 
         if (filterParams.Status.HasValue)
             query = query.Where(o => o.Status == filterParams.Status.Value);
+
+        if (filterParams.RestaurantId.HasValue)
+            query = query.Where(o => o.RestaurantId == filterParams.RestaurantId.Value);
 
         var orders = await query.ToListAsync(cancellationToken);
         return orders.ConvertAll(Mapper.ToDto);
@@ -86,12 +90,6 @@ public class OrderService(
         return (lastOrder?.OrderNumber ?? 0) + 1;
     }
 
-    private static void EnsurePendingStatus(Order entity)
-    {
-        if (entity.Status != OrderStatus.Pending)
-            throw new InvalidOperationException("Only pending orders can be modified.");
-    }
-
     private static async Task<uint> CalculatePriceAsync(Order entity, ApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
@@ -106,8 +104,8 @@ public class OrderService(
             .Where(f => foodIds.Contains(f.Id))
             .ToDictionaryAsync(f => f.Id, f => f.Price, cancellationToken);
 
-        var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * menuPrices.GetValueOrDefault(m.MenuId));
-        var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * foodPrices.GetValueOrDefault(f.FoodId));
+        var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * (menuPrices.TryGetValue(m.MenuId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Menu), m.MenuId)));
+        var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * (foodPrices.TryGetValue(f.FoodId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Food), f.FoodId)));
         return menuPrice + foodPrice;
     }
 
@@ -117,6 +115,28 @@ public class OrderService(
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
+        private static readonly SemaphoreSlim OrderCreationLock = new(1, 1);
+
+        public override async Task<OrderResponseDto> ExecuteAsync(OrderRequestDto requestDto, uint? userId = null,
+            CancellationToken cancellationToken = default)
+        {
+            await OrderCreationLock.WaitAsync(cancellationToken);
+            try
+            {
+                await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+
+                var entity = await CreateEntityAsync(requestDto, userId, cancellationToken);
+                await SaveEntityAsync(requestDto, entity, userId, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return await CreateDtoAsync(requestDto, entity, userId, cancellationToken);
+            }
+            finally
+            {
+                OrderCreationLock.Release();
+            }
+        }
+
         protected override async Task<Order> CreateEntityAsync(OrderRequestDto requestDto, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
@@ -127,8 +147,10 @@ public class OrderService(
                 .FirstOrDefaultAsync(cancellationToken);
             entity.OrderNumber = GetNextOrderNumber(lastOrder);
 
-            if (await DbContext.Customers.AnyAsync(c => c.Id == userId, cancellationToken))
-                entity.CustomerId = userId;
+            if (userId == null)
+                throw new AppException("User ID is required to create an order.");
+
+            entity.UserId = userId.Value;
 
             entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
 
@@ -148,23 +170,6 @@ public class OrderService(
         {
             await base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
             entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
-        }
-
-        protected override Task SaveEntityAsync(uint id, OrderRequestDto requestDto, Order entity, uint? userId = null,
-            CancellationToken cancellationToken = default)
-        {
-            EnsurePendingStatus(entity);
-            return base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
-        }
-    }
-
-    private class Delete(ApplicationDbContext dbContext, DbSet<Order> dbSet) : Delete<Order>(dbContext, dbSet)
-    {
-        protected override Task DeleteEntityAsync(uint id, Order entity, uint? userId = null,
-            CancellationToken cancellationToken = default)
-        {
-            EnsurePendingStatus(entity);
-            return base.DeleteEntityAsync(id, entity, userId, cancellationToken);
         }
     }
 }

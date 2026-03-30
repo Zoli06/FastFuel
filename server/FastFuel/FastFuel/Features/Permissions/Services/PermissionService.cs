@@ -3,7 +3,6 @@ using System.Security.Claims;
 using FastFuel.Features.Common.Permissions;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Permissions.Services;
@@ -56,26 +55,16 @@ public class PermissionService(
 
     private static IEnumerable<string> GetPermissionsForController(Type controllerType)
     {
-        var controllerName = GetControllerName(controllerType);
-
         return controllerType
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(m => m.GetCustomAttribute<SkipPermissionCheckAttribute>() == null
-                        && !m.GetCustomAttributes().OfType<IAllowAnonymous>().Any())
-            .Select(m => m.GetCustomAttribute<PermissionCheckAttribute>())
-            .Where(attr => attr != null)
-            .Select(attr => PermissionParser.ParsePermissionName(controllerName, attr!.Operation));
+            .Select(method => PermissionRequirementResolver.ResolveRequiredPermission(method, controllerType))
+            .Where(permission => permission != null)
+            .Select(permission => permission!);
     }
 
     private static bool IsConcreteController(Type type)
     {
         return type is { IsAbstract: false, IsInterface: false }
                && type.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string GetControllerName(Type type)
-    {
-        const string suffix = "Controller";
-        return type.Name[..^suffix.Length];
     }
 }

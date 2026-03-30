@@ -1,12 +1,5 @@
-import { LoginForm } from '../components/Login/LoginForm.tsx';
-import { HeaderGeneral } from '../components/Headers/HeaderGeneral.tsx';
+import { Login } from '../components/Login/Login.tsx';
 
 export const LoginPage = () => {
-  return (
-    <div>
-      <HeaderGeneral title={'Login'} />
-
-      <LoginForm />
-    </div>
-  );
+  return <Login />;
 };

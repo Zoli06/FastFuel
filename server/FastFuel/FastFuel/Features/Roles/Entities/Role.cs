@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Pages.Common;
 using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Features.Roles.Entities;
@@ -12,4 +13,6 @@ public class Role : IdentityRole<uint>, IIdentifiable
     }
 
     public bool IsDefault { get; set; }
+    public bool IsImmutable { get; set; }
+    public List<Page> Pages { get; set; } = [];
 }

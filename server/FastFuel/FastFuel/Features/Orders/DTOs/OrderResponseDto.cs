@@ -5,7 +5,7 @@ namespace FastFuel.Features.Orders.DTOs;
 
 public record OrderResponseDto : IIdentifiable
 {
-    public required uint? CustomerId { get; set; }
+    public required uint UserId { get; set; }
     public required uint RestaurantId { get; init; }
     public required uint OrderNumber { get; init; }
     public required OrderStatus Status { get; init; }

@@ -1,19 +1,24 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
-import { App } from './App.tsx';
 import { MantineProvider } from '@mantine/core';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
-
-const queryClient = new QueryClient();
+import '@mantine/notifications/styles.css';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './lib/router.tsx';
+import { Notifications } from '@mantine/notifications';
+import { queryClient } from './lib/query-client.ts';
+import { LoadingPage } from './pages/LoadingPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <Suspense fallback={<LoadingPage />}>
+          <RouterProvider router={router} />
+          <Notifications />
+        </Suspense>
       </QueryClientProvider>
     </MantineProvider>
   </StrictMode>,

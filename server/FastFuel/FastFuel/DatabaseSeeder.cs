@@ -1,13 +1,17 @@
-using System.Security.Claims;
+using FastFuel.Features.Admins.DTOs;
+using FastFuel.Features.Admins.Entities;
 using FastFuel.Features.Allergies.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Employees.DTOs;
+using FastFuel.Features.Employees.Entities;
 using FastFuel.Features.FoodIngredients.Entities;
 using FastFuel.Features.Foods.Entities;
 using FastFuel.Features.Ingredients.Entities;
+using FastFuel.Features.Machines.DTOs;
+using FastFuel.Features.Machines.Entities;
 using FastFuel.Features.MenuFoods.Entities;
 using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.OpeningHours.Entities;
@@ -15,9 +19,7 @@ using FastFuel.Features.OrderFoods.Entities;
 using FastFuel.Features.OrderMenus.Entities;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.Entities;
-using FastFuel.Features.Permissions.Services;
 using FastFuel.Features.Restaurants.Entities;
-using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.StationCategories.Entities;
 using FastFuel.Features.Stations.Entities;
 using FastFuel.Features.Themes.Entities;
@@ -35,11 +37,15 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
     private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
         serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();
 
+    private readonly ICrudService<AdminRequestDto, AdminResponseDto> _adminService =
+        serviceProvider.GetRequiredService<ICrudService<AdminRequestDto, AdminResponseDto>>();
+
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
 
-    private readonly IPermissionService _permissionService = serviceProvider.GetRequiredService<IPermissionService>();
-    private readonly RoleManager<Role> _roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
+    private readonly ICrudService<MachineRequestDto, MachineResponseDto> _machineService =
+        serviceProvider.GetRequiredService<ICrudService<MachineRequestDto, MachineResponseDto>>();
+
     private readonly UserManager<User> _userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
     public async Task SeedTestAsync()
@@ -185,8 +191,9 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _context.SaveChangesAsync();
 
         await SeedAdmin();
-        await SeedEmployee();
-        await SeedCustomer();
+        await SeedEmployee(restaurant);
+        await SeedMachine(restaurant);
+        var customer = await SeedCustomer();
 
         // Place an order
         var order = new Order
@@ -195,7 +202,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             OrderNumber = 1,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            Customer = await _context.Users.OfType<Customer>().FirstOrDefaultAsync(c => c.UserName == "customer")
+            User = customer
         };
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
@@ -205,14 +212,16 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         {
             Menu = lunchMenu,
             Order = order,
-            Quantity = 1
+            Quantity = 1,
+            SpecialInstructions = "Please make the burger without tomato."
         };
 
         var orderFoodItem = new OrderFood
         {
             Food = cheeseBurger,
             Order = order,
-            Quantity = 1
+            Quantity = 1,
+            SpecialInstructions = "Extra cheese, please."
         };
         _context.OrderMenus.Add(orderMenuItem);
         _context.OrderFoods.Add(orderFoodItem);
@@ -226,27 +235,35 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await SeedAdmin();
     }
 
-    private async Task SeedEmployee()
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<Employee> SeedEmployee(Restaurant workplace)
     {
+        var userName = "employee";
+
         var employeeDto = new EmployeeRequestDto
         {
-            UserName = "employee",
+            UserName = userName,
             Email = "employee@example.com",
             Name = "Employee User",
             Password = "Employee123!",
             ThemeId = null,
             ShiftIds = [],
-            StationCategoryIds = []
+            StationCategoryIds = [],
+            WorksAtRestaurantId = workplace.Id
         };
 
         await _employeeService.CreateAsync(employeeDto);
+        var employee = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(employee as Employee).Result!;
     }
 
-    private async Task SeedCustomer()
+    private async Task<Customer> SeedCustomer()
     {
+        var userName = "customer";
+
         var customerDto = new CustomerRequestDto
         {
-            UserName = "customer",
+            UserName = userName,
             Email = "customer@example.com",
             Name = "Customer User",
             Password = "Customer123!",
@@ -254,34 +271,48 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         };
 
         await _customerService.CreateAsync(customerDto);
+
+        var customer = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(customer as Customer).Result!;
     }
 
-    private async Task SeedAdmin()
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<Admin> SeedAdmin()
     {
-        var adminDto = new EmployeeRequestDto
+        var userName = "admin";
+
+        var adminRequestDto = new AdminRequestDto
         {
-            UserName = "admin",
+            UserName = userName,
             Email = "admin@example.com",
             Name = "Admin User",
             Password = "Admin123!",
-            ThemeId = null,
-            ShiftIds = [],
-            StationCategoryIds = []
+            ThemeId = null
         };
 
-        await _employeeService.CreateAsync(adminDto);
+        await _adminService.CreateAsync(adminRequestDto);
 
-        var adminUser = await _userManager.FindByNameAsync("admin");
-        var allPermissions = await _permissionService.GetAllPermissionsAsync();
-        var role = await _roleManager.FindByNameAsync("Admin");
-        if (role == null)
+        var adminUser = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(adminUser as Admin).Result!;
+    }
+
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<Machine> SeedMachine(Restaurant locatedAt)
+    {
+        var userName = "machine";
+
+        var machineRequestDto = new MachineRequestDto
         {
-            role = new Role { Name = "Admin", IsDefault = true };
-            await _roleManager.CreateAsync(role);
-            foreach (var permission in allPermissions)
-                await _roleManager.AddClaimAsync(role, new Claim("Permission", permission));
-        }
+            UserName = userName,
+            LocatedAtRestaurantId = locatedAt.Id,
+            Name = "Machine User",
+            ThemeId = null,
+            Password = "Machine123!"
+        };
 
-        await _userManager.AddToRoleAsync(adminUser!, "Admin");
+        await _machineService.CreateAsync(machineRequestDto);
+
+        var machineUser = await _userManager.FindByNameAsync(userName);
+        return Task.FromResult(machineUser as Machine).Result!;
     }
 }

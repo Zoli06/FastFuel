@@ -1,4 +1,3 @@
-using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Entities;
@@ -7,9 +6,22 @@ using Microsoft.AspNetCore.Identity;
 namespace FastFuel.Features.Users.Mappers;
 
 public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
-    : IMapper<User, UserRequestDto, UserResponseDto>
 {
-    protected abstract string UserType { get; }
+    private static string GetRuntimeUserType(User model)
+    {
+        var type = model.GetType();
+
+        if (type == typeof(User))
+            return nameof(User);
+
+        // EF proxy instances inherit from the concrete entity type.
+        if (type.Name.EndsWith("Proxy", StringComparison.Ordinal)
+            && type.BaseType is not null
+            && typeof(User).IsAssignableFrom(type.BaseType))
+            return type.BaseType.Name;
+
+        return type.Name;
+    }
 
     public virtual UserResponseDto ToDto(User model)
     {
@@ -19,15 +31,15 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
         return new UserResponseDto
         {
             Id = model.Id,
-            Name = model.UserName,
-            Email = model.Email,
+            Name = model.Name,
             UserName = model.UserName,
             ThemeId = model.ThemeId,
             RoleIds = roleManager.Roles
                 .Where(r => userRoles.Contains(r.Name))
                 .Select(r => r.Id)
                 .ToList(),
-            UserType = UserType
+            UserType = GetRuntimeUserType(model),
+            OrderIds = model.Orders.Select(o => o.Id).ToList()
         };
     }
 
@@ -36,7 +48,6 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
         return new User
         {
             Name = dto.Name,
-            Email = dto.Email,
             UserName = dto.UserName,
             ThemeId = dto.ThemeId
         };
@@ -45,7 +56,6 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
     public void UpdateEntity(UserRequestDto dto, User model)
     {
         model.Name = dto.Name;
-        model.Email = dto.Email;
         model.UserName = dto.UserName;
         model.ThemeId = dto.ThemeId;
     }

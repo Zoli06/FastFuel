@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>ce8bb661-0178-4391-b09d-a5a5b70ef382</UserSecretsId>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +25,10 @@
         <PackageReference Include="NSwag.AspNetCore" Version="14.6.3"/>
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0"/>
         <PackageReference Include="Scrutor" Version="7.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\Machines\" />
     </ItemGroup>
 
 </Project>

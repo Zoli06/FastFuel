@@ -1,10 +1,14 @@
 using System.Text.Json.Serialization;
 using FastFuel.Features.Common.DbContexts;
-using FastFuel.Features.Common.ExceptionFilters;
+using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
+using FastFuel.NSwag.MarkAsRequiredIfNonNullable;
+using FastFuel.NSwag.PermissionSchema;
 using FastFuel.NSwag.SwaggerQueryParam;
 using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +38,9 @@ public static class Program
         // Configure other application services (controllers, OpenAPI, CORS, DI)
         ConfigureAppServices(builder);
 
+        // Configure global exception handlers
+        AddExceptionHandler(builder);
+
         var app = builder.Build();
 
         // Configure middleware / request pipeline
@@ -50,7 +57,10 @@ public static class Program
     {
         builder.Services.AddAuthorization();
         builder.Services
-            .AddIdentityApiEndpoints<User>()
+            .AddIdentityApiEndpoints<User>(options =>
+            {
+                options.User.AllowedUserNameCharacters = null!;
+            })
             .AddRoles<Role>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
     }
@@ -67,37 +77,35 @@ public static class Program
             dbContextOptions
                 .UseLazyLoadingProxies()
                 .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-            if (builder.Environment.IsDevelopment())
-                dbContextOptions.LogTo(Console.WriteLine, LogLevel.Information)
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
+
+            if (!builder.Environment.IsDevelopment())
+                return;
+
+            dbContextOptions
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors();
         });
     }
 
     // Registers controllers, OpenAPI, CORS, password hasher and scans feature services
     private static void ConfigureAppServices(WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers(options =>
-        {
-            options.Filters.Add<UniqueConstraintExceptionFilter>();
-            options.Filters.Add<ReferenceConstraintExceptionFilter>();
-            options.Filters.Add<InvalidOperationExceptionFilter>();
-            options.Filters.Add<UnauthorizedAccessExceptionFilter>();
-            options.Filters.Add<KeyNotFoundExceptionFilter>();
-        }).AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+        builder.Services.AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         builder.Services.ConfigureHttpJsonOptions(options =>
-        {
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        });
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         builder.Services.AddEndpointsApiExplorer();
 
-        builder.Services.AddOpenApiDocument(config =>
+        builder.Services.AddOpenApiDocument((config, serviceProvider) =>
         {
             config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
             config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
+            config.OperationProcessors.Add(new PermissionSchemaOperationProcessor());
+            config.DocumentProcessors.Add(new PermissionSchemaDocumentProcessor(serviceProvider));
+            config.SchemaSettings.SchemaProcessors.Add(new MarkAsRequiredIfNonNullableSchemaProcessor());
 
             config.AddSecurity("Bearer", new OpenApiSecurityScheme
             {
@@ -110,35 +118,46 @@ public static class Program
             config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
         });
 
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", policy =>
-            {
-                policy.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            });
-        });
+        builder.Services.AddCors();
 
         builder.Services.AddTransient<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.AddScoped<IDefaultRoleInitializer, DefaultRoleInitializer>();
         builder.Services.Scan(scan => scan
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter
                 .InNamespaces("FastFuel.Features")
+                // TODO: switch to an opt-in approach
                 .Where(t => !typeof(IFilterMetadata).IsAssignableFrom(t)
-                            && !typeof(IFilterFactory).IsAssignableFrom(t)))
+                            && !typeof(IFilterFactory).IsAssignableFrom(t)
+                            && !typeof(IExceptionHandler).IsAssignableFrom(t)
+                            && !typeof(Exception).IsAssignableFrom(t)))
             .UsingRegistrationStrategy(RegistrationStrategy.Skip)
             .AsImplementedInterfaces()
             .WithScopedLifetime());
     }
 
+    private static void AddExceptionHandler(WebApplicationBuilder builder)
+    {
+        builder.Services.AddProblemDetails();
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    }
+
     // Configure middleware pipeline (CORS, Dev tools, Authentication, Authorization, Controllers)
     private static void ConfigureMiddleware(WebApplication app)
     {
-        app.UseCors("AllowAll");
+        app.UseExceptionHandler();
+
+        app.UseCors(options =>
+        {
+            // TODO: Remove this security issue
+            options.SetIsOriginAllowed(_ => true);
+            options.AllowAnyMethod();
+            options.AllowAnyHeader();
+            options.AllowCredentials();
+        });
+
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
             app.UseOpenApi();
             app.UseSwaggerUi();
         }
@@ -153,18 +172,21 @@ public static class Program
     private static async Task SeedDatabaseAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+
         if (app.Environment.IsDevelopment())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
+        }
 
+        var roleInitializer = scope.ServiceProvider.GetRequiredService<IDefaultRoleInitializer>();
+        await roleInitializer.InitializeAsync();
+
+        var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
+        if (app.Environment.IsDevelopment())
             await databaseSeeder.SeedTestAsync();
-        }
         else
-        {
             await databaseSeeder.SeedAsync();
-        }
     }
 }
