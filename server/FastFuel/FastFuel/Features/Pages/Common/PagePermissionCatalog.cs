@@ -30,6 +30,12 @@ public static class PagePermissionCatalog
                 [],
                 []
             ),
+            [Page.OrderHistory] =
+            (
+                ["Permission:Order:Read"],
+                [],
+                []
+            ),
             [Page.AdminManager] =
             (
                 ["Permission:Admin:Read"],
@@ -177,6 +183,12 @@ public static class PagePermissionCatalog
                 ["Permission:Restaurant:Read"],
                 ["Permission:Restaurant:Create", "Permission:Restaurant:Update", "Permission:Restaurant:Delete"],
                 []
-            )
+            ),
+            [Page.Profile] =
+            (
+                [],
+                [],
+                []
+            ),
         };
 }

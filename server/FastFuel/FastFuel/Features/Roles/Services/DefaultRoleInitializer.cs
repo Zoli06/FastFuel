@@ -24,11 +24,11 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 Page.AdminManager, Page.AllergyManager, Page.CustomerManager, Page.IngredientManager,
                 Page.EmployeeManager, Page.MachineManager, Page.FoodManager, Page.MenuManager, Page.OrderManager,
                 Page.RoleManager, Page.ShiftManager, Page.StationCategoryManager, Page.StationManager,
-                Page.RestaurantManager
+                Page.RestaurantManager, Page.Profile
             ],
-            [DefaultRole.Customer] = [Page.OrderCreator],
-            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay],
-            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator]
+            [DefaultRole.Customer] = [Page.OrderCreator, Page.OrderHistory, Page.Profile],
+            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay, Page.OrderHistory, Page.Profile],
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator, Page.OrderHistory, Page.Profile]
         };
 
     public async Task InitializeAsync()

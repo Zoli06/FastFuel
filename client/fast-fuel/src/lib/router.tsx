@@ -22,6 +22,8 @@ import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManager
 import { Layout } from '../components/Layout/Layout.tsx';
 import type { HeaderAuthButton } from '../components/Header/Header.tsx';
 import { OrderCreator } from '../components/OrderCreator/OrderCreator.tsx';
+import { OrderHistoryPage } from '../pages/OrderHistoryPage.tsx';
+import { ProfilePage } from '../pages/ProfilePage.tsx';
 
 type RouteHandle = {
   header?: {
@@ -62,6 +64,16 @@ export const router = createBrowserRouter([
         path: 'order',
         element: <OrderCreator />,
         handle: withHeader('Place Order'),
+      },
+      {
+        path: 'order-history',
+        element: <OrderHistoryPage />,
+        handle: withHeader('Order History'),
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+        handle: withHeader('Profile'),
       },
       {
         path: 'manage',

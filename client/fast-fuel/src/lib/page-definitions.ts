@@ -5,11 +5,13 @@ import {
   IconClipboardList,
   IconClock,
   IconDeviceDesktop,
+  IconHistory,
   IconLayoutGrid,
   IconLeaf,
   IconShield,
   IconShoppingCart,
   IconToolsKitchen2,
+  IconUser,
   IconUsers,
 } from '@tabler/icons-react';
 import type { components, operations } from '../types/api';
@@ -56,6 +58,14 @@ export const pageDefinitions = {
     showInHomeMenu: true,
     group: 'Orders',
   },
+  OrderHistory: {
+    displayName: 'Order History',
+    color: 'cyan',
+    icon: IconHistory,
+    routePath: '/order-history',
+    showInHomeMenu: true,
+    group: 'Orders',
+  },
   AdminManager: {
     displayName: 'Admins',
     color: 'red',
@@ -93,6 +103,14 @@ export const pageDefinitions = {
     color: 'blue',
     icon: IconUsers,
     routePath: '/manage/employee',
+    showInHomeMenu: true,
+    group: 'Management',
+  },
+  Profile: {
+    displayName: 'Profile',
+    color: 'blue',
+    icon: IconUser,
+    routePath: '/profile',
     showInHomeMenu: true,
     group: 'Management',
   },
