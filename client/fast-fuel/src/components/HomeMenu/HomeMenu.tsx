@@ -11,21 +11,29 @@ import { Paper } from '../common/Paper/Paper.tsx';
 import { Link } from 'react-router-dom';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { IconChevronRight, IconShield } from '@tabler/icons-react';
-import { getHomeMenuDefinitions } from '../../lib/page-permissions.ts';
-import { myRolePagesQueryOptions } from '../../lib/api-client.ts';
+import {
+  type Group as PageGroup,
+  type PageDefinition,
+  getPageDefinitions,
+} from '../../lib/page-definitions.ts';
+import { myRolesQueryOptions } from '../../lib/api-client.ts';
 
 export const HomeMenu = () => {
-  const { data: pages } = useSuspenseQuery(myRolePagesQueryOptions());
-  const pageDefinitions = getHomeMenuDefinitions(pages);
+  const { data: roles } = useSuspenseQuery(myRolesQueryOptions());
+  const accessiblePages = Array.from(new Set(roles.flatMap((role) => role.pages)));
+  const pageDefinitions = getPageDefinitions(accessiblePages);
 
-  const menuItems = pageDefinitions.map((definition) => ({
-    text: definition.displayName,
-    to: definition.routePath,
-    icon: definition.icon,
-    color: definition.color,
-  }));
-
-  const MenuCard = ({ text, to, icon: Icon, color }: (typeof menuItems)[number]) => (
+  const MenuCard = ({
+    text,
+    to,
+    icon: Icon,
+    color,
+  }: {
+    text: string;
+    to: string;
+    icon: PageDefinition['icon'];
+    color: string;
+  }) => (
     <UnstyledButton component={Link} to={to} w="100%">
       <MantinePaper withBorder p="md" style={{ transition: 'box-shadow 0.15s' }}>
         <Group justify="space-between" wrap="nowrap">
@@ -47,7 +55,7 @@ export const HomeMenu = () => {
     </UnstyledButton>
   );
 
-  if (menuItems.length === 0) {
+  if (Object.keys(pageDefinitions).length === 0) {
     return (
       <Paper>
         <Stack align="center" gap="xs" py="xl">
@@ -62,11 +70,28 @@ export const HomeMenu = () => {
 
   return (
     <Paper>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
-        {menuItems.map((item) => (
-          <MenuCard key={item.to} {...item} />
-        ))}
-      </SimpleGrid>
+      <Stack gap="md">
+        {(Object.entries(pageDefinitions) as [PageGroup, PageDefinition[]][]).map(
+          ([group, defs]) => (
+            <Stack key={group} gap="xs">
+              <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                {group}
+              </Text>
+              <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+                {defs.map((def) => (
+                  <MenuCard
+                    key={def.routePath}
+                    text={def.displayName}
+                    to={def.routePath}
+                    icon={def.icon}
+                    color={def.color}
+                  />
+                ))}
+              </SimpleGrid>
+            </Stack>
+          ),
+        )}
+      </Stack>
     </Paper>
   );
 };

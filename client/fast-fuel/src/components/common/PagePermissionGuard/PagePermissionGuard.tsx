@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Alert, Text } from '@mantine/core';
-import type { Page } from '../../../lib/page-permissions.ts';
+import type { Page } from '../../../lib/page-definitions.ts';
 import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { Paper } from '../Paper/Paper.tsx';
 

@@ -13,24 +13,27 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
     private static readonly IReadOnlyDictionary<DefaultRole, string[]> DefaultRoles =
         new Dictionary<DefaultRole, string[]>
         {
-            [DefaultRole.User] =
+            [DefaultRole.Customer] =
             [
                 "Permission:Menu:Read",
                 "Permission:Food:Read",
                 "Permission:Ingredient:Read",
                 "Permission:Allergy:Read",
                 "Permission:Restaurant:Read",
-                "Permission:Restaurant:Read"
-            ],
-            [DefaultRole.Customer] =
-            [
+                "Permission:Restaurant:Read",
                 "Permission:Order:Create",
                 "Permission:Customer:UpdateSelf"
             ],
             [DefaultRole.Employee] =
             [
+                "Permission:Menu:Read",
+                "Permission:Food:Read",
+                "Permission:Ingredient:Read",
+                "Permission:Allergy:Read",
+                "Permission:Restaurant:Read",
+                "Permission:Restaurant:Read",
                 "Permission:StationCategory:Read",
-                "Permission:Order:CreateAtWorkplace",
+                "Permission:Order:Create",
                 "Permission:Order:Read",
                 "Permission:Order:UpdateStatus",
                 "Permission:Station:Read",
@@ -44,10 +47,9 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
     private static readonly IReadOnlyDictionary<DefaultRole, Page[]> DefaultRolePages =
         new Dictionary<DefaultRole, Page[]>
         {
-            [DefaultRole.User] = [],
-            [DefaultRole.Customer] = [],
-            [DefaultRole.Employee] = [Page.StationTasks, Page.EmployeeOrder, Page.OrderStatusDisplay],
-            [DefaultRole.Machine] = [Page.OrderStatusDisplay]
+            [DefaultRole.Customer] = [Page.OrderCreator],
+            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay],
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.OrderCreator]
         };
 
     public async Task InitializeAsync()
@@ -56,7 +58,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
 
         foreach (var (defaultRole, permissions) in DefaultRoles)
         {
-            var roleName = defaultRole.ToRoleName();
+            var roleName = defaultRole.ToString();
             if (await roleManager.RoleExistsAsync(roleName))
                 continue;
 
@@ -84,7 +86,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
 
     private async Task InitializeAdminRoleAsync()
     {
-        var adminRoleName = DefaultRole.Admin.ToRoleName();
+        var adminRoleName = nameof(DefaultRole.Admin);
         var adminRole = await roleManager.FindByNameAsync(adminRoleName);
         if (adminRole == null)
         {

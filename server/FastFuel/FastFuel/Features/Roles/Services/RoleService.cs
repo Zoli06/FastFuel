@@ -59,19 +59,16 @@ public class RoleService(
         List<string> newPermissions)
     {
         var existingClaims = await roleManager.GetClaimsAsync(role);
-        var existingPermissions =
-            existingClaims.Where(c => c.Type == "Permission").Select(c => c.Value).ToHashSet();
+        var permissionClaims = existingClaims.Where(c => c.Type == "Permission").ToList();
+        var existingPermissions = permissionClaims.Select(c => c.Value).ToHashSet();
         var newPermissionsSet = newPermissions.ToHashSet();
 
         var permissionsToRemove = existingPermissions.Except(newPermissionsSet).ToList();
         var permissionsToAdd = newPermissionsSet.Except(existingPermissions).ToList();
 
-        var claimsByValue = existingClaims.Where(c => c.Type == "Permission")
-            .ToDictionary(c => c.Value);
-
-        foreach (var permission in permissionsToRemove)
-            if (claimsByValue.TryGetValue(permission, out var claim))
-                await roleManager.RemoveClaimAsync(role, claim);
+        var permissionsToRemoveSet = permissionsToRemove.ToHashSet();
+        foreach (var claim in permissionClaims.Where(c => permissionsToRemoveSet.Contains(c.Value)))
+            await roleManager.RemoveClaimAsync(role, claim);
 
         foreach (var permission in permissionsToAdd)
             await roleManager.AddClaimAsync(role, new Claim("Permission", permission));

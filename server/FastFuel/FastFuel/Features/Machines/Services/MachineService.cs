@@ -20,7 +20,6 @@ public class MachineService(
 
     protected override DefaultRole[] DefaultRoles =>
     [
-        ..base.DefaultRoles,
         DefaultRole.Machine
     ];
 }

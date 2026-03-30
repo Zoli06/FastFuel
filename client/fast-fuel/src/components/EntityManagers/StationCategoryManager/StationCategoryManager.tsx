@@ -6,14 +6,14 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationCategoryManager = () => {
-  const { necessary, recommended } = usePagePermissions('StationCategoryManager', { split: true });
+  const { recommended } = usePagePermissions('StationCategoryManager', { split: true });
 
   const [
     { data: ingredients = [] },
     { data: stationCategories = [], refetch: refetchStationCategories },
   ] = useConditionalSuspenseQueries([
     recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-    necessary.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    apiClient.queryOptions('get', '/api/StationCategory'),
   ]);
 
   type StationCategory = (typeof stationCategories)[number];

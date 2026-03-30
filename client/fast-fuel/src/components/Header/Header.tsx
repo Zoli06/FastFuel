@@ -1,11 +1,15 @@
-import { Button, Center, Flex, Text } from '@mantine/core';
+import { Button, Center, Flex, Stack, Text } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { apiClient, clearAuthData, fetchClient } from '../../lib/api-client.ts';
 import { notifications } from '@mantine/notifications';
+import { apiClient, clearAuthData, myCurrentUserQueryOptions } from '../../lib/api-client.ts';
+
+export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
 
 interface HeaderProps {
   title: string;
-  authButton?: 'Login' | 'Logout' | 'Register';
+  authButton?: HeaderAuthButton;
 }
 
 const authButtonConfig = {
@@ -16,6 +20,11 @@ const authButtonConfig = {
 
 export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const navigate = useNavigate();
+  const { data: currentUser } = useQuery({
+    ...myCurrentUserQueryOptions(),
+    enabled: shouldLoadCurrentUser,
+  });
+
   const { mutate: logout } = apiClient.useMutation('post', '/api/Auth/logout', {
     onSuccess: () => {
       clearAuthData();

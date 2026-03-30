@@ -180,6 +180,31 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     [Fact]
+    public async Task UpdateRole_WithDuplicateExistingPermissionClaims_ShouldNotThrowAndShouldSyncClaims()
+    {
+        var role = new Role { Name = "SupervisorWithDuplicates" };
+        await _roleManager.CreateAsync(role);
+
+        await _roleManager.AddClaimAsync(role, new Claim("Permission", "Permission:A"));
+        await _roleManager.AddClaimAsync(role, new Claim("Permission", "Permission:A"));
+
+        var updateRequest = BuildRequest(
+            "SupervisorWithDuplicates",
+            new List<string> { "Permission:B" }
+        );
+
+        var updated = await _service.UpdateAsync(role.Id, updateRequest);
+
+        Assert.True(updated);
+
+        var refreshedRole = await _roleManager.FindByNameAsync("SupervisorWithDuplicates");
+        var claims = await _roleManager.GetClaimsAsync(refreshedRole!);
+
+        Assert.Single(claims);
+        Assert.Equal("Permission:B", claims[0].Value);
+    }
+
+    [Fact]
     public async Task Update_ImmutableRole_ShouldThrowUnauthorizedAppException()
     {
         var role = new Role

@@ -12,14 +12,19 @@ import {
 import { apiClient } from '../../../lib/api-client.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
-import { pageDefinitions, type Page, type Permission } from '../../../lib/page-permissions.ts';
+import {
+  pageDefinitions,
+  type Page,
+  type PageDefinition,
+  type Permission,
+} from '../../../lib/page-definitions.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 
 export const RoleManager = () => {
-  const { necessary, recommended } = usePagePermissions('RoleManager', { split: true });
+  const { recommended } = usePagePermissions('RoleManager', { split: true });
 
   const [
     { data: users = [] },
@@ -28,15 +33,15 @@ export const RoleManager = () => {
   ] = useConditionalSuspenseQueries([
     recommended.User.Read && apiClient.queryOptions('get', '/api/User'),
     recommended.Permission.Read && apiClient.queryOptions('get', '/api/Permission'),
-    necessary.Role.Read && apiClient.queryOptions('get', '/api/Role'),
+    apiClient.queryOptions('get', '/api/Role'),
   ]);
 
   type Role = (typeof roles)[number];
   type RoleFormValues = Pick<Role, 'id' | 'name' | 'permissions' | 'pages' | 'userIds'>;
 
-  const pageEntries = (
-    Object.entries(pageDefinitions) as [Page, (typeof pageDefinitions)[Page]][]
-  ).sort(([, left], [, right]) => left.displayName.localeCompare(right.displayName));
+  const pageEntries = (Object.entries(pageDefinitions) as [Page, PageDefinition][]).sort(
+    ([, left], [, right]) => left.displayName.localeCompare(right.displayName),
+  );
 
   const getMissingNecessaryPermissions = (pages: Page[], selectedPermissions: Permission[]) => {
     const permissionSet = new Set(selectedPermissions);
@@ -54,6 +59,25 @@ export const RoleManager = () => {
     const missing = getMissingNecessaryPermissions(pages, selectedPermissions);
     if (missing.length === 0) return undefined;
     return `Cannot remove permissions required by displayed pages: ${missing.join(', ')}`;
+  };
+
+  const getPagesDefaultRoleError = (pages: Page[], roleName: string, isDefaultRole: boolean) => {
+    const restrictedPages = pages.filter((page) => {
+      const requiredDefaultRoles = (pageDefinitions[page] as PageDefinition)?.requiresDefaultRole;
+      if (!requiredDefaultRoles || requiredDefaultRoles.length === 0) return false;
+      if (!isDefaultRole) return true;
+      return !requiredDefaultRoles.includes(roleName);
+    });
+
+    if (restrictedPages.length === 0) return undefined;
+
+    const pageDescriptions = restrictedPages.map((page) => {
+      const definition = pageDefinitions[page] as PageDefinition;
+      const roles = definition.requiresDefaultRole?.join(', ') ?? '-';
+      return `${definition.displayName} (default roles: ${roles})`;
+    });
+
+    return `These pages can only be assigned to matching default roles: ${pageDescriptions.join('; ')}`;
   };
 
   const userOptions = users.map((user) => ({
@@ -160,21 +184,42 @@ export const RoleManager = () => {
       : []),
     {
       type: 'custom',
-      render: (form) => {
+      render: (form, mode) => {
+        const values = form.getValues() as RoleFormValues;
+        const role =
+          mode === 'edit' && values.id != null
+            ? roles.find((candidate) => candidate.id === values.id)
+            : undefined;
+        const roleName = (values.name ?? role?.name ?? '').trim();
+        const isDefaultRole = !!role?.isDefault;
         const selectedPermissions =
           (form.getValues().permissions as Permission[] | undefined) ?? [];
         const selectedPages = (form.getValues().pages as Page[] | undefined) ?? [];
         const selectedPermissionSet = new Set(selectedPermissions);
 
-        const updatePages = (nextPages: Page[]) => {
-          form.setFieldValue('pages', nextPages);
-
-          const pagesPermissionError = getPagesPermissionError(nextPages, selectedPermissions);
+        const setSelectionErrors = (nextPages: Page[], nextPermissions: Permission[]) => {
+          const pagesPermissionError = getPagesPermissionError(nextPages, nextPermissions);
           if (pagesPermissionError) {
             form.setFieldError('permissions', pagesPermissionError);
           } else {
             form.clearFieldError('permissions');
           }
+
+          const pagesDefaultRoleError = getPagesDefaultRoleError(
+            nextPages,
+            roleName,
+            isDefaultRole,
+          );
+          if (pagesDefaultRoleError) {
+            form.setFieldError('pages', pagesDefaultRoleError);
+          } else {
+            form.clearFieldError('pages');
+          }
+        };
+
+        const updatePages = (nextPages: Page[]) => {
+          form.setFieldValue('pages', nextPages);
+          setSelectionErrors(nextPages, selectedPermissions);
         };
 
         return (
@@ -187,7 +232,13 @@ export const RoleManager = () => {
               const hasRequiredPermissions = definition.necessaryPermissions.every((permission) =>
                 selectedPermissionSet.has(permission),
               );
+              const requiredDefaultRoles = definition.requiresDefaultRole;
+              const hasRequiredDefaultRole =
+                !requiredDefaultRoles ||
+                requiredDefaultRoles.length === 0 ||
+                (isDefaultRole && requiredDefaultRoles.includes(roleName));
               const isChecked = selectedPages.includes(page);
+              const canTogglePage = hasRequiredPermissions && (hasRequiredDefaultRole || isChecked);
 
               const addNecessaryPermissions = () => {
                 const newPermissions = [...selectedPermissions];
@@ -197,7 +248,7 @@ export const RoleManager = () => {
                   }
                 });
                 form.setFieldValue('permissions', newPermissions);
-                form.clearFieldError('permissions');
+                setSelectionErrors(selectedPages, newPermissions);
               };
 
               const addAllPermissions = () => {
@@ -210,8 +261,19 @@ export const RoleManager = () => {
                   },
                 );
                 form.setFieldValue('permissions', newPermissions);
-                form.clearFieldError('permissions');
+                setSelectionErrors(selectedPages, newPermissions);
               };
+
+              const statusColor = hasRequiredDefaultRole
+                ? hasRequiredPermissions
+                  ? 'green'
+                  : 'red'
+                : 'orange';
+              const statusLabel = hasRequiredDefaultRole
+                ? hasRequiredPermissions
+                  ? 'Available'
+                  : 'Missing required permissions'
+                : `Requires default role: ${(requiredDefaultRoles ?? []).join(', ')}`;
 
               return (
                 <Stack
@@ -227,8 +289,9 @@ export const RoleManager = () => {
                     <Group gap="sm" wrap="nowrap">
                       <Checkbox
                         checked={isChecked}
-                        disabled={!hasRequiredPermissions}
+                        disabled={!canTogglePage}
                         onChange={(event) => {
+                          if (!hasRequiredPermissions || !hasRequiredDefaultRole) return;
                           if (event.currentTarget.checked) {
                             updatePages([...selectedPages, page]);
                           } else {
@@ -245,16 +308,15 @@ export const RoleManager = () => {
                         {definition.displayName}
                       </Text>
                     </Group>
-                    <Badge
-                      color={hasRequiredPermissions ? 'green' : 'red'}
-                      variant="light"
-                      size="sm"
-                    >
-                      {hasRequiredPermissions ? 'Available' : 'Missing required permissions'}
+                    <Badge color={statusColor} variant="light" size="sm">
+                      {statusLabel}
                     </Badge>
                   </Group>
                   <Text size="xs" c="dimmed">
                     Required: {definition.necessaryPermissions.join(', ') || '-'}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    Default role: {definition.requiresDefaultRole?.join(', ') || '-'}
                   </Text>
                   <Text size="xs" c="dimmed">
                     Recommended: {definition.recommendedPermissions.join(', ') || '-'}
@@ -298,9 +360,20 @@ export const RoleManager = () => {
       values.pages ?? [],
       (values.permissions as Permission[] | undefined) ?? [],
     );
+    const role =
+      values.id != null ? roles.find((candidate) => candidate.id === values.id) : undefined;
+    const roleName = (values.name ?? role?.name ?? '').trim();
+    const isDefaultRole = !!role?.isDefault;
+    const pagesDefaultRoleError = getPagesDefaultRoleError(
+      values.pages ?? [],
+      roleName,
+      isDefaultRole,
+    );
 
-    if (!pagesPermissionError) return {};
-    return { permissions: pagesPermissionError };
+    return {
+      ...(pagesPermissionError ? { permissions: pagesPermissionError } : {}),
+      ...(pagesDefaultRoleError ? { pages: pagesDefaultRoleError } : {}),
+    };
   };
 
   const canEditRole = (role: Role) => !role.isImmutable;

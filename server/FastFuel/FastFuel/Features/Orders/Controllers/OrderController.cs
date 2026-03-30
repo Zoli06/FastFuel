@@ -14,6 +14,11 @@ namespace FastFuel.Features.Orders.Controllers;
 public class OrderController(IOrderService service, IOrderFilterParamsFactory filterParamsFactory)
     : CrudController<Order, OrderRequestDto, OrderResponseDto>(service)
 {
+    /// <summary>
+    /// Gets the orders of the currently authenticated user.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The current user's orders.</returns>
     [HttpGet("my")]
     public async Task<Results<Ok<List<OrderResponseDto>>, UnauthorizedHttpResult>> GetMyOrders(
         CancellationToken cancellationToken = default)
@@ -22,6 +27,11 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
             await ((IOrderService)Service).GetOrdersForCurrentUserAsync(User, cancellationToken));
     }
 
+    /// <summary>
+    /// Gets all orders with optional filters.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching orders, or a bad request response if a filter is invalid.</returns>
     [HttpGet]
     [SwaggerQueryParam("status", typeof(OrderStatus))]
     [SwaggerQueryParam("restaurantId", typeof(uint))]
@@ -44,6 +54,13 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
         });
     }
 
+    /// <summary>
+    /// Updates the status of an existing order.
+    /// </summary>
+    /// <param name="id">The identifier of the order to update.</param>
+    /// <param name="orderStatus">The new order status.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>No content when the status update succeeds; otherwise an error response.</returns>
     [HttpPut("{id:int}/status")]
     [PermissionCheck("UpdateStatus")]
     public async Task<Results<
@@ -63,22 +80,5 @@ public class OrderController(IOrderService service, IOrderFilterParamsFactory fi
             return TypedResults.NoContent();
 
         return TypedResults.NotFound();
-    }
-
-    [HttpPost("at-workplace")]
-    [PermissionCheck("CreateAtWorkplace")]
-    public async Task<Results<
-            Created<OrderResponseDto>,
-            BadRequest<ProblemDetails>,
-            UnauthorizedHttpResult,
-            ForbidHttpResult>>
-        CreateOrderAtWorkplace(
-            [FromBody] OrderCreateAtWorkPlaceRequestDto requestDto,
-            CancellationToken cancellationToken = default
-        )
-    {
-        var responseDto = await ((IOrderService)Service).CreateOrderAtWorkplaceAsync(User, requestDto, cancellationToken);
-        var location = Url.Action(nameof(GetById), new { id = responseDto.Id });
-        return TypedResults.Created(location!, responseDto);
     }
 }

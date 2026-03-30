@@ -1,5 +1,4 @@
 import { Register } from '../components/Registration/Registration.tsx';
-import { Header } from '../components/Header/Header.tsx';
 
 export const RegistrationPage = () => {
   return (
@@ -9,4 +8,5 @@ export const RegistrationPage = () => {
       <Register />
     </div>
   );
+  return <Register />;
 };

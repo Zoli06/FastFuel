@@ -11,10 +11,10 @@ type Customer = components['schemas']['CustomerResponseDto'];
 type CustomerFormValues = Customer & { password?: string | null };
 
 export const CustomerManager = () => {
-  const { necessary, recommended } = usePagePermissions('CustomerManager', { split: true });
+  const { recommended } = usePagePermissions('CustomerManager', { split: true });
 
   const [{ data: customers = [], refetch: refetchCustomers }] = useConditionalSuspenseQueries([
-    necessary.Customer.Read && apiClient.queryOptions('get', '/api/Customer'),
+    apiClient.queryOptions('get', '/api/Customer'),
   ]);
 
   const tableColumns: ColumnDefinition<Customer>[] = [

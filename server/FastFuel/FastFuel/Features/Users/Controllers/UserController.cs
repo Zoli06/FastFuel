@@ -14,6 +14,11 @@ public class UserController(
     IUserService<UserRequestDto, UserResponseDto> service)
     : ControllerBase
 {
+    /// <summary>
+    /// Gets all users.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The list of users.</returns>
     [HttpGet]
     [PermissionCheck(CrudOperation.Read)]
     public async Task<Results<
@@ -27,6 +32,12 @@ public class UserController(
         return TypedResults.Ok(dtos);
     }
 
+    /// <summary>
+    /// Gets a user by id.
+    /// </summary>
+    /// <param name="id">The user identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The user when it exists.</returns>
     [HttpGet("{id:int}")]
     [PermissionCheck(CrudOperation.Read)]
     public async Task<Results<
@@ -42,6 +53,11 @@ public class UserController(
         return TypedResults.Ok(dto);
     }
 
+    /// <summary>
+    /// Gets the profile of the currently authenticated user.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The current user profile when it exists.</returns>
     [HttpGet("me")]
     public Task<Results<Ok<UserResponseDto>, NotFound, UnauthorizedHttpResult>>
         GetCurrentUser(CancellationToken cancellationToken = default)

@@ -7,10 +7,10 @@ import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSusp
 import type { components } from '../../../types/api';
 
 export const AdminManager = () => {
-  const { necessary, recommended } = usePagePermissions('AdminManager', { split: true });
+  const { recommended } = usePagePermissions('AdminManager', { split: true });
 
   const [{ data: admins = [], refetch: refetchAdmins }] = useConditionalSuspenseQueries([
-    necessary.Admin.Read && apiClient.queryOptions('get', '/api/Admin'),
+    apiClient.queryOptions('get', '/api/Admin'),
   ]);
 
   type Admin = (typeof admins)[number];
