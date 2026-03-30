@@ -6,7 +6,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const { recommended } = usePagePermissions('EmployeeManager', { split: true });
+  const { recommended } = usePagePermissions('EmployeeManager');
 
   const [
     { data: stationCategories = [] },

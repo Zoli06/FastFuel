@@ -7,7 +7,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MenuManager = () => {
-  const { recommended } = usePagePermissions('MenuManager', { split: true });
+  const { recommended } = usePagePermissions('MenuManager');
 
   const [{ data: foods = [] }, { data: menus = [], refetch: refetchMenus }] =
     useConditionalSuspenseQueries([
@@ -45,7 +45,7 @@ export const MenuManager = () => {
               return menu.foods
                 .map((mf) => {
                   const name = foodNameById.get(mf.foodId) ?? `#${mf.foodId}`;
-                  return `${name} ×${mf.quantity}`;
+                  return `${name} ${mf.quantity}`;
                 })
                 .join(', ');
             },

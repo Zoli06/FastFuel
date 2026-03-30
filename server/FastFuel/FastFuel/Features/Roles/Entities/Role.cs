@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Pages.Common;
 using FastFuel.Features.Roles.Common;
 using Microsoft.AspNetCore.Identity;
 

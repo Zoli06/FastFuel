@@ -2,7 +2,7 @@ using FastFuel.Features.Admins.DTOs;
 using FastFuel.Features.Admins.Entities;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Interfaces;
-using FastFuel.Features.Roles.Services;
+using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Users.Entities;
 using FastFuel.Features.Users.Services;
 using Microsoft.AspNetCore.Identity;

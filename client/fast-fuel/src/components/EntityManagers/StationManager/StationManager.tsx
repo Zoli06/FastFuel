@@ -8,7 +8,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
-  const { recommended } = usePagePermissions('StationManager', { split: true });
+  const { recommended } = usePagePermissions('StationManager');
 
   const [
     { data: restaurants = [] },

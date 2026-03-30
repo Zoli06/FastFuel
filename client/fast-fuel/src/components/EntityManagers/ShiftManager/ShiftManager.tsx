@@ -26,7 +26,7 @@ const parseAsUtcDate = (value: string) => {
 };
 
 export const ShiftManager = () => {
-  const { recommended } = usePagePermissions('ShiftManager', { split: true });
+  const { recommended } = usePagePermissions('ShiftManager');
 
   const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
     useConditionalSuspenseQueries([

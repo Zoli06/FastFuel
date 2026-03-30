@@ -12,19 +12,38 @@ import {
 import { apiClient } from '../../../lib/api-client.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
-import {
-  pageDefinitions,
-  type Page,
-  type PageDefinition,
-  type Permission,
-} from '../../../lib/page-definitions.ts';
+import { pageDefinitions, type Page, type Permission } from '../../../lib/page-definitions.ts';
+import type { components } from '../../../types/api';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 
 export const RoleManager = () => {
-  const { recommended } = usePagePermissions('RoleManager', { split: true });
+  const { recommended } = usePagePermissions('RoleManager');
+  const { data: pagePermissions = [] } = apiClient.useSuspenseQuery('get', '/api/Page');
+
+  const pagePermissionsByPage = Object.fromEntries(
+    pagePermissions.map((entry) => [entry.page, entry]),
+  ) as Partial<
+    Record<
+      Page,
+      {
+        necessaryPermissions: Permission[];
+        recommendedPermissions: Permission[];
+        requiresDefaultRole: components['schemas']['DefaultRole'][];
+      }
+    >
+  >;
+
+  const getPagePermissions = (page: Page) => {
+    const entry = pagePermissionsByPage[page];
+    return {
+      necessaryPermissions: entry?.necessaryPermissions ?? [],
+      recommendedPermissions: entry?.recommendedPermissions ?? [],
+      requiresDefaultRole: entry?.requiresDefaultRole ?? [],
+    };
+  };
 
   const [
     { data: users = [] },
@@ -39,15 +58,15 @@ export const RoleManager = () => {
   type Role = (typeof roles)[number];
   type RoleFormValues = Pick<Role, 'id' | 'name' | 'permissions' | 'pages' | 'userIds'>;
 
-  const pageEntries = (Object.entries(pageDefinitions) as [Page, PageDefinition][]).sort(
-    ([, left], [, right]) => left.displayName.localeCompare(right.displayName),
-  );
+  const pageEntries = (
+    Object.entries(pageDefinitions) as [Page, (typeof pageDefinitions)[Page]][]
+  ).sort(([, left], [, right]) => left.displayName.localeCompare(right.displayName));
 
   const getMissingNecessaryPermissions = (pages: Page[], selectedPermissions: Permission[]) => {
     const permissionSet = new Set(selectedPermissions);
     const missing = pages.flatMap(
       (page) =>
-        pageDefinitions[page]?.necessaryPermissions.filter(
+        getPagePermissions(page).necessaryPermissions.filter(
           (permission) => !permissionSet.has(permission),
         ) ?? [],
     );
@@ -63,17 +82,17 @@ export const RoleManager = () => {
 
   const getPagesDefaultRoleError = (pages: Page[], roleName: string, isDefaultRole: boolean) => {
     const restrictedPages = pages.filter((page) => {
-      const requiredDefaultRoles = (pageDefinitions[page] as PageDefinition)?.requiresDefaultRole;
+      const requiredDefaultRoles = getPagePermissions(page).requiresDefaultRole;
       if (!requiredDefaultRoles || requiredDefaultRoles.length === 0) return false;
       if (!isDefaultRole) return true;
-      return !requiredDefaultRoles.includes(roleName);
+      return !requiredDefaultRoles.includes(roleName as components['schemas']['DefaultRole']);
     });
 
     if (restrictedPages.length === 0) return undefined;
 
     const pageDescriptions = restrictedPages.map((page) => {
-      const definition = pageDefinitions[page] as PageDefinition;
-      const roles = definition.requiresDefaultRole?.join(', ') ?? '-';
+      const definition = pageDefinitions[page];
+      const roles = getPagePermissions(page).requiresDefaultRole.join(', ') || '-';
       return `${definition.displayName} (default roles: ${roles})`;
     });
 
@@ -229,20 +248,22 @@ export const RoleManager = () => {
             </Text>
             {pageEntries.map(([page, definition]) => {
               const Icon = definition.icon;
-              const hasRequiredPermissions = definition.necessaryPermissions.every((permission) =>
-                selectedPermissionSet.has(permission),
+              const pagePermissionDefinition = getPagePermissions(page);
+              const hasRequiredPermissions = pagePermissionDefinition.necessaryPermissions.every(
+                (permission) => selectedPermissionSet.has(permission),
               );
-              const requiredDefaultRoles = definition.requiresDefaultRole;
+              const requiredDefaultRoles = pagePermissionDefinition.requiresDefaultRole;
               const hasRequiredDefaultRole =
                 !requiredDefaultRoles ||
                 requiredDefaultRoles.length === 0 ||
-                (isDefaultRole && requiredDefaultRoles.includes(roleName));
+                (isDefaultRole &&
+                  requiredDefaultRoles.includes(roleName as components['schemas']['DefaultRole']));
               const isChecked = selectedPages.includes(page);
               const canTogglePage = hasRequiredPermissions && (hasRequiredDefaultRole || isChecked);
 
               const addNecessaryPermissions = () => {
                 const newPermissions = [...selectedPermissions];
-                definition.necessaryPermissions.forEach((permission) => {
+                pagePermissionDefinition.necessaryPermissions.forEach((permission) => {
                   if (!newPermissions.includes(permission)) {
                     newPermissions.push(permission);
                   }
@@ -253,13 +274,14 @@ export const RoleManager = () => {
 
               const addAllPermissions = () => {
                 const newPermissions = [...selectedPermissions];
-                [...definition.necessaryPermissions, ...definition.recommendedPermissions].forEach(
-                  (permission) => {
-                    if (!newPermissions.includes(permission)) {
-                      newPermissions.push(permission);
-                    }
-                  },
-                );
+                [
+                  ...pagePermissionDefinition.necessaryPermissions,
+                  ...pagePermissionDefinition.recommendedPermissions,
+                ].forEach((permission) => {
+                  if (!newPermissions.includes(permission)) {
+                    newPermissions.push(permission);
+                  }
+                });
                 form.setFieldValue('permissions', newPermissions);
                 setSelectionErrors(selectedPages, newPermissions);
               };
@@ -313,13 +335,10 @@ export const RoleManager = () => {
                     </Badge>
                   </Group>
                   <Text size="xs" c="dimmed">
-                    Required: {definition.necessaryPermissions.join(', ') || '-'}
+                    Required: {pagePermissionDefinition.necessaryPermissions.join(', ') || '-'}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    Default role: {definition.requiresDefaultRole?.join(', ') || '-'}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    Recommended: {definition.recommendedPermissions.join(', ') || '-'}
+                    Recommended: {pagePermissionDefinition.recommendedPermissions.join(', ') || '-'}
                   </Text>
                   <Group gap="sm">
                     <Button size="xs" variant="light" onClick={addNecessaryPermissions}>

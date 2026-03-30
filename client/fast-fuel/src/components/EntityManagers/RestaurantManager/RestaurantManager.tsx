@@ -32,7 +32,7 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const { recommended } = usePagePermissions('RestaurantManager', { split: true });
+  const { recommended } = usePagePermissions('RestaurantManager');
 
   const { data: restaurants, refetch: refetchRestaurants } = useSuspenseQuery(
     apiClient.queryOptions('get', '/api/Restaurant'),

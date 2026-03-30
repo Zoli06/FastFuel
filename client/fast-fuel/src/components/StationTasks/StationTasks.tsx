@@ -189,7 +189,7 @@ const OrderCard = ({
 type Category = 'Pending' | 'InProgress' | 'Ready';
 
 export const StationTasks = ({ stationId }: StationTasksProps) => {
-  const { recommended } = usePagePermissions('StationTasks', { split: true });
+  const { recommended } = usePagePermissions('StationTasks');
   const isWideScreen = useMediaQuery('(min-width: 1400px)');
   const [selectedCategory, setSelectedCategory] = useState<Category>('Pending');
 

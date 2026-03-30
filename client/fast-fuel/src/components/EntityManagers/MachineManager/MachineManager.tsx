@@ -6,7 +6,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MachineManager = () => {
-  const { recommended } = usePagePermissions('MachineManager', { split: true });
+  const { recommended } = usePagePermissions('MachineManager');
 
   const [{ data: restaurants = [] }, { data: machines = [], refetch: refetchMachines }] =
     useConditionalSuspenseQueries([

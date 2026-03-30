@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
+using FastFuel.Features.Pages.Common;
 using FastFuel.Features.Permissions.Services;
-using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -10,45 +10,10 @@ namespace FastFuel.Features.Roles.Services;
 public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionService permissionService)
     : IDefaultRoleInitializer
 {
-    private static readonly IReadOnlyDictionary<DefaultRole, string[]> DefaultRoles =
+    private static readonly IReadOnlyDictionary<DefaultRole, string[]> ExtraDefaultRolePermissions =
         new Dictionary<DefaultRole, string[]>
         {
-            [DefaultRole.Customer] =
-            [
-                "Permission:Menu:Read",
-                "Permission:Food:Read",
-                "Permission:Ingredient:Read",
-                "Permission:Allergy:Read",
-                "Permission:Restaurant:Read",
-                "Permission:Restaurant:Read",
-                "Permission:Order:Create",
-                "Permission:Customer:UpdateSelf"
-            ],
-            [DefaultRole.Employee] =
-            [
-                "Permission:Menu:Read",
-                "Permission:Food:Read",
-                "Permission:Ingredient:Read",
-                "Permission:Allergy:Read",
-                "Permission:Restaurant:Read",
-                "Permission:Restaurant:Read",
-                "Permission:StationCategory:Read",
-                "Permission:Order:Create",
-                "Permission:Order:UpdateStatus",
-                "Permission:Station:Read",
-                "Permission:Station:ViewTasks"
-            ],
-            [DefaultRole.Machine] =
-            [
-                "Permission:Order:Read",
-                "Permission:Order:Create",
-                "Permission:Restaurant:Read",
-                "Permission:Food:Read",
-                "Permission:Menu:Read",
-                "Permission:Station:ViewTasks",
-                "Permission:Station:Read",
-                "Permission:Order:UpdateStatus"
-            ]
+            [DefaultRole.Customer] = ["Permission:Customer:UpdateSelf"]
         };
 
     private static readonly IReadOnlyDictionary<DefaultRole, Page[]> DefaultRolePages =
@@ -87,10 +52,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 throw new ValidationAppException(
                     string.Join("; ", roleResult.Errors.Select(e => e.Description)));
 
-            if (!DefaultRoles.TryGetValue(defaultRole, out var permissions))
-                continue;
-
-            foreach (var permission in permissions)
+            foreach (var permission in GetDefaultPermissions(defaultRole))
             {
                 var claimResult = await roleManager.AddClaimAsync(role, new Claim("Permission", permission));
                 if (!claimResult.Succeeded)
@@ -100,6 +62,28 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
         }
 
         await InitializeAdminRoleAsync();
+    }
+
+    private static IReadOnlyCollection<string> GetDefaultPermissions(DefaultRole defaultRole)
+    {
+        var permissions = new HashSet<string>();
+
+        if (DefaultRolePages.TryGetValue(defaultRole, out var pages))
+        {
+            foreach (var page in pages)
+            {
+                if (!PagePermissionCatalog.PagePermissions.TryGetValue(page, out var pagePermissions))
+                    continue;
+
+                permissions.UnionWith(pagePermissions.Necessary);
+                permissions.UnionWith(pagePermissions.Recommended);
+            }
+        }
+
+        if (ExtraDefaultRolePermissions.TryGetValue(defaultRole, out var extraPermissions))
+            permissions.UnionWith(extraPermissions);
+
+        return permissions;
     }
 
     private async Task InitializeAdminRoleAsync()

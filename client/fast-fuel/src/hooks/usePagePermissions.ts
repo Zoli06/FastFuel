@@ -1,84 +1,66 @@
+import { useMemo } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { myPermissionsQueryOptions } from '../lib/api-client.ts';
-import { pageDefinitions } from '../lib/page-definitions.ts';
+import { myPermissionsQueryOptions, pagesQueryOptions } from '../lib/api-client.ts';
+import type { Page, Permission } from '../lib/page-definitions.ts';
 import { buildPermissionMap, type PermissionMap } from '../lib/buildPermissionMap.ts';
-
-type Page = keyof typeof pageDefinitions;
-
-type NecessaryPagePermissions<P extends Page> =
-  (typeof pageDefinitions)[P]['necessaryPermissions'][number];
-
-type RecommendedPagePermissions<P extends Page> =
-  (typeof pageDefinitions)[P]['recommendedPermissions'][number];
-
-type PagePermissions<P extends Page> =
-  | (typeof pageDefinitions)[P]['necessaryPermissions'][number]
-  | (typeof pageDefinitions)[P]['recommendedPermissions'][number];
 
 type AllTrue<M> = { [R in keyof M]: { [A in keyof M[R]]: true } };
 
-export type SplitPagePermissions<P extends Page> =
+export type SplitPagePermissions =
   | {
       hasNecessary: false;
-      necessary: PermissionMap<NecessaryPagePermissions<P>>;
-      recommended: PermissionMap<RecommendedPagePermissions<P>>;
+      necessary: PermissionMap<Permission>;
+      recommended: PermissionMap<Permission>;
     }
   | {
       hasNecessary: true;
-      necessary: AllTrue<PermissionMap<NecessaryPagePermissions<P>>>;
-      recommended: PermissionMap<RecommendedPagePermissions<P>>;
+      necessary: AllTrue<PermissionMap<Permission>>;
+      recommended: PermissionMap<Permission>;
     };
 
-type UsePagePermissionsOptions = {
-  split?: boolean;
+const EMPTY_PAGE_PERMISSIONS = {
+  necessaryPermissions: [] as Permission[],
+  recommendedPermissions: [] as Permission[],
 };
 
-export function usePagePermissions<P extends Page>(
-  page: P,
-  options: { split: true },
-): SplitPagePermissions<P>;
-export function usePagePermissions<P extends Page>(
-  page: P,
-  options?: UsePagePermissionsOptions,
-): PermissionMap<PagePermissions<P>>;
-export function usePagePermissions<P extends Page>(
-  page: P,
-  options?: UsePagePermissionsOptions,
-): PermissionMap<PagePermissions<P>> | SplitPagePermissions<P> {
+export function usePagePermissions(page: Page): SplitPagePermissions {
   const { data: permissions } = useSuspenseQuery(myPermissionsQueryOptions());
-  const allPermissionsMap = buildPermissionMap(permissions) as PermissionMap<PagePermissions<P>>;
+  const { data: pages } = useSuspenseQuery(pagesQueryOptions());
 
-  if (options?.split) {
-    const hasNecessary = pageDefinitions[page].necessaryPermissions.every((p) => {
-      const [, resource, action] = (p as string).split(':');
-      return (
-        (allPermissionsMap as Record<string, Record<string, boolean>>)[resource]?.[action] ?? false
-      );
-    });
+  const pagePermissions = useMemo(() => {
+    const pageMap = Object.fromEntries(pages.map((entry) => [entry.page, entry])) as Partial<
+      Record<
+        Page,
+        {
+          necessaryPermissions: Permission[];
+          recommendedPermissions: Permission[];
+        }
+      >
+    >;
 
-    if (!hasNecessary) {
-      return {
-        hasNecessary: false,
-        necessary: allPermissionsMap as PermissionMap<NecessaryPagePermissions<P>>,
-        recommended: allPermissionsMap as PermissionMap<RecommendedPagePermissions<P>>,
-      };
-    }
+    return pageMap[page] ?? EMPTY_PAGE_PERMISSIONS;
+  }, [page, pages]);
 
+  const allPermissionsMap = buildPermissionMap(permissions) as PermissionMap<Permission>;
+
+  const hasNecessary = pagePermissions.necessaryPermissions.every((permission) => {
+    const [, resource, action] = permission.split(':');
+    return (
+      (allPermissionsMap as Record<string, Record<string, boolean>>)[resource]?.[action] ?? false
+    );
+  });
+
+  if (!hasNecessary) {
     return {
-      hasNecessary: true,
-      necessary: allPermissionsMap as AllTrue<PermissionMap<NecessaryPagePermissions<P>>>,
-      recommended: allPermissionsMap as PermissionMap<RecommendedPagePermissions<P>>,
+      hasNecessary: false,
+      necessary: allPermissionsMap,
+      recommended: allPermissionsMap,
     };
   }
 
-  // This narrows compile-time access to only permissions declared for the page.
-  return allPermissionsMap;
-}
-
-export function assertNecessaryPermissions<P extends Page>(
-  perms: SplitPagePermissions<P>,
-): asserts perms is Extract<SplitPagePermissions<P>, { hasNecessary: true }> {
-  if (!perms.hasNecessary) {
-    throw new Error('Rendered without necessary permissions');
-  }
+  return {
+    hasNecessary: true,
+    necessary: allPermissionsMap as AllTrue<PermissionMap<Permission>>,
+    recommended: allPermissionsMap,
+  };
 }
