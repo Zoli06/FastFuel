@@ -1,6 +1,8 @@
 import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { apiClient, clearAuthData, fetchClient } from '../../lib/api-client.ts';
+import { notifications } from '@mantine/notifications';
 import { apiClient, clearAuthData, myCurrentUserQueryOptions } from '../../lib/api-client.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
@@ -10,10 +12,13 @@ interface HeaderProps {
   authButton?: HeaderAuthButton;
 }
 
-export const Header = ({ title, authButton }: HeaderProps) => {
-  const currentAuthButton = authButton ?? 'Logout';
-  const shouldLoadCurrentUser = currentAuthButton === 'Logout';
+const authButtonConfig = {
+  Login: { text: 'Login', color: 'green', path: '/login' },
+  Logout: { text: 'Logout', color: 'red', path: null },
+  Register: { text: 'Register', color: 'blue', path: '/register' },
+};
 
+export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const navigate = useNavigate();
   const { data: currentUser } = useQuery({
     ...myCurrentUserQueryOptions(),
@@ -27,41 +32,40 @@ export const Header = ({ title, authButton }: HeaderProps) => {
     },
   });
 
-  const authButtonStates = {
-    Login: { text: 'Login', color: 'green', action: () => navigate('/login') },
-    Logout: { text: 'Logout', color: 'red', action: () => logout({}) },
-    Register: { text: 'Register', color: 'blue', action: () => navigate('/register') },
+  const handleHomeClick = async () => {
+    const { data: user } = await fetchClient.GET('/api/User/me').catch(() => ({ data: null }));
+    if (!user) {
+      notifications.show({
+        title: 'Not logged in',
+        message: 'Please login to access the home page',
+        color: 'red',
+      });
+      return;
+    }
+    navigate('/');
   };
 
-  return (
-    <>
-      <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
-        <Flex flex={1} justify="flex-start">
-          <Button variant="filled" onClick={() => navigate('/')} color={'gray'}>
-            Home
-          </Button>
-        </Flex>
-        <Center>
-          <Stack align="center" gap={0}>
-            <Text fz="2rem">{title}</Text>
-            {currentUser && (
-              <Text size="sm" c="dimmed">
-                {currentUser.name} ({currentUser.userType.toLowerCase()})
-              </Text>
-            )}
-          </Stack>
-        </Center>
+  const config = authButtonConfig[authButton];
 
-        <Flex flex={1} justify="flex-end">
-          <Button
-            variant="filled"
-            onClick={authButtonStates[currentAuthButton].action}
-            color={authButtonStates[currentAuthButton].color}
-          >
-            {authButtonStates[currentAuthButton].text}
-          </Button>
-        </Flex>
+  return (
+    <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
+      <Flex flex={1} justify="flex-start">
+        <Button variant="filled" onClick={handleHomeClick} color="gray">
+          Home
+        </Button>
       </Flex>
-    </>
+      <Center>
+        <Text fz="2rem">{title}</Text>
+      </Center>
+      <Flex flex={1} justify="flex-end">
+        <Button
+          variant="filled"
+          color={config.color}
+          onClick={() => (config.path ? navigate(config.path) : logout({}))}
+        >
+          {config.text}
+        </Button>
+      </Flex>
+    </Flex>
   );
 };

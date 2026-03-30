@@ -11,7 +11,7 @@ type RegisterFormValues = components['schemas']['CustomerRequestDto'] & {
 };
 
 export const Register = () => {
-  const redirect = useNavigate();
+  const navigate = useNavigate();
 
   const form = useForm<RegisterFormValues>({
     mode: 'uncontrolled',
@@ -32,22 +32,11 @@ export const Register = () => {
   const { mutateAsync: register, isPending: isRegistering } = apiClient.useMutation(
     'post',
     '/api/Customer',
-    {
-      onSuccess: () => {
-        form.reset();
-      },
-    },
   );
 
   const { mutateAsync: login, isPending: isLoggingIn } = apiClient.useMutation(
     'post',
     '/api/Auth/login',
-    {
-      onSuccess: () => {
-        triggerPermissionsRefresh();
-        redirect('/', { replace: true });
-      },
-    },
   );
 
   const handleSubmit = async (values: RegisterFormValues) => {
@@ -58,7 +47,7 @@ export const Register = () => {
         userName: values.userName,
         themeId: values.themeId,
         password: values.password,
-      } as components['schemas']['CustomerRequestDto'],
+      },
     });
 
     await login({
@@ -66,13 +55,11 @@ export const Register = () => {
         userName: values.userName,
         password: values.password,
       },
-      params: {
-        query: {
-          useCookies: true,
-          useSessionCookies: true,
-        },
-      },
+      params: { query: { useCookies: true, useSessionCookies: true } },
     });
+    triggerPermissionsRefresh();
+    navigate('/', { replace: true });
+    form.reset();
   };
 
   return (
@@ -86,7 +73,6 @@ export const Register = () => {
             required
             {...form.getInputProps('name')}
           />
-
           <TextInput
             type="email"
             key={form.key('email')}
@@ -95,7 +81,6 @@ export const Register = () => {
             required
             {...form.getInputProps('email')}
           />
-
           <TextInput
             key={form.key('userName')}
             label="Username"
@@ -103,7 +88,6 @@ export const Register = () => {
             required
             {...form.getInputProps('userName')}
           />
-
           <PasswordInput
             key={form.key('password')}
             label="Password"
@@ -111,7 +95,6 @@ export const Register = () => {
             required
             {...form.getInputProps('password')}
           />
-
           <PasswordInput
             key={form.key('confirmPassword')}
             label="Confirm Password"
@@ -119,7 +102,6 @@ export const Register = () => {
             required
             {...form.getInputProps('confirmPassword')}
           />
-
           <Button type="submit" fullWidth loading={isRegistering || isLoggingIn}>
             Register
           </Button>
