@@ -1,50 +1,21 @@
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  Divider,
-  Group,
-  Modal,
-  NumberInput,
-  Paper,
-  ScrollArea,
-  SimpleGrid,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  UnstyledButton,
-} from '@mantine/core';
+import { Group, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { OrderItemCard } from './OrderItemCard.tsx';
-import { OrderDetailModal } from './OrderDetailModal.tsx';
+import { OrderDetailModal } from './modals/OrderDetailModal.tsx';
+import { CategoryNav } from './sections/CategoryNav.tsx';
+import { CartPanel } from './sections/CartPanel.tsx';
+import { ItemGrid } from './sections/ItemGrid.tsx';
+import { OrderCatalogHeader } from './sections/OrderCatalogHeader.tsx';
+import { RestaurantPickerModal } from './modals/RestaurantPickerModal.tsx';
+import { CheckoutModal } from './modals/CheckoutModal.tsx';
+import { EditCartEntryModal } from './modals/EditCartEntryModal.tsx';
+import type { CategoryValue } from './constants.ts';
 import { apiClient } from '../../lib/api-client.ts';
-import {
-  IconArrowsSort,
-  IconArrowDown,
-  IconArrowUp,
-  IconBottleFilled,
-  IconBurger,
-  IconLayoutGrid,
-  IconSearch,
-  IconSortAscendingLetters,
-  IconSortDescendingLetters,
-  IconToolsKitchen3,
-} from '@tabler/icons-react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import type { CartItem, SortKey, UnifiedItem } from './types.ts';
+import type { CartEntry, CartItem, CheckoutStep, SortKey, UnifiedItem } from './types.ts';
 import { myCurrentUserQueryOptions } from '../../lib/api-client.ts';
-
-const CATEGORIES = [
-  { label: 'All', value: 'all', icons: [IconLayoutGrid] },
-  { label: 'Foods', value: 'food', icons: [IconToolsKitchen3] },
-  { label: 'Menus', value: 'menu', icons: [IconBurger, IconBottleFilled] },
-];
-
-type CheckoutStep = 'idle' | 'confirm' | 'payment' | 'thankyou';
-type CartEntry = CartItem & { cartKey: string };
 
 export const OrderCreator = () => {
   const { data: currentUser } = useSuspenseQuery(myCurrentUserQueryOptions());
@@ -82,7 +53,7 @@ export const OrderCreator = () => {
   const [cart, setCart] = useState<CartEntry[]>([]);
   const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState<CategoryValue>('all');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('idle');
@@ -149,14 +120,8 @@ export const OrderCreator = () => {
     setCart((prev) => prev.filter((c) => c.cartKey !== cartKey));
   };
 
-  const saveEditedEntry = (
-    cartKey: string,
-    quantity: number,
-    specialInstructions: string | null,
-  ) => {
-    setCart((prev) =>
-      prev.map((c) => (c.cartKey === cartKey ? { ...c, quantity, specialInstructions } : c)),
-    );
+  const saveEditedEntry = (cartKey: string, specialInstructions: string | null) => {
+    setCart((prev) => prev.map((c) => (c.cartKey === cartKey ? { ...c, specialInstructions } : c)));
     setEditingEntry(null);
   };
 
@@ -215,52 +180,7 @@ export const OrderCreator = () => {
   return (
     <>
       <Group align="flex-start" gap={0} style={{ minHeight: '100vh' }}>
-        {/* Sidebar */}
-        <Stack
-          visibleFrom="sm"
-          gap={4}
-          p="sm"
-          style={{
-            width: 100,
-            minHeight: '100vh',
-            background: 'var(--mantine-color-dark-8, #1a1a1a)',
-            borderRight: '2px solid var(--mantine-color-orange-6)',
-            position: 'sticky',
-            top: 0,
-            flexShrink: 0,
-          }}
-        >
-          {CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat.value;
-            return (
-              <UnstyledButton
-                key={cat.value}
-                onClick={() => setActiveCategory(cat.value)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '10px 6px',
-                  borderRadius: 8,
-                  background: isActive ? 'var(--mantine-color-orange-6)' : 'transparent',
-                  color: isActive ? '#fff' : 'var(--mantine-color-gray-4)',
-                  fontWeight: isActive ? 700 : 400,
-                  fontSize: 11,
-                  transition: 'all 0.15s',
-                  textAlign: 'center',
-                }}
-              >
-                <Group gap={2} justify="center">
-                  {cat.icons.map((Icon, i) => (
-                    <Icon key={i} size={18} />
-                  ))}
-                </Group>
-                {cat.label}
-              </UnstyledButton>
-            );
-          })}
-        </Stack>
+        <CategoryNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
 
         {/* Main content */}
         <Stack
@@ -269,274 +189,44 @@ export const OrderCreator = () => {
           style={{ flex: 1 }}
           pb={cart.length > 0 ? cartPanelHeight + 24 : 'md'}
         >
-          {/* Mobile category pill bar */}
-          <Box hiddenFrom="sm">
-            <Group
-              gap={8}
-              style={{
-                overflowX: 'auto',
-                flexWrap: 'nowrap',
-                paddingBottom: 4,
-                scrollbarWidth: 'none',
-              }}
-            >
-              {CATEGORIES.map((cat) => {
-                const isActive = activeCategory === cat.value;
-                return (
-                  <UnstyledButton
-                    key={cat.value}
-                    onClick={() => setActiveCategory(cat.value)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '6px 14px',
-                      borderRadius: 20,
-                      background: isActive
-                        ? 'var(--mantine-color-orange-6)'
-                        : 'var(--mantine-color-dark-6)',
-                      color: isActive ? '#fff' : 'var(--mantine-color-gray-4)',
-                      fontWeight: isActive ? 700 : 400,
-                      fontSize: 13,
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    <Group gap={4}>
-                      {cat.icons.map((Icon, i) => (
-                        <Icon key={i} size={15} />
-                      ))}
-                    </Group>
-                    {cat.label}
-                  </UnstyledButton>
-                );
-              })}
-            </Group>
-          </Box>
-
-          <Group justify="space-between" align="flex-end" wrap="wrap" gap="sm">
-            {/* Restaurant indicator */}
-            <Group gap="xs" align="center">
-              {selectedRestaurant ? (
-                <>
-                  <Text size="sm" c="dimmed">
-                    Ordering from:
-                  </Text>
-                  <Text fw={700} size="sm" c="orange">
-                    {selectedRestaurant.name}
-                  </Text>
-                  {needsRestaurantPicker && (
-                    <Button
-                      size="compact-xs"
-                      variant="subtle"
-                      color="orange"
-                      onClick={() => {
-                        setRestaurantSearch('');
-                        setRestaurantPickerOpen(true);
-                      }}
-                    >
-                      Change
-                    </Button>
-                  )}
-                </>
-              ) : (
-                needsRestaurantPicker && (
-                  <Button
-                    size="xs"
-                    variant="light"
-                    color="orange"
-                    onClick={() => {
-                      setRestaurantSearch('');
-                      setRestaurantPickerOpen(true);
-                    }}
-                  >
-                    Select a restaurant
-                  </Button>
-                )
-              )}
-            </Group>
-
-            <Group gap="sm" wrap="wrap">
-              {/* Search bar */}
-              <TextInput
-                placeholder="Search food & menus..."
-                leftSection={<IconSearch size={18} />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                size="md"
-                style={{ width: 260 }}
-              />
-              {/* Sort buttons — size="sm" */}
-              {[
-                {
-                  keyAsc: 'name-asc' as SortKey,
-                  keyDesc: 'name-desc' as SortKey,
-                  iconAsc: IconSortAscendingLetters,
-                  iconDesc: IconSortDescendingLetters,
-                  label: 'Name',
-                },
-                {
-                  keyAsc: 'price-asc' as SortKey,
-                  keyDesc: 'price-desc' as SortKey,
-                  iconAsc: IconArrowUp,
-                  iconDesc: IconArrowDown,
-                  label: 'Price',
-                },
-              ].map((s) => {
-                const isAsc = sortKey === s.keyAsc;
-                const isDesc = sortKey === s.keyDesc;
-                const isActive = isAsc || isDesc;
-                const Icon = isActive ? (isDesc ? s.iconDesc : s.iconAsc) : IconArrowsSort;
-                return (
-                  <Button
-                    key={s.label}
-                    size="sm"
-                    variant={isActive ? 'filled' : 'light'}
-                    color="orange"
-                    leftSection={<Icon size={15} />}
-                    onClick={() => setSortKey(isAsc ? s.keyDesc : s.keyAsc)}
-                  >
-                    {s.label}
-                  </Button>
-                );
-              })}
-            </Group>
-          </Group>
-
-          <Text
-            fw={700}
-            size="xl"
-            style={{
-              color: 'var(--mantine-color-orange-6)',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
+          <OrderCatalogHeader
+            selectedRestaurant={selectedRestaurant}
+            needsRestaurantPicker={needsRestaurantPicker}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            sortKey={sortKey}
+            onSortKeyChange={setSortKey}
+            onOpenRestaurantPicker={() => {
+              setRestaurantSearch('');
+              setRestaurantPickerOpen(true);
             }}
-          >
-            {CATEGORIES.find((c) => c.value === activeCategory)?.label}
-            <Text span size="sm" c="dimmed" fw={400} ml={8}>
-              ({filteredAndSorted.length} items)
-            </Text>
-          </Text>
+          />
 
-          <SimpleGrid cols={{ base: 1, sm: 3, md: 4, lg: 6 }} spacing={4}>
-            {filteredAndSorted.map((item) => (
-              <OrderItemCard
-                key={`${item.type}-${item.id}`}
-                item={item}
-                allFoods={foods}
-                onAdd={() => addItemToCart({ item, quantity: 1, specialInstructions: null })}
-                onRemove={() => {}}
-                onOpen={() => {
-                  setSelectedItem(item);
-                  open();
-                }}
-              />
-            ))}
-          </SimpleGrid>
+          <ItemGrid
+            activeCategory={activeCategory}
+            items={filteredAndSorted}
+            foods={foods}
+            onAddItem={addItemToCart}
+            onOpenItem={(item) => {
+              setSelectedItem(item);
+              open();
+            }}
+          />
         </Stack>
       </Group>
 
-      {/* Cart panel */}
-      {cart.length > 0 && (
-        <Paper
-          withBorder
-          p="md"
-          radius={0}
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            width: '100%',
-            zIndex: 100,
-            background: 'var(--mantine-color-body)',
-            borderTop: '2px solid var(--mantine-color-orange-6)',
-            borderLeft: 'none',
-            borderRight: 'none',
-            borderBottom: 'none',
-          }}
-        >
-          <Text fw={700} size="lg" mb="xs">
-            Your order
-            <Text span size="sm" c="dimmed" fw={400} ml={8}>
-              ({totalItems} items)
-            </Text>
-          </Text>
-
-          <ScrollArea h={cartScrollHeight} scrollbarSize={4} mb="xs">
-            <Stack gap={0}>
-              {cart.map((c, idx) => (
-                <Box key={c.cartKey}>
-                  {idx > 0 && <Divider my={6} />}
-                  <Group justify="space-between" wrap="nowrap" gap="xs">
-                    <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                      <Text size="sm" fw={600} lineClamp={1}>
-                        {c.item.name}
-                      </Text>
-                      {c.specialInstructions && (
-                        <Text size="xs" c="dimmed" fs="italic" lineClamp={1}>
-                          {c.specialInstructions}
-                        </Text>
-                      )}
-                    </Stack>
-                    <Group gap={12} wrap="nowrap" style={{ flexShrink: 0 }} align="center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        color="gray"
-                        w={38}
-                        h={38}
-                        p={0}
-                        style={{ fontSize: 20, fontWeight: 700, borderRadius: 8, flexShrink: 0 }}
-                        onClick={() => removeOneFromCart(c.cartKey)}
-                      >
-                        −
-                      </Button>
-                      <Text fw={800} size="md" style={{ minWidth: 24, textAlign: 'center' }}>
-                        {c.quantity}
-                      </Text>
-                      <Button
-                        size="sm"
-                        variant="filled"
-                        color="gray"
-                        w={38}
-                        h={38}
-                        p={0}
-                        style={{ fontSize: 20, fontWeight: 700, borderRadius: 8, flexShrink: 0 }}
-                        onClick={() => addOneToCart(c.cartKey)}
-                      >
-                        +
-                      </Button>
-                      <Text
-                        size="sm"
-                        fw={700}
-                        c="darkred"
-                        style={{ minWidth: 60, textAlign: 'right' }}
-                      >
-                        ${(c.item.price * c.quantity).toFixed(2)}
-                      </Text>
-                    </Group>
-                  </Group>
-                </Box>
-              ))}
-            </Stack>
-          </ScrollArea>
-
-          <Divider mb="sm" />
-          <Group justify="space-between" mb="sm">
-            <Text fw={700} size="md">
-              Total
-            </Text>
-            <Text fw={800} size="lg" c="darkred">
-              ${totalPrice.toFixed(2)}
-            </Text>
-          </Group>
-          <Button fullWidth color="darkred" loading={isPending} onClick={handlePlaceOrder}>
-            Place order
-          </Button>
-        </Paper>
-      )}
+      <CartPanel
+        cart={cart}
+        totalItems={totalItems}
+        totalPrice={totalPrice}
+        cartScrollHeight={cartScrollHeight}
+        isPending={isPending}
+        onEditEntry={(entry) => setEditingEntry({ ...entry })}
+        onRemoveOne={removeOneFromCart}
+        onAddOne={addOneToCart}
+        onPlaceOrder={handlePlaceOrder}
+        onRemoveEntry={removeEntireEntry}
+      />
 
       {/* Item detail modal */}
       {selectedItem && (
@@ -552,306 +242,44 @@ export const OrderCreator = () => {
         />
       )}
 
-      {/* Restaurant picker modal */}
-      <Modal
+      <RestaurantPickerModal
         opened={restaurantPickerOpen}
+        restaurantId={restaurantId}
+        searchValue={restaurantSearch}
+        restaurants={filteredRestaurants}
+        onSearchChange={setRestaurantSearch}
         onClose={() => {
           if (restaurantId !== null) setRestaurantPickerOpen(false);
         }}
-        title="Where are you ordering from?"
-        centered
-        size="md"
-        closeOnClickOutside={restaurantId !== null}
-        closeOnEscape={restaurantId !== null}
-        withCloseButton={restaurantId !== null}
-      >
-        <Stack gap="sm">
-          <TextInput
-            placeholder="Search restaurants..."
-            leftSection={<IconSearch size={15} />}
-            value={restaurantSearch}
-            onChange={(e) => setRestaurantSearch(e.currentTarget.value)}
-            autoFocus
-          />
-          <ScrollArea h={320}>
-            <Stack gap={4}>
-              {filteredRestaurants.length === 0 && (
-                <Text c="dimmed" size="sm" ta="center" py="md">
-                  No restaurants found
-                </Text>
-              )}
-              {filteredRestaurants.map((r) => (
-                <UnstyledButton
-                  key={r.id}
-                  onClick={() => {
-                    setRestaurantId(r.id);
-                    setRestaurantPickerOpen(false);
-                  }}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 8,
-                    background:
-                      restaurantId === r.id
-                        ? 'var(--mantine-color-orange-5)'
-                        : 'var(--mantine-color-blue-9)',
-                    border:
-                      restaurantId === r.id
-                        ? '2px solid var(--mantine-color-blue-4)'
-                        : '2px solid var(--mantine-color-blue-8)',
-                    transition: 'all 0.12s',
-                  }}
-                >
-                  <Text
-                    fw={restaurantId === r.id ? 700 : 500}
-                    size="sm"
-                    c={restaurantId === r.id ? 'blue.2' : 'blue.1'}
-                  >
-                    {r.name}
-                  </Text>
-                </UnstyledButton>
-              ))}
-            </Stack>
-          </ScrollArea>
-        </Stack>
-      </Modal>
+        onSelectRestaurant={(newRestaurantId) => {
+          setRestaurantId(newRestaurantId);
+          setRestaurantPickerOpen(false);
+        }}
+      />
 
-      {/* Confirmation modal */}
-      <Modal
-        opened={checkoutStep === 'confirm'}
-        onClose={() => setCheckoutStep('idle')}
-        title="Confirm your order"
-        centered
-        size="sm"
-      >
-        <Stack gap="sm">
-          <Text size="sm" c="dimmed">
-            Ordering from:{' '}
-            <Text span fw={700} c="orange">
-              {selectedRestaurant?.name}
-            </Text>
-          </Text>
-          <Divider />
-          <Stack gap={6}>
-            {cart.map((c) => (
-              <Group key={c.cartKey} justify="space-between" align="flex-start" wrap="nowrap">
-                <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                  <Text size="sm">
-                    {c.item.name}{' '}
-                    <Text span c="dimmed">
-                      ×{c.quantity}
-                    </Text>
-                  </Text>
-                  {c.specialInstructions && (
-                    <Text size="xs" c="dimmed" fs="italic">
-                      {c.specialInstructions}
-                    </Text>
-                  )}
-                </Stack>
-                <Group gap={6} align="center" style={{ flexShrink: 0 }}>
-                  <Text size="sm" fw={600} c="darkred">
-                    ${(c.item.price * c.quantity).toFixed(2)}
-                  </Text>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="orange"
-                    onClick={() => {
-                      setEditingEntry({ ...c });
-                      setCheckoutStep('idle');
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="red"
-                    onClick={() => removeEntireEntry(c.cartKey)}
-                  >
-                    Remove
-                  </Button>
-                </Group>
-              </Group>
-            ))}
-          </Stack>
-          <Divider />
-          <Group justify="space-between">
-            <Text fw={700}>Total</Text>
-            <Text fw={800} c="darkred" size="lg">
-              ${totalPrice.toFixed(2)}
-            </Text>
-          </Group>
-          <Group justify="flex-end" gap="sm" mt="xs">
-            <Button variant="subtle" color="gray" onClick={() => setCheckoutStep('idle')}>
-              Back
-            </Button>
-            <Button color="darkred" onClick={handleConfirmOrder} disabled={cart.length === 0}>
-              Confirm & Pay
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <CheckoutModal
+        checkoutStep={checkoutStep}
+        selectedRestaurantName={selectedRestaurant?.name}
+        cart={cart}
+        totalPrice={totalPrice}
+        placedOrderNumber={placedOrderNumber}
+        isPending={isPending}
+        onCloseCheckout={() => setCheckoutStep('idle')}
+        onConfirmOrder={handleConfirmOrder}
+        onBackToConfirm={() => setCheckoutStep('confirm')}
+        onPay={handleFakePayment}
+      />
 
-      {/* Edit entry modal — opened from confirm */}
+      {/* Edit entry modal — opened from cart panel */}
       {editingEntry && (
         <EditCartEntryModal
           entry={editingEntry}
-          onSave={(qty, instr) => {
-            saveEditedEntry(editingEntry.cartKey, qty, instr);
-            setCheckoutStep('confirm');
-          }}
-          onCancel={() => {
-            setEditingEntry(null);
-            setCheckoutStep('confirm');
-          }}
+          onSave={(specialInstructions) =>
+            saveEditedEntry(editingEntry.cartKey, specialInstructions)
+          }
+          onCancel={() => setEditingEntry(null)}
         />
       )}
-
-      {/* Fake payment modal */}
-      <Modal
-        opened={checkoutStep === 'payment'}
-        onClose={() => setCheckoutStep('idle')}
-        title="Payment"
-        centered
-        size="sm"
-        closeOnClickOutside={false}
-        closeOnEscape={false}
-        withCloseButton={false}
-      >
-        <Stack gap="md">
-          <Text size="sm" c="dimmed">
-            Total to pay:
-          </Text>
-          <Text fw={800} size="xl" c="darkred" ta="center">
-            ${totalPrice.toFixed(2)}
-          </Text>
-          <Divider label="Mock card details" labelPosition="center" />
-          <TextInput label="Card number" disabled value="4242 4242 4242 4242" />
-          <Group grow>
-            <TextInput label="Expiry" disabled value="12/28" />
-            <TextInput label="CVV" disabled value="123" />
-          </Group>
-          <Button fullWidth color="darkred" loading={isPending} onClick={handleFakePayment}>
-            Pay ${totalPrice.toFixed(2)}
-          </Button>
-          <Button variant="subtle" color="gray" onClick={() => setCheckoutStep('confirm')}>
-            Back
-          </Button>
-        </Stack>
-      </Modal>
-
-      {/* Thank you modal */}
-      <Modal
-        opened={checkoutStep === 'thankyou'}
-        onClose={() => setCheckoutStep('idle')}
-        title="Order placed!"
-        centered
-        size="sm"
-        withCloseButton={false}
-        closeOnClickOutside={false}
-        closeOnEscape={false}
-      >
-        <Stack gap="sm" align="center">
-          <Text size="xl">🎉</Text>
-          <Text size="sm" c="dimmed" ta="center">
-            Your order has been submitted successfully.
-          </Text>
-          <Text fw={700} size="xl" c="orange">
-            Order #{placedOrderNumber}
-          </Text>
-          <Text size="xs" c="dimmed" ta="center">
-            Sit back and relax — your food is on its way!
-          </Text>
-          <Button fullWidth color="darkred" mt="sm" onClick={() => setCheckoutStep('idle')}>
-            OK
-          </Button>
-        </Stack>
-      </Modal>
     </>
-  );
-};
-
-// ─── Edit cart entry modal ────────────────────────────────────────────────────
-
-type EditCartEntryModalProps = {
-  entry: CartEntry;
-  onSave: (quantity: number, specialInstructions: string | null) => void;
-  onCancel: () => void;
-};
-
-const EditCartEntryModal = ({ entry, onSave, onCancel }: EditCartEntryModalProps) => {
-  const [quantity, setQuantity] = useState(entry.quantity);
-  const [instructions, setInstructions] = useState(entry.specialInstructions ?? '');
-
-  return (
-    <Modal opened onClose={onCancel} title={`Edit — ${entry.item.name}`} centered size="sm">
-      <Stack gap="md">
-        <Stack gap={4}>
-          <Text size="sm" fw={500}>
-            Quantity
-          </Text>
-          <Group justify="space-between" align="center" px="md">
-            <Button
-              variant="outline"
-              color="darkred"
-              size="lg"
-              w={56}
-              h={56}
-              p={0}
-              style={{ fontSize: 28, fontWeight: 700, borderRadius: 12 }}
-              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              disabled={quantity <= 1}
-            >
-              −
-            </Button>
-            <NumberInput
-              value={quantity}
-              onChange={(v) => setQuantity(Math.max(1, Number(v) || 1))}
-              min={1}
-              style={{ width: 80 }}
-              styles={{ input: { textAlign: 'center', fontWeight: 800, fontSize: 20 } }}
-              hideControls
-            />
-            <Button
-              variant="filled"
-              color="darkred"
-              size="lg"
-              w={56}
-              h={56}
-              p={0}
-              style={{ fontSize: 28, fontWeight: 700, borderRadius: 12 }}
-              onClick={() => setQuantity((q) => q + 1)}
-            >
-              +
-            </Button>
-          </Group>
-        </Stack>
-
-        <Textarea
-          label="Special instructions"
-          placeholder="e.g. no onions, extra sauce..."
-          value={instructions}
-          onChange={(e) => setInstructions(e.currentTarget.value)}
-          minRows={2}
-          autosize
-        />
-
-        <Divider />
-
-        <Group justify="space-between" align="center">
-          <Text fw={700} c="darkred" size="lg">
-            ${(entry.item.price * quantity).toFixed(2)}
-          </Text>
-          <Group gap="sm">
-            <Button variant="subtle" color="gray" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button color="darkred" onClick={() => onSave(quantity, instructions || null)}>
-              Save
-            </Button>
-          </Group>
-        </Group>
-      </Stack>
-    </Modal>
   );
 };

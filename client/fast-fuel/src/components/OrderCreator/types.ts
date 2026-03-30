@@ -11,4 +11,8 @@ export type CartItem = {
   specialInstructions: string | null;
 };
 
+export type CartEntry = CartItem & { cartKey: string };
+
+export type CheckoutStep = 'idle' | 'confirm' | 'payment' | 'thankyou';
+
 export type SortKey = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
