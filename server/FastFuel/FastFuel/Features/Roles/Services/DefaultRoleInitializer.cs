@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
+using FastFuel.Features.Pages.Common;
 using FastFuel.Features.Permissions.Services;
-using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -10,53 +10,30 @@ namespace FastFuel.Features.Roles.Services;
 public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionService permissionService)
     : IDefaultRoleInitializer
 {
-    private static readonly IReadOnlyDictionary<DefaultRole, string[]> DefaultRoles =
+    private static readonly IReadOnlyDictionary<DefaultRole, string[]> ExtraDefaultRolePermissions =
         new Dictionary<DefaultRole, string[]>
         {
-            [DefaultRole.Customer] =
-            [
-                "Permission:Menu:Read",
-                "Permission:Food:Read",
-                "Permission:Ingredient:Read",
-                "Permission:Allergy:Read",
-                "Permission:Restaurant:Read",
-                "Permission:Restaurant:Read",
-                "Permission:Order:Create",
-                "Permission:Customer:UpdateSelf"
-            ],
-            [DefaultRole.Employee] =
-            [
-                "Permission:Menu:Read",
-                "Permission:Food:Read",
-                "Permission:Ingredient:Read",
-                "Permission:Allergy:Read",
-                "Permission:Restaurant:Read",
-                "Permission:Restaurant:Read",
-                "Permission:StationCategory:Read",
-                "Permission:Order:Create",
-                "Permission:Order:Read",
-                "Permission:Order:UpdateStatus",
-                "Permission:Station:Read",
-                "Permission:Station:ViewTasks"
-            ],
-            [DefaultRole.Machine] =
-            [
-            ]
+            [DefaultRole.Customer] = ["Permission:Customer:UpdateSelf"]
         };
 
     private static readonly IReadOnlyDictionary<DefaultRole, Page[]> DefaultRolePages =
         new Dictionary<DefaultRole, Page[]>
         {
+            [DefaultRole.Admin] =
+            [
+                Page.AdminManager, Page.AllergyManager, Page.CustomerManager, Page.IngredientManager,
+                Page.EmployeeManager, Page.MachineManager, Page.FoodManager, Page.MenuManager, Page.OrderManager,
+                Page.RoleManager, Page.ShiftManager, Page.StationCategoryManager, Page.StationManager,
+                Page.RestaurantManager
+            ],
             [DefaultRole.Customer] = [Page.OrderCreator],
             [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay],
-            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.OrderCreator]
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator]
         };
 
     public async Task InitializeAsync()
     {
-        await InitializeAdminRoleAsync();
-
-        foreach (var (defaultRole, permissions) in DefaultRoles)
+        foreach (var defaultRole in Enum.GetValues<DefaultRole>())
         {
             var roleName = defaultRole.ToString();
             if (await roleManager.RoleExistsAsync(roleName))
@@ -66,15 +43,16 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             {
                 Name = roleName,
                 IsDefault = true,
-                IsImmutable = false,
+                IsImmutable = defaultRole == DefaultRole.Admin,
                 Pages = DefaultRolePages.TryGetValue(defaultRole, out var pages) ? pages.ToList() : []
             };
+
             var roleResult = await roleManager.CreateAsync(role);
             if (!roleResult.Succeeded)
                 throw new ValidationAppException(
                     string.Join("; ", roleResult.Errors.Select(e => e.Description)));
 
-            foreach (var permission in permissions)
+            foreach (var permission in GetDefaultPermissions(defaultRole))
             {
                 var claimResult = await roleManager.AddClaimAsync(role, new Claim("Permission", permission));
                 if (!claimResult.Succeeded)
@@ -82,6 +60,30 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                         string.Join("; ", claimResult.Errors.Select(e => e.Description)));
             }
         }
+
+        await InitializeAdminRoleAsync();
+    }
+
+    private static IReadOnlyCollection<string> GetDefaultPermissions(DefaultRole defaultRole)
+    {
+        var permissions = new HashSet<string>();
+
+        if (DefaultRolePages.TryGetValue(defaultRole, out var pages))
+        {
+            foreach (var page in pages)
+            {
+                if (!PagePermissionCatalog.PagePermissions.TryGetValue(page, out var pagePermissions))
+                    continue;
+
+                permissions.UnionWith(pagePermissions.Necessary);
+                permissions.UnionWith(pagePermissions.Recommended);
+            }
+        }
+
+        if (ExtraDefaultRolePermissions.TryGetValue(defaultRole, out var extraPermissions))
+            permissions.UnionWith(extraPermissions);
+
+        return permissions;
     }
 
     private async Task InitializeAdminRoleAsync()
@@ -95,34 +97,6 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             if (!createResult.Succeeded)
                 throw new ValidationAppException(
                     string.Join("; ", createResult.Errors.Select(e => e.Description)));
-        }
-
-        var shouldUpdate = false;
-        if (!adminRole.IsDefault)
-        {
-            adminRole.IsDefault = true;
-            shouldUpdate = true;
-        }
-
-        if (!adminRole.IsImmutable)
-        {
-            adminRole.IsImmutable = true;
-            shouldUpdate = true;
-        }
-
-        var allPages = Enum.GetValues<Page>().ToList();
-        if (!adminRole.Pages.SequenceEqual(allPages))
-        {
-            adminRole.Pages = allPages;
-            shouldUpdate = true;
-        }
-
-        if (shouldUpdate)
-        {
-            var updateResult = await roleManager.UpdateAsync(adminRole);
-            if (!updateResult.Succeeded)
-                throw new ValidationAppException(
-                    string.Join("; ", updateResult.Errors.Select(e => e.Description)));
         }
 
         var allPermissions = await permissionService.GetAllPermissionsAsync();

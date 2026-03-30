@@ -11,7 +11,7 @@ type Customer = components['schemas']['CustomerResponseDto'];
 type CustomerFormValues = Customer & { password?: string | null };
 
 export const CustomerManager = () => {
-  const { recommended } = usePagePermissions('CustomerManager', { split: true });
+  const { recommended } = usePagePermissions('CustomerManager');
 
   const [{ data: customers = [], refetch: refetchCustomers }] = useConditionalSuspenseQueries([
     apiClient.queryOptions('get', '/api/Customer'),

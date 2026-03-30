@@ -93,7 +93,7 @@ export const OrderCreator = () => {
     if (needsRestaurantPicker && restaurantId === null) {
       setRestaurantPickerOpen(true);
     }
-  }, [needsRestaurantPicker]);
+  }, [needsRestaurantPicker, restaurantId]);
 
   useEffect(() => {
     if (lockedRestaurantId !== null) {
@@ -125,7 +125,6 @@ export const OrderCreator = () => {
     return 0;
   });
 
-  // Every "Add to order" is always a NEW separate row — never merged.
   const addItemToCart = (item: CartItem) => {
     const cartKey = `${item.item.type}-${item.item.id}-${Date.now()}-${Math.random()}`;
     setCart((prev) => [...prev, { ...item, cartKey }]);

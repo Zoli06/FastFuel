@@ -3,7 +3,7 @@ using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
-using FastFuel.Features.Roles.Services;
+using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Users.DTOs;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;

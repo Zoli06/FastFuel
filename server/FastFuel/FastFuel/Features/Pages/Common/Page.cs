@@ -1,4 +1,4 @@
-namespace FastFuel.Features.Roles.Common;
+namespace FastFuel.Features.Pages.Common;
 
 public enum Page
 {

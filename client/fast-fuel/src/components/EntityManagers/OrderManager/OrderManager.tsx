@@ -6,7 +6,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const OrderManager = () => {
-  const { recommended } = usePagePermissions('OrderManager', { split: true });
+  const { recommended } = usePagePermissions('OrderManager');
 
   const [
     { data: menus = [] },

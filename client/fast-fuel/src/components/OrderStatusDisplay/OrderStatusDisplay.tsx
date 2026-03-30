@@ -38,7 +38,7 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) => {
-  const { recommended } = usePagePermissions('OrderStatusDisplay', { split: true });
+  const { recommended } = usePagePermissions('OrderStatusDisplay');
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
   const hideExitButtonTimeoutRef = useRef<number | null>(null);

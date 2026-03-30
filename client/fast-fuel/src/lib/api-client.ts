@@ -95,3 +95,9 @@ export const myRolesQueryOptions = () =>
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
+
+export const pagesQueryOptions = () =>
+  apiClient.queryOptions('get', '/api/Page', undefined, {
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });

@@ -6,7 +6,7 @@ import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const AllergyManager = () => {
-  const { recommended } = usePagePermissions('AllergyManager', { split: true });
+  const { recommended } = usePagePermissions('AllergyManager');
 
   const [{ data: ingredients = [] }, { data: allergies = [], refetch: refetchAllergies }] =
     useConditionalSuspenseQueries([
