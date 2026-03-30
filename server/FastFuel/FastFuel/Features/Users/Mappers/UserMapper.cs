@@ -38,7 +38,8 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
                 .Where(r => userRoles.Contains(r.Name))
                 .Select(r => r.Id)
                 .ToList(),
-            UserType = GetRuntimeUserType(model)
+            UserType = GetRuntimeUserType(model),
+            OrderIds = model.Orders.Select(o => o.Id).ToList()
         };
     }
 

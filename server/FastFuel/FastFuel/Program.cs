@@ -59,7 +59,7 @@ public static class Program
         builder.Services
             .AddIdentityApiEndpoints<User>(options =>
             {
-                options.User.AllowedUserNameCharacters = null;
+                options.User.AllowedUserNameCharacters = null!;
             })
             .AddRoles<Role>()
             .AddEntityFrameworkStores<ApplicationDbContext>();

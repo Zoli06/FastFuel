@@ -23,7 +23,8 @@ public class MachineMapper(RoleManager<Role> roleManager, UserManager<User> user
             ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
             UserType = userDto.UserType,
-            LocatedAtRestaurantId = entity.LocatedAtRestaurantId
+            LocatedAtRestaurantId = entity.LocatedAtRestaurantId,
+            OrderIds = entity.Orders.ConvertAll(order => order.Id)
         };
     }
 

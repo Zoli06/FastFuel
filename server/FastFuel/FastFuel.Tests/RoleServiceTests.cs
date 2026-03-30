@@ -2,7 +2,6 @@ using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Pages.Common;
-using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.DTOs;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Mappers;
