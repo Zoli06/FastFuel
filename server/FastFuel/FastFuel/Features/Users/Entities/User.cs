@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.Orders.Entities;
 using FastFuel.Features.Themes.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -23,4 +24,6 @@ public class User : IdentityUser<uint>, IIdentifiable
 
     public uint? ThemeId { get; set; }
     public virtual Theme? Theme { get; set; }
+
+    public virtual List<Order> Orders { get; init; } = [];
 }

@@ -244,6 +244,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
                 Name = entity.Name,
                 UserName = entity.UserName,
                 ThemeId = entity.ThemeId,
+                OrderIds = entity.Orders.ConvertAll(order => order.Id),
 
                 RoleIds = new List<uint>(),
                 UserType = "User"

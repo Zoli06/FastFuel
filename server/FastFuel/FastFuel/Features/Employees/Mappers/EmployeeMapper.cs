@@ -30,7 +30,8 @@ public class EmployeeMapper(
             UserType = userDto.UserType,
             ShiftIds = entity.Shifts.ConvertAll(shift => shift.Id),
             StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id),
-            WorksAtRestaurantId = entity.WorksAtRestaurantId
+            WorksAtRestaurantId = entity.WorksAtRestaurantId,
+            OrderIds = entity.Orders.ConvertAll(order => order.Id)
         };
     }
 
