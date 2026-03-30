@@ -1,9 +1,13 @@
 import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { apiClient, clearAuthData, fetchClient } from '../../lib/api-client.ts';
 import { notifications } from '@mantine/notifications';
-import { apiClient, clearAuthData, myCurrentUserQueryOptions } from '../../lib/api-client.ts';
+import {
+  apiClient,
+  clearAuthData,
+  fetchClient,
+  myCurrentUserQueryOptions,
+} from '../../lib/api-client.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
 
@@ -20,6 +24,8 @@ const authButtonConfig = {
 
 export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const navigate = useNavigate();
+  const shouldLoadCurrentUser = authButton === 'Logout';
+
   const { data: currentUser } = useQuery({
     ...myCurrentUserQueryOptions(),
     enabled: shouldLoadCurrentUser,
@@ -55,7 +61,14 @@ export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
         </Button>
       </Flex>
       <Center>
-        <Text fz="2rem">{title}</Text>
+        <Stack align="center" gap={0}>
+          <Text fz="2rem">{title}</Text>
+          {currentUser && (
+            <Text size="sm" c="dimmed">
+              {currentUser.name} ({currentUser.userType.toLowerCase()})
+            </Text>
+          )}
+        </Stack>
       </Center>
       <Flex flex={1} justify="flex-end">
         <Button
