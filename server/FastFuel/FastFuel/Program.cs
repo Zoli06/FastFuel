@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
+using FastFuel.NSwag.MarkAsRequiredIfNonNullable;
 using FastFuel.NSwag.PermissionSchema;
 using FastFuel.NSwag.SwaggerQueryParam;
 using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
@@ -63,7 +64,10 @@ public static class Program
     {
         builder.Services.AddAuthorization();
         builder.Services
-            .AddIdentityApiEndpoints<User>()
+            .AddIdentityApiEndpoints<User>(options =>
+            {
+                options.User.AllowedUserNameCharacters = null!;
+            })
             .AddRoles<Role>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
     }
@@ -106,7 +110,9 @@ public static class Program
             config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
             config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
+            config.OperationProcessors.Add(new PermissionSchemaOperationProcessor());
             config.DocumentProcessors.Add(new PermissionSchemaDocumentProcessor(serviceProvider));
+            config.SchemaSettings.SchemaProcessors.Add(new MarkAsRequiredIfNonNullableSchemaProcessor());
 
             config.AddSecurity("Bearer", new OpenApiSecurityScheme
             {
