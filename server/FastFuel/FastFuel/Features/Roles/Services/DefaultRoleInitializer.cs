@@ -27,7 +27,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 Page.RestaurantManager
             ],
             [DefaultRole.Customer] = [Page.OrderCreator],
-            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay],
+            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay, Page.MyShifts],
             [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator]
         };
 
