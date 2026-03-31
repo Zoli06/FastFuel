@@ -1,5 +1,5 @@
 import { Button, Divider, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
-import { useForm } from '@mantine/form';
+import { Form, useForm } from '@mantine/form';
 import type { CartEntry, CheckoutStep } from '../types.ts';
 import { useEffect } from 'react';
 
@@ -145,11 +145,7 @@ export const CheckoutModal = ({
         closeOnEscape={false}
         withCloseButton={false}
       >
-        <form
-          onSubmit={cardForm.onSubmit(() => {
-            onPay();
-          })}
-        >
+        <Form form={cardForm} onSubmit={onPay}>
           <Stack gap="md">
             <Text size="sm" c="dimmed">
               Total to pay:
@@ -171,7 +167,7 @@ export const CheckoutModal = ({
               inputMode="numeric"
               autoComplete="cc-number"
             />
-            <Group grow>
+            <Group grow align="flex-start">
               <TextInput
                 label="Expiry date"
                 maxLength={5}
@@ -180,7 +176,7 @@ export const CheckoutModal = ({
                 value={cardForm.values.expiry}
                 onChange={(e) => {
                   // Auto-insert slash
-                  let v = e.currentTarget.value.replace(/[^\d]/g, '');
+                  let v = e.currentTarget.value.replace(/\D/g, '');
                   if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2, 4);
                   cardForm.setFieldValue('expiry', v.slice(0, 5));
                 }}
@@ -193,12 +189,10 @@ export const CheckoutModal = ({
                 maxLength={4}
                 placeholder="123"
                 {...cardForm.getInputProps('cvv')}
-                value={cardForm.values.cvv}
                 onChange={(e) => {
-                  cardForm.setFieldValue(
-                    'cvv',
-                    e.currentTarget.value.replace(/\D/g, '').slice(0, 4),
-                  );
+                  cardForm
+                    .getInputProps('cvv')
+                    .onChange(e.currentTarget.value.replace(/\D/g, '').slice(0, 4));
                 }}
                 error={cardForm.errors.cvv}
                 inputMode="numeric"
@@ -210,7 +204,7 @@ export const CheckoutModal = ({
               color="darkred"
               loading={isPending}
               type="submit"
-              disabled={!cardForm.isValid() || isPending}
+              disabled={isPending}
             >
               Pay ${totalPrice.toFixed(2)}
             </Button>
@@ -218,7 +212,7 @@ export const CheckoutModal = ({
               Back
             </Button>
           </Stack>
-        </form>
+        </Form>
       </Modal>
 
       <Modal
