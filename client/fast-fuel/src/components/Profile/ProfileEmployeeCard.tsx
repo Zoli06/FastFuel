@@ -1,34 +1,50 @@
 import { Card, Group, Stack, Text } from '@mantine/core';
 import type { components } from '../../types/api.ts';
+import { apiClient } from '../../lib/api-client.ts';
+import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
+import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 
 type EmployeeData = components['schemas']['EmployeeResponseDto'];
 
-export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => (
-  <Card withBorder radius="md" p="lg">
-    <Text fw={500} mb="md">
-      Employment details
-    </Text>
-    <Stack gap="xs">
-      <Group>
-        <Text size="sm" c="dimmed" w={160}>
-          Restaurant ID
-        </Text>
-        <Text size="sm">{data.worksAtRestaurantId}</Text>
-      </Group>
-      <Group>
-        <Text size="sm" c="dimmed" w={160}>
-          Station categories
-        </Text>
-        <Text size="sm">
-          {data.stationCategoryIds.length > 0 ? data.stationCategoryIds.join(', ') : '—'}
-        </Text>
-      </Group>
-      <Group>
-        <Text size="sm" c="dimmed" w={160}>
-          Shifts
-        </Text>
-        <Text size="sm">{data.shiftIds.length > 0 ? `${data.shiftIds.length} shift(s)` : '—'}</Text>
-      </Group>
-    </Stack>
-  </Card>
-);
+export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
+  const { recommended } = usePagePermissions('Profile');
+
+  const [{ data: restaurants }, { data: stationCategories }] = useConditionalSuspenseQueries([
+    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+  ]);
+
+  return (
+    <Card withBorder radius="md" p="lg">
+      <Text fw={500} mb="md">
+        Employment details
+      </Text>
+      <Stack gap="xs">
+        {recommended.Restaurant.Read && (
+          <Group>
+            <Text size="sm" c="dimmed" w={160}>
+              Working at
+            </Text>
+            <Text size="sm">
+              {restaurants?.find((r) => r.id === data.worksAtRestaurantId)?.name ??
+                `#${data.worksAtRestaurantId}`}
+            </Text>
+          </Group>
+        )}
+        {recommended.StationCategory.Read && (
+          <Group>
+            <Text size="sm" c="dimmed" w={160}>
+              Station categories
+            </Text>
+            <Text size="sm">
+              {stationCategories
+                ?.filter((c) => data.stationCategoryIds?.includes(c.id))
+                .map((c) => c.name)
+                .join(', ') ?? 'None'}
+            </Text>
+          </Group>
+        )}
+      </Stack>
+    </Card>
+  );
+};
