@@ -14,6 +14,12 @@ namespace FastFuel.Features.Shifts.Controllers;
 public class ShiftController(IShiftService service, UserManager<User> userManager)
     : CrudController<Shift, ShiftRequestDto, ShiftResponseDto>(service)
 {
+    /// <summary>
+    /// Gets the shifts of the currently authenticated employee.
+    /// </summary>
+    /// <param name="user">The current authenticated user.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The current employee's shifts.</returns>
     [HttpGet("my")]
     public async Task<ActionResult<List<ShiftResponseDto>>> GetShiftsForCurrentEmployee(ClaimsPrincipal user, CancellationToken cancellationToken = default)
     {
