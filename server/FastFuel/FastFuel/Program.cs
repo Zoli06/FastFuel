@@ -18,8 +18,15 @@ using Scrutor;
 
 namespace FastFuel;
 
+/// <summary>
+/// 
+/// </summary>
 public static class Program
 {
+    /// <summary>
+    /// Go shit a brickc
+    /// </summary>
+    /// <param name="args"></param>
     public static void Main(string[] args)
     {
         MainAsync(args).GetAwaiter().GetResult();

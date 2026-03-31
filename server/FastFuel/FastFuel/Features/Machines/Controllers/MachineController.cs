@@ -14,6 +14,11 @@ public class MachineController(
 {
     public IUserService<MachineRequestDto, MachineResponseDto> UserService { get; } = service;
 
+    /// <summary>
+    /// Gets the profile of the currently authenticated machine user.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The current machine profile when it exists.</returns>
     [HttpGet("me")]
     public Task<Results<Ok<MachineResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
