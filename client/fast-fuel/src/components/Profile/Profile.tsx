@@ -1,6 +1,8 @@
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Stack } from '@mantine/core';
 import { apiClient, myCurrentUserQueryOptions } from '../../lib/api-client.ts';
+import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
+import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 import { ProfileHeader } from './ProfileHeader.tsx';
 import { ProfileEditForm } from './ProfileEditForm.tsx';
 import { ProfileEmployeeCard } from './ProfileEmployeeCard.tsx';
@@ -10,34 +12,25 @@ export const Profile = () => {
   const { data: currentUser, refetch: refetchCurrentUser } = useSuspenseQuery(
     myCurrentUserQueryOptions(),
   );
+  const { recommended } = usePagePermissions('Profile');
 
   const isCustomer = currentUser.userType === 'Customer';
-  const isAdmin = currentUser.userType === 'Admin';
   const isEmployee = currentUser.userType === 'Employee';
   const isMachine = currentUser.userType === 'Machine';
 
-  const { data: customerData, refetch: refetchCustomer } = useQuery({
-    ...apiClient.queryOptions('get', '/api/Customer/me'),
-    enabled: isCustomer,
-  });
+  const canEdit = isCustomer && recommended.Customer.UpdateSelf;
 
-  const { data: adminData, refetch: refetchAdmin } = useQuery({
-    ...apiClient.queryOptions('get', '/api/Admin/me'),
-    enabled: isAdmin,
-  });
+  const [
+    { data: customerData, refetch: refetchCustomer },
+    { data: employeeData },
+    { data: machineData },
+  ] = useConditionalSuspenseQueries([
+    isCustomer && apiClient.queryOptions('get', '/api/Customer/me'),
+    isEmployee && apiClient.queryOptions('get', '/api/Employee/me'),
+    isMachine && apiClient.queryOptions('get', '/api/Machine/me'),
+  ]);
 
-  const { data: employeeData } = useQuery({
-    ...apiClient.queryOptions('get', '/api/Employee/me'),
-    enabled: isEmployee,
-  });
-
-  const { data: machineData } = useQuery({
-    ...apiClient.queryOptions('get', '/api/Machine/me'),
-    enabled: isMachine,
-  });
-
-  const specificUser = customerData ?? adminData;
-  const email = specificUser?.email ?? '';
+  const email = customerData?.email ?? '';
 
   return (
     <Stack p="md" maw={800} mx="auto">
@@ -47,16 +40,14 @@ export const Profile = () => {
         userType={currentUser.userType}
       />
 
-      {(isCustomer || isAdmin) && (
+      {canEdit && (
         <ProfileEditForm
-          userId={currentUser.id}
           name={currentUser.name}
           userName={currentUser.userName}
           email={email}
-          userType={isCustomer ? 'Customer' : 'Admin'}
           onSaved={() => {
             void refetchCurrentUser();
-            void (isCustomer ? refetchCustomer() : refetchAdmin());
+            void refetchCustomer();
           }}
         />
       )}

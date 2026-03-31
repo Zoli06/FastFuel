@@ -191,7 +191,7 @@ public static class PagePermissionCatalog
             [Page.Profile] =
             (
                 [],
-                [],
+                ["Permission:Customer:UpdateSelf"],
                 []
             ),
         };

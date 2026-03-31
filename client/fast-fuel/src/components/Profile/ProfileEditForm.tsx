@@ -15,22 +15,13 @@ import { apiClient } from '../../lib/api-client.ts';
 import type { components } from '../../types/api.ts';
 
 interface ProfileEditFormProps {
-  userId: number;
   name: string;
   userName: string;
   email: string;
-  userType: 'Customer' | 'Admin';
   onSaved: () => void;
 }
 
-export const ProfileEditForm = ({
-  userId,
-  name,
-  userName,
-  email,
-  userType,
-  onSaved,
-}: ProfileEditFormProps) => {
+export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditFormProps) => {
   const form = useForm({
     initialValues: { name, userName, email, password: '' },
   });
@@ -57,34 +48,16 @@ export const ProfileEditForm = ({
     },
   });
 
-  const { mutate: updateAdmin } = apiClient.useMutation('put', '/api/Admin/{id}', {
-    onSuccess: () => {
-      onSaved();
-      notifications.show({
-        title: 'Profile updated',
-        message: 'Your changes have been saved.',
-        color: 'green',
-      });
-    },
-  });
-
   const handleSubmit = form.onSubmit((values) => {
-    const body = {
-      name: values.name,
-      userName: values.userName,
-      email: values.email,
-      themeId: null,
-      password: values.password || null,
-    };
-
-    if (userType === 'Customer') {
-      updateCustomer({ body: body as components['schemas']['CustomerRequestDto'] });
-    } else {
-      updateAdmin({
-        params: { path: { id: userId } },
-        body: body as components['schemas']['AdminRequestDto'],
-      });
-    }
+    updateCustomer({
+      body: {
+        name: values.name,
+        userName: values.userName,
+        email: values.email,
+        themeId: null,
+        password: values.password || null,
+      } as components['schemas']['CustomerRequestDto'],
+    });
   });
 
   return (

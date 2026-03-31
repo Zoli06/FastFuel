@@ -28,7 +28,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             ],
             [DefaultRole.Customer] = [Page.OrderCreator, Page.OrderHistory, Page.Profile],
             [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay, Page.Profile],
-            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator, Page.Profile]
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator, Page.Profile],
         };
 
     public async Task InitializeAsync()

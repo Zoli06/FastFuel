@@ -39,7 +39,6 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
           justify="space-between"
           wrap="nowrap"
           style={{
-            background: open ? 'var(--mantine-color-orange-9)' : 'var(--mantine-color-dark-8)',
             transition: 'background 0.15s',
           }}
         >
@@ -93,7 +92,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
 
       <Collapse in={open}>
         <Divider color="orange.8" />
-        <Stack gap={0} px="md" py="sm" style={{ background: 'var(--mantine-color-dark-7)' }}>
+        <Stack gap={0} px="md" py="sm">
           <Group gap={4} hiddenFrom="sm" mb="xs">
             <IconClock size={13} color="var(--mantine-color-orange-4)" />
             <Text size="xs" c="orange.4">
@@ -121,7 +120,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
                           flexShrink: 0,
                         }}
                       />
-                      <Text size="sm" c="gray.2" lineClamp={1}>
+                      <Text size="sm" lineClamp={1}>
                         {item.name}
                       </Text>
                       <Badge size="xs" color="orange" variant="outline">
