@@ -31,11 +31,7 @@ export const MyShifts = () => {
 
   return (
     <Paper>
-      <EntityTable
-        data={shifts}
-        columns={tableColumns}
-        sectionKey={(s) => parseAsUtcDate(s.startTime).toLocaleDateString()}
-      />
+      <EntityTable data={shifts} columns={tableColumns} />
     </Paper>
   );
 };
