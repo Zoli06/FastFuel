@@ -21,4 +21,5 @@ public enum Page
     StationCategoryManager,
     StationManager,
     RestaurantManager,
+    MyShifts
 }

@@ -1,17 +1,7 @@
-import {
-  Badge,
-  Button,
-  Divider,
-  Group,
-  Image,
-  Modal,
-  NumberInput,
-  Stack,
-  Text,
-  Textarea,
-} from '@mantine/core';
+import { Badge, Button, Divider, Group, Image, Modal, Stack, Text, Textarea } from '@mantine/core';
 import { useState } from 'react';
-import type { CartItem, Food, UnifiedItem } from './types.ts';
+import type { CartItem, Food, UnifiedItem } from '../types.ts';
+import { QuantitySelector } from '../QuantitySelector.tsx';
 
 type MenuDetailModalProps = {
   opened: boolean;
@@ -89,47 +79,7 @@ export const OrderDetailModal = ({
 
           <Divider label="Customise" labelPosition="left" />
 
-          {/* Quantity row — big +/- buttons with typeable input in the middle */}
-          <Stack gap={4}>
-            <Text size="sm" fw={500}>
-              Quantity
-            </Text>
-            <Group justify="space-between" align="center" px="md">
-              <Button
-                variant="outline"
-                color="darkred"
-                size="lg"
-                w={56}
-                h={56}
-                p={0}
-                style={{ fontSize: 28, fontWeight: 700, borderRadius: 12 }}
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1}
-              >
-                −
-              </Button>
-              <NumberInput
-                value={quantity}
-                onChange={(v) => setQuantity(Math.max(1, Number(v) || 1))}
-                min={1}
-                style={{ width: 80 }}
-                styles={{ input: { textAlign: 'center', fontWeight: 800, fontSize: 20 } }}
-                hideControls
-              />
-              <Button
-                variant="filled"
-                color="darkred"
-                size="lg"
-                w={56}
-                h={56}
-                p={0}
-                style={{ fontSize: 28, fontWeight: 700, borderRadius: 12 }}
-                onClick={() => setQuantity((q) => q + 1)}
-              >
-                +
-              </Button>
-            </Group>
-          </Stack>
+          <QuantitySelector value={quantity} onChange={setQuantity} />
 
           <Textarea
             label="Special instructions"

@@ -23,7 +23,8 @@ public class AdminMapper(RoleManager<Role> roleManager, UserManager<User> userMa
             UserName = userDto.UserName,
             ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
-            UserType = userDto.UserType
+            UserType = userDto.UserType,
+            OrderIds = userDto.OrderIds
         };
     }
 

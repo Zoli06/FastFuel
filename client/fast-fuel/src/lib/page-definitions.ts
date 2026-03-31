@@ -186,6 +186,14 @@ export const pageDefinitions = {
     showInHomeMenu: true,
     group: 'Restaurant',
   },
+  MyShifts: {
+    displayName: 'My Shifts',
+    color: 'teal',
+    icon: IconClock,
+    routePath: '/employee/my-shifts',
+    showInHomeMenu: true,
+    group: 'Management',
+  },
 } as const satisfies Record<Page, PageDefinition>;
 
 export const getPageDefinitions = (pages: Page[]): Partial<Record<Group, PageDefinition[]>> => {
