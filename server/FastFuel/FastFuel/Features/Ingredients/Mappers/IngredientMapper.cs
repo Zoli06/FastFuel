@@ -5,7 +5,7 @@ using FastFuel.Features.Ingredients.Entities;
 
 namespace FastFuel.Features.Ingredients.Mappers;
 
-public class IngredientMapper(ApplicationDbContext dbContext)
+public class IngredientMapper(FastFuelDbContext dbContext)
     : IMapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
     public IngredientResponseDto ToDto(Ingredient entity)

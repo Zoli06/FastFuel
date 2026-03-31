@@ -10,7 +10,7 @@ namespace FastFuel.Tests;
 public class ShiftServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private Employee _defaultEmployee = null!;
     private ShiftService _service = null!;
 

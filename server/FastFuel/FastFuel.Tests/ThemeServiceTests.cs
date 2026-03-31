@@ -8,7 +8,7 @@ namespace FastFuel.Tests;
 public class ThemeServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private ThemeService _service = null!;
 
     // ─── Lifecycle ─────────────────────────────────────────────

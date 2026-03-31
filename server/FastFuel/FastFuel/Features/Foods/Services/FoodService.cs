@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Foods.Services;
 
-public class FoodService(ApplicationDbContext dbContext, IMapper<Food, FoodRequestDto, FoodResponseDto> mapper)
+public class FoodService(FastFuelDbContext dbContext, IMapper<Food, FoodRequestDto, FoodResponseDto> mapper)
     : CrudService<Food, FoodRequestDto, FoodResponseDto>(dbContext, mapper)
 {
     protected override DbSet<Food> DbSet { get; } = dbContext.Foods;

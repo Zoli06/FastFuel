@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Stations.Services;
 
 public class StationService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Station, StationRequestDto, StationResponseDto> mapper,
     IStationTasksMapper tasksMapper)
     : CrudService<Station, StationRequestDto, StationResponseDto>(dbContext, mapper), IStationService

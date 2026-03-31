@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Allergies.Services;
 
 public class AllergyService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Allergy, AllergyRequestDto, AllergyResponseDto> mapper)
     : CrudService<Allergy, AllergyRequestDto, AllergyResponseDto>(dbContext, mapper)
 {

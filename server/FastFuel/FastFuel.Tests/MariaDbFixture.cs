@@ -26,13 +26,13 @@ public class MariaDbFixture : IAsyncLifetime
         await _mariaDbContainer.DisposeAsync();
     }
 
-    public ApplicationDbContext CreateDbContext()
+    public FastFuelDbContext CreateDbContext()
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+        var options = new DbContextOptionsBuilder<FastFuelDbContext>()
             .UseLazyLoadingProxies()
             .UseMySql(ConnectionString, ServerVersion.AutoDetect(ConnectionString))
             .Options;
 
-        return new ApplicationDbContext(options);
+        return new FastFuelDbContext(options);
     }
 }

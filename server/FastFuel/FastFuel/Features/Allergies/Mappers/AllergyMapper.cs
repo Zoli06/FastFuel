@@ -5,7 +5,7 @@ using FastFuel.Features.Common.Interfaces;
 
 namespace FastFuel.Features.Allergies.Mappers;
 
-public class AllergyMapper(ApplicationDbContext dbContext)
+public class AllergyMapper(FastFuelDbContext dbContext)
     : IMapper<Allergy, AllergyRequestDto, AllergyResponseDto>
 {
     public AllergyResponseDto ToDto(Allergy entity)

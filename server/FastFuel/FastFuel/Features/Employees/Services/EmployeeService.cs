@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Employees.Services;
 
 public class EmployeeService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Employee, EmployeeRequestDto, EmployeeResponseDto> mapper,
     UserManager<User> userManager)
     : UserServiceBase<Employee, EmployeeRequestDto, EmployeeResponseDto>(dbContext, mapper, userManager)

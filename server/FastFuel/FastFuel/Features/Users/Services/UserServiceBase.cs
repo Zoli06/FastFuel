@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Users.Services;
 
 public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<TUser, TUserRequestDto, TUserResponseDto> mapper,
     UserManager<User> userManager)
     : CrudService<TUser, TUserRequestDto, TUserResponseDto>(dbContext, mapper),
@@ -40,7 +40,7 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
     }
 
     private class Create(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<TUser> dbSet,
         IMapper<TUser, TUserRequestDto, TUserResponseDto> mapper,
         UserManager<User> userManager,
@@ -61,7 +61,7 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
     }
 
     private class Update(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<TUser> dbSet,
         IMapper<TUser, TUserRequestDto, TUserResponseDto> mapper,
         UserManager<User> userManager

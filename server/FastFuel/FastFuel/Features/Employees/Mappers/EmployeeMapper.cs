@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Identity;
 namespace FastFuel.Features.Employees.Mappers;
 
 public class EmployeeMapper(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     RoleManager<Role> roleManager,
     UserManager<User> userManager)
     : UserMapper(roleManager, userManager), IMapper<Employee, EmployeeRequestDto, EmployeeResponseDto>
