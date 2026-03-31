@@ -180,6 +180,12 @@ public static class PagePermissionCatalog
                     ["Permission:Restaurant:Create", "Permission:Restaurant:Update", "Permission:Restaurant:Delete"],
                     []
                 ),
-                [Page.MyShifts] = ([], [], [DefaultRole.Employee])
+                [Page.MyShifts] = ([], [], [DefaultRole.Employee]),
+                [Page.Profile] =
+                (
+                    [],
+                    ["Permission:Customer:UpdateSelf"],
+                    []
+                )
             };
 }
