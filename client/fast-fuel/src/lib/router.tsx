@@ -22,6 +22,8 @@ import { CustomerManagerPage } from '../pages/EntityManagerPages/CustomerManager
 import { Layout } from '../components/Layout/Layout.tsx';
 import type { HeaderAuthButton } from '../components/Header/Header.tsx';
 import { OrderCreator } from '../components/OrderCreator/OrderCreator.tsx';
+import { OrderHistoryPage } from '../pages/OrderHistoryPage.tsx';
+import { ProfilePage } from '../pages/ProfilePage.tsx';
 import { MyShiftsPage } from '../pages/MyShiftsPage.tsx';
 
 type RouteHandle = {
@@ -68,6 +70,16 @@ export const router = createBrowserRouter([
         path: 'employee/my-shifts',
         element: <MyShiftsPage />,
         handle: withHeader('My Shifts'),
+      },
+      {
+        path: 'order-history',
+        element: <OrderHistoryPage />,
+        handle: withHeader('Order History'),
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+        handle: withHeader('Profile'),
       },
       {
         path: 'manage',
