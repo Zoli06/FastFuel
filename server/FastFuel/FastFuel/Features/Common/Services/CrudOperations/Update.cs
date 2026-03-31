@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Common.Services.CrudOperations;
 
 public class Update<TEntity, TRequest, TResponse>(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     DbSet<TEntity> dbSet,
     IMapper<TEntity, TRequest, TResponse> mapper)
     where TEntity : class
 {
-    protected readonly ApplicationDbContext DbContext = dbContext;
+    protected readonly FastFuelDbContext DbContext = dbContext;
     protected readonly DbSet<TEntity> DbSet = dbSet;
     protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
 

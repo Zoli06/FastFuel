@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.Services.CrudOperations;
 
-public class Delete<TEntity>(ApplicationDbContext dbContext, DbSet<TEntity> dbSet)
+public class Delete<TEntity>(FastFuelDbContext dbContext, DbSet<TEntity> dbSet)
     where TEntity : class, IIdentifiable
 {
-    protected readonly ApplicationDbContext DbContext = dbContext;
+    protected readonly FastFuelDbContext DbContext = dbContext;
     protected readonly DbSet<TEntity> DbSet = dbSet;
 
     protected virtual async Task<TEntity?> GetEntityAsync(uint id, uint? userId = null,

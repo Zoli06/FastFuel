@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Users.Services;
 
 public class UserService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<User, UserRequestDto, UserResponseDto> mapper,
     UserManager<User> userManager)
     : UserServiceBase<User, UserRequestDto, UserResponseDto>(dbContext, mapper, userManager)

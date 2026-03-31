@@ -25,7 +25,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Common.DbContexts;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+public class FastFuelDbContext(DbContextOptions<FastFuelDbContext> options)
     : IdentityDbContext<User, Role, uint>(options)
 {
     public DbSet<Admin> Admins { get; set; }
@@ -51,7 +51,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(FastFuelDbContext).Assembly);
 
         builder.Entity<User>().UseTptMappingStrategy();
     }

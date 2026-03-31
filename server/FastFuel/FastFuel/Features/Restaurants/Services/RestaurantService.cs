@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Restaurants.Services;
 
 public class RestaurantService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Restaurant, RestaurantRequestDto, RestaurantResponseDto> mapper)
     : CrudService<Restaurant, RestaurantRequestDto, RestaurantResponseDto>(dbContext, mapper)
 {

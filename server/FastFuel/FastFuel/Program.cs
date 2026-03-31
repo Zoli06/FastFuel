@@ -69,7 +69,7 @@ public static class Program
                 options.User.AllowedUserNameCharacters = null!;
             })
             .AddRoles<Role>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<FastFuelDbContext>();
     }
 
     // Configures the application's EF Core DbContext
@@ -79,7 +79,7 @@ public static class Program
                                ?? throw new InvalidOperationException(
                                    "Connection string 'DefaultConnection' not found.");
 
-        builder.Services.AddDbContext<ApplicationDbContext>(dbContextOptions =>
+        builder.Services.AddDbContext<FastFuelDbContext>(dbContextOptions =>
         {
             dbContextOptions
                 .UseLazyLoadingProxies()
@@ -182,7 +182,7 @@ public static class Program
 
         if (app.Environment.IsDevelopment())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<FastFuelDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
         }

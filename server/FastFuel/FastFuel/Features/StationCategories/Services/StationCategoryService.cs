@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.StationCategories.Services;
 
 public class StationCategoryService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto> mapper)
     : CrudService<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>(dbContext, mapper)
 {

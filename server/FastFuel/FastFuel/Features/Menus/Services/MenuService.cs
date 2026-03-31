@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Menus.Services;
 
-public class MenuService(ApplicationDbContext dbContext, IMapper<Menu, MenuRequestDto, MenuResponseDto> mapper)
+public class MenuService(FastFuelDbContext dbContext, IMapper<Menu, MenuRequestDto, MenuResponseDto> mapper)
     : CrudService<Menu, MenuRequestDto, MenuResponseDto>(dbContext, mapper)
 {
     protected override DbSet<Menu> DbSet { get; } = dbContext.Menus;

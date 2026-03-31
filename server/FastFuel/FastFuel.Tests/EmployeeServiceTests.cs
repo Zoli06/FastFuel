@@ -15,7 +15,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 {
     private readonly MariaDbFixture _fixture;
 
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private EmployeeService _service = null!;
 
     public EmployeeServiceTests(MariaDbFixture fixture)
@@ -58,7 +58,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
     private UserManager<User> CreateUserManager()
     {
-        var store = new UserStore<User, Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new UserStore<User, Role, FastFuelDbContext, uint>(_dbContext);
 
         var options = new OptionsWrapper<IdentityOptions>(new IdentityOptions());
 
@@ -79,7 +79,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
     private RoleManager<Role> CreateRoleManager()
     {
-        var store = new RoleStore<Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new RoleStore<Role, FastFuelDbContext, uint>(_dbContext);
 
         var logger = new LoggerFactory().CreateLogger<RoleManager<Role>>();
 

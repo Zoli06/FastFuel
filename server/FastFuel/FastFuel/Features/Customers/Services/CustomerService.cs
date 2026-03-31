@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Customers.Services;
 
 public class CustomerService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Customer, CustomerRequestDto, CustomerResponseDto> mapper,
     UserManager<User> userManager)
     : UserServiceBase<Customer, CustomerRequestDto, CustomerResponseDto>(dbContext, mapper, userManager)

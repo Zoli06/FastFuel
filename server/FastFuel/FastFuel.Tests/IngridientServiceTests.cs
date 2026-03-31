@@ -8,7 +8,7 @@ namespace FastFuel.Tests;
 public class IngredientServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private IngredientService _service = null!;
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────

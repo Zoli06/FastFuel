@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Admins.Services;
 
 public class AdminService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Admin, AdminRequestDto, AdminResponseDto> mapper,
     UserManager<User> userManager)
     : UserServiceBase<Admin, AdminRequestDto, AdminResponseDto>(dbContext, mapper, userManager)

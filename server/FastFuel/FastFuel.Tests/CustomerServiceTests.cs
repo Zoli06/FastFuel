@@ -16,7 +16,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 {
     private readonly MariaDbFixture _fixture;
 
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private CustomerService _service = null!;
 
     public CustomerServiceTests(MariaDbFixture fixture)
@@ -59,7 +59,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
     private UserManager<User> CreateUserManager()
     {
-        var store = new UserStore<User, Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new UserStore<User, Role, FastFuelDbContext, uint>(_dbContext);
 
         return new UserManager<User>(
             store,
@@ -76,7 +76,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
     private RoleManager<Role> CreateRoleManager()
     {
-        var store = new RoleStore<Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new RoleStore<Role, FastFuelDbContext, uint>(_dbContext);
 
         return new RoleManager<Role>(
             store,

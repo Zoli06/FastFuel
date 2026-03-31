@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Machines.Services;
 
 public class MachineService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Machine, MachineRequestDto, MachineResponseDto> mapper,
     UserManager<User> userManager)
     : UserServiceBase<Machine, MachineRequestDto, MachineResponseDto>(dbContext, mapper, userManager)

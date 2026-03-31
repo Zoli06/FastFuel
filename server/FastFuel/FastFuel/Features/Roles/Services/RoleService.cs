@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Roles.Services;
 
 public class RoleService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Role, RoleRequestDto, RoleResponseDto> mapper,
     RoleManager<Role> roleManager,
     UserManager<User> userManager)
@@ -109,7 +109,7 @@ public class RoleService(
     }
 
     private class Create(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<Role> dbSet,
         IMapper<Role, RoleRequestDto, RoleResponseDto> mapper,
         RoleManager<Role> roleManager,
@@ -127,7 +127,7 @@ public class RoleService(
     }
 
     private class Update(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<Role> dbSet,
         IMapper<Role, RoleRequestDto, RoleResponseDto> mapper,
         RoleManager<Role> roleManager,
@@ -161,7 +161,7 @@ public class RoleService(
         }
     }
 
-    private class Delete(ApplicationDbContext dbContext, DbSet<Role> dbSet)
+    private class Delete(FastFuelDbContext dbContext, DbSet<Role> dbSet)
         : Delete<Role>(dbContext, dbSet)
     {
         protected override async Task DeleteEntityAsync(uint id, Role entity, uint? userId = null,

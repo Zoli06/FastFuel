@@ -8,7 +8,7 @@ namespace FastFuel.Tests;
 public class MenuServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private MenuService _service = null!;
 
     private static readonly Uri DefaultImage =

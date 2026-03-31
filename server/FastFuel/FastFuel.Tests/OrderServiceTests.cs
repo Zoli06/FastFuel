@@ -14,7 +14,7 @@ namespace FastFuel.Tests;
 public class OrderServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private Food _food = null!;
     private Menu _menu = null!;
 

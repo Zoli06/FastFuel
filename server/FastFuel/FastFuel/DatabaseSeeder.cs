@@ -32,7 +32,7 @@ namespace FastFuel;
 // TODO: Rewrite this to use the services instead of directly accessing the DbContext.
 public class DatabaseSeeder(IServiceProvider serviceProvider)
 {
-    private readonly ApplicationDbContext _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+    private readonly FastFuelDbContext _context = serviceProvider.GetRequiredService<FastFuelDbContext>();
 
     private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
         serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();

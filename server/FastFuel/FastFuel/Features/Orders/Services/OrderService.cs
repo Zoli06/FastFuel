@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Orders.Services;
 
 public class OrderService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
     : CrudService<Order, OrderRequestDto, OrderResponseDto>(dbContext, mapper), IOrderService
 {
@@ -90,7 +90,7 @@ public class OrderService(
         return (lastOrder?.OrderNumber ?? 0) + 1;
     }
 
-    private static async Task<uint> CalculatePriceAsync(Order entity, ApplicationDbContext dbContext,
+    private static async Task<uint> CalculatePriceAsync(Order entity, FastFuelDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
         var menuIds = entity.Menus.Select(m => m.MenuId).ToList();
@@ -110,7 +110,7 @@ public class OrderService(
     }
 
     private class Create(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<Order> dbSet,
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
@@ -159,7 +159,7 @@ public class OrderService(
     }
 
     private class Update(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<Order> dbSet,
         IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
         : Update<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
