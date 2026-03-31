@@ -4,7 +4,6 @@ using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
-using FastFuel.NSwag.OperationSummaryDescription;
 using FastFuel.NSwag.PermissionSchema;
 using FastFuel.NSwag.SwaggerQueryParam;
 using FastFuel.NSwag.UnregisteredStatusCodeResultOperation;
@@ -106,7 +105,6 @@ public static class Program
         {
             config.Title = "FastFuel";
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
-            config.OperationProcessors.Add(new OperationSummaryDescriptionProcessor());
             config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
             config.DocumentProcessors.Add(new PermissionSchemaDocumentProcessor(serviceProvider));
 
