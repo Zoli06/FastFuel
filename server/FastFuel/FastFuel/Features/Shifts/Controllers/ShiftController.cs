@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using FastFuel.Features.Common.Controllers;
 using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Employees.Entities;
@@ -15,12 +14,12 @@ public class ShiftController(IShiftService service, UserManager<User> userManage
     : CrudController<Shift, ShiftRequestDto, ShiftResponseDto>(service)
 {
     [HttpGet("my")]
-    public async Task<ActionResult<List<ShiftResponseDto>>> GetShiftsForCurrentEmployee(ClaimsPrincipal user, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<ShiftResponseDto>>> GetShiftsForCurrentEmployee(CancellationToken cancellationToken = default)
     {
-        var employee = await userManager.GetUserAsync(user) as Employee;
+        var employee = await userManager.GetUserAsync(User) as Employee;
         if (employee == null)
         {
-            throw new ResourceNotFoundAppException(nameof(Employee), userManager.GetUserId(user) ?? "");
+            throw new ResourceNotFoundAppException(nameof(Employee), userManager.GetUserId(User) ?? "");
         }
 
         return await service.GetShiftsForCurrentEmployeeAsync(employee, cancellationToken);
