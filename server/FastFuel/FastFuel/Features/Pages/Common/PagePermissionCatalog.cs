@@ -32,7 +32,11 @@ public static class PagePermissionCatalog
             ),
             [Page.OrderHistory] =
             (
-                ["Permission:Order:Read"],
+                [
+                    "Permission:Order:Read",
+                    "Permission:Restaurant:Read",
+                    "Permission:Food:Read",
+                    "Permission:Menu:Read"],
                 [],
                 []
             ),

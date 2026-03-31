@@ -27,8 +27,8 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
                 Page.RestaurantManager, Page.Profile
             ],
             [DefaultRole.Customer] = [Page.OrderCreator, Page.OrderHistory, Page.Profile],
-            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay, Page.OrderHistory, Page.Profile],
-            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator, Page.OrderHistory, Page.Profile]
+            [DefaultRole.Employee] = [Page.StationTasks, Page.OrderCreator, Page.OrderStatusDisplay, Page.Profile],
+            [DefaultRole.Machine] = [Page.OrderStatusDisplay, Page.StationTasks, Page.OrderCreator, Page.Profile]
         };
 
     public async Task InitializeAsync()
