@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
+using FastFuel.NSwag.CrudOperationSummary;
 using FastFuel.NSwag.MarkAsRequiredIfNonNullable;
 using FastFuel.NSwag.PermissionSchema;
 using FastFuel.NSwag.SwaggerQueryParam;
@@ -108,6 +109,7 @@ public static class Program
         builder.Services.AddOpenApiDocument((config, serviceProvider) =>
         {
             config.Title = "FastFuel";
+            config.OperationProcessors.Add(new CrudOperationSummaryOperationProcessor());
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
             config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
             config.OperationProcessors.Add(new PermissionSchemaOperationProcessor());
