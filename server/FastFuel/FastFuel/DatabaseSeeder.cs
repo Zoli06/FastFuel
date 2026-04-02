@@ -22,7 +22,6 @@ using FastFuel.Features.Orders.Entities;
 using FastFuel.Features.Restaurants.Entities;
 using FastFuel.Features.StationCategories.Entities;
 using FastFuel.Features.Stations.Entities;
-using FastFuel.Features.Themes.Entities;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -175,19 +174,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             DayOfWeek = day, OpenTime = new TimeOnly(9, 0), CloseTime = new TimeOnly(21, 0), Restaurant = restaurant
         }).ToList();
         _context.OpeningHours.AddRange(openingHours);
-        await _context.SaveChangesAsync();
-
-        // Register user with a theme
-        var theme = new Theme
-        {
-            Name = "Dark Mode",
-            Background = "#121212",
-            Footer = "#1e1e1e",
-            ButtonPrimary = "#bb86fc",
-            ButtonSecondary = "#03dac6"
-        };
-
-        _context.Themes.Add(theme);
         await _context.SaveChangesAsync();
 
         await SeedAdmin();
