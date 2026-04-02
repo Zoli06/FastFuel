@@ -142,7 +142,6 @@ export const EmployeeManager = () => {
     name: values.name,
     email: values.email,
     userName: values.userName,
-    themeId: null,
     password: values.password ?? null,
     shiftIds: values.shiftIds ?? [],
     stationCategoryIds: values.stationCategoryIds,

@@ -73,7 +73,6 @@ export const CustomerManager = () => {
       name: values.name,
       email: values.email,
       userName: values.userName,
-      themeId: null,
       password: values.password || null,
       // https://github.com/openapi-ts/openapi-typescript/issues/1520
     }) as components['schemas']['CustomerRequestDto'];

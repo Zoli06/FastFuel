@@ -54,7 +54,6 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
         name: values.name,
         userName: values.userName,
         email: values.email,
-        themeId: null,
         password: values.password || null,
       } as components['schemas']['CustomerRequestDto'],
     });
