@@ -18,7 +18,6 @@ using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Shifts.Entities;
 using FastFuel.Features.StationCategories.Entities;
 using FastFuel.Features.Stations.Entities;
-using FastFuel.Features.Themes.Entities;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +45,6 @@ public class FastFuelDbContext(DbContextOptions<FastFuelDbContext> options)
     public DbSet<StationCategory> StationCategories { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<Shift> Shifts { get; set; }
-    public DbSet<Theme> Themes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
