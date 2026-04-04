@@ -1,18 +1,18 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import { getDuration, normalizeDateTime, parseAsUtcDate } from '../../../lib/time.ts';
 
 export const ShiftManager = () => {
-  const { recommended } = usePagePermissions('ShiftManager');
+  const { necessaryPerm, recommendedPerm } = $api('ShiftManager');
+  const employeeReadApi = recommendedPerm('Permission:Employee:Read');
 
   const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
     useConditionalSuspenseQueries([
-      recommended.Employee.Read && apiClient.queryOptions('get', '/api/Employee'),
-      apiClient.queryOptions('get', '/api/Shift'),
+      employeeReadApi?.queryOptions('get', '/api/Employee'),
+      necessaryPerm('Permission:Shift:Read').queryOptions('get', '/api/Shift'),
     ]);
 
   type Shift = (typeof shifts)[number];
@@ -27,7 +27,7 @@ export const ShiftManager = () => {
   }));
 
   const tableColumns: ColumnDefinition<Shift>[] = [
-    ...(recommended.Employee.Read
+    ...(employeeReadApi
       ? [
           {
             header: 'Employee',
@@ -54,7 +54,7 @@ export const ShiftManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(recommended.Employee.Read
+    ...(employeeReadApi
       ? [
           {
             type: 'numericSelect',
@@ -111,15 +111,27 @@ export const ShiftManager = () => {
     },
   ];
 
-  const { mutate: createShift } = apiClient.useMutation('post', '/api/Shift', {
-    onSuccess: () => refetchShifts(),
-  });
-  const { mutate: updateShift } = apiClient.useMutation('put', '/api/Shift/{id}', {
-    onSuccess: () => refetchShifts(),
-  });
-  const { mutate: deleteShift } = apiClient.useMutation('delete', '/api/Shift/{id}', {
-    onSuccess: () => refetchShifts(),
-  });
+  const createShift = recommendedPerm('Permission:Shift:Create')?.useMutation(
+    'post',
+    '/api/Shift',
+    {
+      onSuccess: () => refetchShifts(),
+    },
+  ).mutate;
+  const updateShift = recommendedPerm('Permission:Shift:Update')?.useMutation(
+    'put',
+    '/api/Shift/{id}',
+    {
+      onSuccess: () => refetchShifts(),
+    },
+  ).mutate;
+  const deleteShift = recommendedPerm('Permission:Shift:Delete')?.useMutation(
+    'delete',
+    '/api/Shift/{id}',
+    {
+      onSuccess: () => refetchShifts(),
+    },
+  ).mutate;
 
   const toRequestDto = (values: ShiftFormValues) => {
     const start = new Date(normalizeDateTime(values.startTime));
@@ -145,9 +157,9 @@ export const ShiftManager = () => {
   };
 
   const handleSubmit = (values: ShiftFormValues, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createShift) {
       createShift({ body: toRequestDto(values) });
-    } else {
+    } else if (mode === 'edit' && updateShift) {
       updateShift({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
@@ -164,10 +176,10 @@ export const ShiftManager = () => {
       sectionKey={(s) => parseAsUtcDate(s.startTime).toLocaleDateString()}
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}
-      onDelete={(s) => deleteShift({ params: { path: { id: s.id } } })}
-      canCreate={recommended.Shift.Create}
-      canEdit={recommended.Shift.Update}
-      canDelete={recommended.Shift.Delete}
+      onDelete={deleteShift ? (s) => deleteShift({ params: { path: { id: s.id } } }) : undefined}
+      canCreate={!!createShift}
+      canEdit={!!updateShift}
+      canDelete={!!deleteShift}
     />
   );
 };

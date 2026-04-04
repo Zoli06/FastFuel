@@ -2,12 +2,7 @@ import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
-import {
-  apiClient,
-  clearAuthData,
-  fetchClient,
-  myCurrentUserQueryOptions,
-} from '../../lib/api-client.ts';
+import { $api } from '../../lib/api.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
 
@@ -25,21 +20,22 @@ const authButtonConfig = {
 export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const navigate = useNavigate();
   const shouldLoadCurrentUser = authButton === 'Logout';
+  const { noPerm, invalidateCache } = $api(null);
 
-  const { data: currentUser } = useQuery({
-    ...myCurrentUserQueryOptions(),
+  const { data: currentUser, refetch: refetchCurrentUser } = useQuery({
+    ...noPerm().queryOptions('get', '/api/User/me'),
     enabled: shouldLoadCurrentUser,
   });
 
-  const { mutate: logout } = apiClient.useMutation('post', '/api/Auth/logout', {
+  const { mutate: logout } = noPerm().useMutation('post', '/api/Auth/logout', {
     onSuccess: () => {
-      clearAuthData();
+      invalidateCache();
       navigate('/login');
     },
   });
 
   const handleHomeClick = async () => {
-    const { data: user } = await fetchClient.GET('/api/User/me').catch(() => ({ data: null }));
+    const { data: user } = currentUser ? { data: currentUser } : await refetchCurrentUser();
     if (!user) {
       notifications.show({
         title: 'Not logged in',

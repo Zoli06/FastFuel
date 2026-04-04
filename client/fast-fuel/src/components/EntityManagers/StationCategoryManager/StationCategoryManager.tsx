@@ -1,19 +1,19 @@
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationCategoryManager = () => {
-  const { recommended } = usePagePermissions('StationCategoryManager');
+  const { necessaryPerm, recommendedPerm } = $api('StationCategoryManager');
+  const ingredientReadApi = recommendedPerm('Permission:Ingredient:Read');
 
   const [
     { data: ingredients = [] },
     { data: stationCategories = [], refetch: refetchStationCategories },
   ] = useConditionalSuspenseQueries([
-    recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-    apiClient.queryOptions('get', '/api/StationCategory'),
+    ingredientReadApi?.queryOptions('get', '/api/Ingredient'),
+    necessaryPerm('Permission:StationCategory:Read').queryOptions('get', '/api/StationCategory'),
   ]);
 
   type StationCategory = (typeof stationCategories)[number];
@@ -25,7 +25,7 @@ export const StationCategoryManager = () => {
 
   const tableColumns: ColumnDefinition<StationCategory>[] = [
     { header: 'Name', accessor: 'name' },
-    ...(recommended.Ingredient.Read
+    ...(ingredientReadApi
       ? [
           {
             header: 'Ingredients',
@@ -49,7 +49,7 @@ export const StationCategoryManager = () => {
       nullable: 'never',
       required: 'always',
     },
-    ...(recommended.Ingredient.Read
+    ...(ingredientReadApi
       ? [
           {
             type: 'numericMultiSelect',
@@ -69,24 +69,28 @@ export const StationCategoryManager = () => {
       : []),
   ];
 
-  const { mutate: createStationCategory } = apiClient.useMutation('post', '/api/StationCategory', {
-    onSuccess: () => refetchStationCategories(),
-  });
-  const { mutate: updateStationCategory } = apiClient.useMutation(
+  const createStationCategory = recommendedPerm('Permission:StationCategory:Create')?.useMutation(
+    'post',
+    '/api/StationCategory',
+    {
+      onSuccess: () => refetchStationCategories(),
+    },
+  ).mutate;
+  const updateStationCategory = recommendedPerm('Permission:StationCategory:Update')?.useMutation(
     'put',
     '/api/StationCategory/{id}',
     { onSuccess: () => refetchStationCategories() },
-  );
-  const { mutate: deleteStationCategory } = apiClient.useMutation(
+  ).mutate;
+  const deleteStationCategory = recommendedPerm('Permission:StationCategory:Delete')?.useMutation(
     'delete',
     '/api/StationCategory/{id}',
     { onSuccess: () => refetchStationCategories() },
-  );
+  ).mutate;
 
   const handleSubmit = (values: StationCategory, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createStationCategory) {
       createStationCategory({ body: values });
-    } else {
+    } else if (mode === 'edit' && updateStationCategory) {
       updateStationCategory({ params: { path: { id: values.id } }, body: values });
     }
   };
@@ -99,10 +103,14 @@ export const StationCategoryManager = () => {
       tableColumns={tableColumns}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteStationCategory({ params: { path: { id: r.id } } })}
-      canCreate={recommended.StationCategory.Create}
-      canEdit={recommended.StationCategory.Update}
-      canDelete={recommended.StationCategory.Delete}
+      onDelete={
+        deleteStationCategory
+          ? (r) => deleteStationCategory({ params: { path: { id: r.id } } })
+          : undefined
+      }
+      canCreate={!!createStationCategory}
+      canEdit={!!updateStationCategory}
+      canDelete={!!deleteStationCategory}
     />
   );
 };

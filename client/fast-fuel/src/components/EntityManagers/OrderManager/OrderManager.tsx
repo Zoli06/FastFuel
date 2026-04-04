@@ -1,12 +1,16 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const OrderManager = () => {
-  const { recommended } = usePagePermissions('OrderManager');
+  const { necessaryPerm, recommendedPerm } = $api('OrderManager');
+
+  const menuReadApi = recommendedPerm('Permission:Menu:Read');
+  const foodReadApi = recommendedPerm('Permission:Food:Read');
+  const userReadApi = recommendedPerm('Permission:User:Read');
+  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
 
   const [
     { data: menus = [] },
@@ -15,11 +19,11 @@ export const OrderManager = () => {
     { data: restaurants = [] },
     { data: orders = [], refetch: refetchOrders },
   ] = useConditionalSuspenseQueries([
-    recommended.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-    recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-    recommended.User.Read && apiClient.queryOptions('get', '/api/User'),
-    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    apiClient.queryOptions('get', '/api/Order'),
+    menuReadApi?.queryOptions('get', '/api/Menu'),
+    foodReadApi?.queryOptions('get', '/api/Food'),
+    userReadApi?.queryOptions('get', '/api/User'),
+    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    necessaryPerm('Permission:Order:Read').queryOptions('get', '/api/Order'),
   ]);
 
   type Order = (typeof orders)[number];
@@ -35,7 +39,7 @@ export const OrderManager = () => {
 
   const tableColumns: ColumnDefinition<Order>[] = [
     { header: 'Order #', accessor: 'orderNumber' },
-    ...(recommended.User.Read
+    ...(userReadApi
       ? [
           {
             header: 'Ordered By',
@@ -43,7 +47,7 @@ export const OrderManager = () => {
           },
         ]
       : []),
-    ...(recommended.Restaurant.Read
+    ...(restaurantReadApi
       ? [
           {
             header: 'Restaurant',
@@ -54,7 +58,7 @@ export const OrderManager = () => {
       : []),
     { header: 'Status', accessor: 'status' },
     { header: 'Price', render: (order) => `${order.price.toFixed(2)}` },
-    ...(recommended.Menu.Read
+    ...(menuReadApi
       ? [
           {
             header: 'Menus',
@@ -70,7 +74,7 @@ export const OrderManager = () => {
           },
         ]
       : []),
-    ...(recommended.Food.Read
+    ...(foodReadApi
       ? [
           {
             header: 'Foods',
@@ -93,7 +97,7 @@ export const OrderManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(recommended.Restaurant.Read
+    ...(restaurantReadApi
       ? [
           {
             type: 'numericSelect',
@@ -110,7 +114,7 @@ export const OrderManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(recommended.Menu.Read
+    ...(menuReadApi
       ? [
           {
             type: 'fieldset',
@@ -164,7 +168,7 @@ export const OrderManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(recommended.Food.Read
+    ...(foodReadApi
       ? [
           {
             type: 'fieldset',
@@ -220,20 +224,32 @@ export const OrderManager = () => {
       : []),
   ];
 
-  const { mutate: createOrder } = apiClient.useMutation('post', '/api/Order', {
-    onSuccess: () => refetchOrders(),
-  });
-  const { mutate: updateOrder } = apiClient.useMutation('put', '/api/Order/{id}', {
-    onSuccess: () => refetchOrders(),
-  });
-  const { mutate: deleteOrder } = apiClient.useMutation('delete', '/api/Order/{id}', {
-    onSuccess: () => refetchOrders(),
-  });
+  const createOrder = recommendedPerm('Permission:Order:Create')?.useMutation(
+    'post',
+    '/api/Order',
+    {
+      onSuccess: () => refetchOrders(),
+    },
+  ).mutate;
+  const updateOrder = recommendedPerm('Permission:Order:Update')?.useMutation(
+    'put',
+    '/api/Order/{id}',
+    {
+      onSuccess: () => refetchOrders(),
+    },
+  ).mutate;
+  const deleteOrder = recommendedPerm('Permission:Order:Delete')?.useMutation(
+    'delete',
+    '/api/Order/{id}',
+    {
+      onSuccess: () => refetchOrders(),
+    },
+  ).mutate;
 
   const handleSubmit = (values: Order, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createOrder) {
       createOrder({ body: values });
-    } else {
+    } else if (mode === 'edit' && updateOrder) {
       updateOrder({ params: { path: { id: values.id } }, body: values });
     }
   };
@@ -246,10 +262,10 @@ export const OrderManager = () => {
       tableColumns={tableColumns}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(o) => deleteOrder({ params: { path: { id: o.id } } })}
-      canCreate={recommended.Order.Create}
-      canEdit={recommended.Order.Update}
-      canDelete={recommended.Order.Delete}
+      onDelete={deleteOrder ? (o) => deleteOrder({ params: { path: { id: o.id } } }) : undefined}
+      canCreate={!!createOrder}
+      canEdit={!!updateOrder}
+      canDelete={!!deleteOrder}
     />
   );
 };

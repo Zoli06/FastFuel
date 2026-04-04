@@ -1,13 +1,12 @@
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.ts';
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 // TODO: Remove this or at least extract to a helper
 const maxLength = 100;
@@ -32,11 +31,11 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const { recommended } = usePagePermissions('RestaurantManager');
+  const { necessaryPerm, recommendedPerm } = $api('RestaurantManager');
 
-  const { data: restaurants, refetch: refetchRestaurants } = useSuspenseQuery(
-    apiClient.queryOptions('get', '/api/Restaurant'),
-  );
+  const [{ data: restaurants = [], refetch: refetchRestaurants }] = useConditionalSuspenseQueries([
+    necessaryPerm('Permission:Restaurant:Read').queryOptions('get', '/api/Restaurant'),
+  ]);
 
   type Restaurant = (typeof restaurants)[number];
 
@@ -164,20 +163,32 @@ export const RestaurantManager = () => {
     },
   ];
 
-  const { mutate: createRestaurant } = apiClient.useMutation('post', '/api/Restaurant', {
-    onSuccess: () => refetchRestaurants(),
-  });
-  const { mutate: updateRestaurant } = apiClient.useMutation('put', '/api/Restaurant/{id}', {
-    onSuccess: () => refetchRestaurants(),
-  });
-  const { mutate: deleteRestaurant } = apiClient.useMutation('delete', '/api/Restaurant/{id}', {
-    onSuccess: () => refetchRestaurants(),
-  });
+  const createRestaurant = recommendedPerm('Permission:Restaurant:Create')?.useMutation(
+    'post',
+    '/api/Restaurant',
+    {
+      onSuccess: () => refetchRestaurants(),
+    },
+  ).mutate;
+  const updateRestaurant = recommendedPerm('Permission:Restaurant:Update')?.useMutation(
+    'put',
+    '/api/Restaurant/{id}',
+    {
+      onSuccess: () => refetchRestaurants(),
+    },
+  ).mutate;
+  const deleteRestaurant = recommendedPerm('Permission:Restaurant:Delete')?.useMutation(
+    'delete',
+    '/api/Restaurant/{id}',
+    {
+      onSuccess: () => refetchRestaurants(),
+    },
+  ).mutate;
 
   const handleSubmit = (values: Restaurant, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createRestaurant) {
       createRestaurant({ body: values });
-    } else {
+    } else if (mode === 'edit' && updateRestaurant) {
       updateRestaurant({ params: { path: { id: values.id } }, body: values });
     }
   };
@@ -203,10 +214,12 @@ export const RestaurantManager = () => {
         },
       }}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteRestaurant({ params: { path: { id: r.id } } })}
-      canCreate={recommended.Restaurant.Create}
-      canEdit={recommended.Restaurant.Update}
-      canDelete={recommended.Restaurant.Delete}
+      onDelete={
+        deleteRestaurant ? (r) => deleteRestaurant({ params: { path: { id: r.id } } }) : undefined
+      }
+      canCreate={!!createRestaurant}
+      canEdit={!!updateRestaurant}
+      canDelete={!!deleteRestaurant}
     />
   );
 };

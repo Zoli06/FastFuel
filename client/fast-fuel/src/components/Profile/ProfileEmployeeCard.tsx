@@ -1,17 +1,18 @@
 import { Card, Group, Stack, Text } from '@mantine/core';
-import type { components } from '../../types/api.ts';
-import { apiClient } from '../../lib/api-client.ts';
+import type { components } from '../../types/api-schema.generated.ts';
+import { $api } from '../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 
 type EmployeeData = components['schemas']['EmployeeResponseDto'];
 
 export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
-  const { recommended } = usePagePermissions('Profile');
+  const { recommendedPerm } = $api('Profile');
+  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
 
   const [{ data: restaurants }, { data: stationCategories }] = useConditionalSuspenseQueries([
-    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
+    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
   ]);
 
   return (
@@ -20,7 +21,7 @@ export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
         Employment details
       </Text>
       <Stack gap="xs">
-        {recommended.Restaurant.Read && (
+        {restaurantReadApi && (
           <Group>
             <Text size="sm" c="dimmed" w={160}>
               Working at
@@ -31,7 +32,7 @@ export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
             </Text>
           </Group>
         )}
-        {recommended.StationCategory.Read && (
+        {stationCategoryReadApi && (
           <Group>
             <Text size="sm" c="dimmed" w={160}>
               Station categories

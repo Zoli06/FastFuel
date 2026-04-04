@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run generate:api & vite",
+    "dev": "npm run generate & vite",
     "dev:no-api": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -12,7 +12,9 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test:ts": "tsc --noEmit",
-    "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api.d.ts --properties-required-by-default"
+    "generate": "npm run generate:api && npm run generate:page-permissions",
+    "generate:api": "openapi-typescript http://localhost:5249/swagger/v1/swagger.json -o ./src/types/api-schema.generated.ts --properties-required-by-default",
+    "generate:page-permissions": "node ./src/generate-page-permission.ts --openapi http://localhost:5249/swagger/v1/swagger.json --permissions http://localhost:5249/api/Page --out src/types/page-permissions.generated.ts"
   },
   "dependencies": {
     "@mantine/core": "^8.3.18",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@types/node": "^25.5.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",

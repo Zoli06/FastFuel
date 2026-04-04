@@ -5,26 +5,26 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query';
 
-type ResultForOptions<T> = T extends false
+type ResultForOptions<T> = T extends undefined
   ? UseQueryResult<undefined>
   : T extends { queryFn: (...args: never[]) => infer TResult }
     ? UseQueryResult<Awaited<TResult>>
     : UseQueryResult;
 
-export const useConditionalSuspenseQueries = <const T extends readonly (object | false)[]>(
+export const useConditionalSuspenseQueries = <const T extends readonly (object | undefined)[]>(
   queries: T,
 ): { [K in keyof T]: ResultForOptions<T[K]> } => {
   const queryClient = useQueryClient();
 
   const results = useQueries({
     queries: queries.map((q, i) =>
-      q === false ? { queryKey: ['__skipped__', i], queryFn: () => null, enabled: false } : q,
+      q === undefined ? { queryKey: ['__skipped__', i], enabled: false } : q,
     ) as (UseQueryOptions & { queryKey: readonly unknown[] })[],
   });
 
   for (let i = 0; i < queries.length; i++) {
     const q = queries[i];
-    if (q !== false && results[i].isPending) {
+    if (q !== undefined && results[i].isPending) {
       const cachedQuery = queryClient
         .getQueryCache()
         .find({ queryKey: (q as { queryKey: readonly unknown[] }).queryKey });

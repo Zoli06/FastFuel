@@ -190,6 +190,14 @@ public static class PagePermissionCatalog
                         "Permission:StationCategory:Read"
                     ],
                     []
+                ),
+                [Page.OrderHistory] =
+                (
+                    [
+                        "Permission:Food:Read", "Permission:Menu:Read", "Permission:Restaurant:Read"
+                    ],
+                    [],
+                    []
                 )
             };
 }

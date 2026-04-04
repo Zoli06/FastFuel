@@ -12,14 +12,13 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { useSuspenseQueries } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
-import type { components } from '../../types/api';
-import { apiClient } from '../../lib/api-client.ts';
+import type { components } from '../../types/api-schema.generated.ts';
+import { $api } from '../../lib/api.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
-import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
+import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 
 type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
@@ -189,13 +188,15 @@ const OrderCard = ({
 type Category = 'Pending' | 'InProgress' | 'Ready';
 
 export const StationTasks = ({ stationId }: StationTasksProps) => {
-  const { recommended } = usePagePermissions('StationTasks');
+  const { necessaryPerm, recommendedPerm } = $api('StationTasks');
+  const stationReadApi = recommendedPerm('Permission:Station:Read');
+  const updateStatusApi = recommendedPerm('Permission:Order:UpdateStatus');
   const isWideScreen = useMediaQuery('(min-width: 1400px)');
   const [selectedCategory, setSelectedCategory] = useState<Category>('Pending');
 
-  const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useSuspenseQueries({
-    queries: [
-      apiClient.queryOptions(
+  const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useConditionalSuspenseQueries(
+    [
+      necessaryPerm('Permission:Station:ViewTasks').queryOptions(
         'get',
         '/api/Station/{id}/tasks',
         {
@@ -205,21 +206,23 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
           refetchInterval: 2500,
         },
       ),
-      apiClient.queryOptions('get', '/api/Station/{id}', {
+      stationReadApi?.queryOptions('get', '/api/Station/{id}', {
         params: { path: { id: stationId } },
       }),
-    ] as const,
-  });
+    ],
+  );
 
-  const { mutate: updateStatus } = apiClient.useMutation('put', '/api/Order/{id}/status', {
-    onSuccess: refetchTasks,
-  });
+  const updateStatus = updateStatusApi
+    ? updateStatusApi.useMutation('put', '/api/Order/{id}/status', {
+        onSuccess: refetchTasks,
+      }).mutate
+    : undefined;
 
   const handleAdvance = (id: number, status: OrderStatus) => {
-    updateStatus({ params: { path: { id } }, body: status });
+    updateStatus?.({ params: { path: { id } }, body: status });
   };
 
-  const tasksArray: StationTask[] = Array.isArray(tasks) ? tasks : [tasks];
+  const tasksArray: StationTask[] = Array.isArray(tasks) ? tasks : tasks ? [tasks] : [];
   const allOrders = tasksArray.flatMap((t) => t.orders);
   const pendingOrders = allOrders.filter((o) => o.status === 'Pending');
   const inProgressOrders = allOrders.filter((o) => o.status === 'InProgress');
@@ -228,7 +231,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
   if (allOrders.length === 0) {
     return (
       <>
-        <Header title={`Tasks: ${station.name}`} />
+        <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
         <Box p="xl" pb={80}>
           <Text ta="center" c="dimmed" fz="xl">
             No pending tasks
@@ -241,7 +244,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
 
   return (
     <>
-      <Header title={`Tasks: ${station.name}`} />
+      <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
       <Box p="md" pb={80}>
         {!isWideScreen && (
           <Box mb="md">
@@ -279,7 +282,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                         key={order.id}
                         order={order}
                         onAdvance={handleAdvance}
-                        canAdvanceStatus={recommended.Order.UpdateStatus}
+                        canAdvanceStatus={!!updateStatus}
                       />
                     ))
                   )}
@@ -306,7 +309,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                         key={order.id}
                         order={order}
                         onAdvance={handleAdvance}
-                        canAdvanceStatus={recommended.Order.UpdateStatus}
+                        canAdvanceStatus={!!updateStatus}
                       />
                     ))
                   )}
@@ -333,7 +336,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                         key={order.id}
                         order={order}
                         onAdvance={handleAdvance}
-                        canAdvanceStatus={recommended.Order.UpdateStatus}
+                        canAdvanceStatus={!!updateStatus}
                       />
                     ))
                   )}
@@ -363,7 +366,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                           key={order.id}
                           order={order}
                           onAdvance={handleAdvance}
-                          canAdvanceStatus={recommended.Order.UpdateStatus}
+                          canAdvanceStatus={!!updateStatus}
                         />
                       ))
                     )}
@@ -392,7 +395,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                           key={order.id}
                           order={order}
                           onAdvance={handleAdvance}
-                          canAdvanceStatus={recommended.Order.UpdateStatus}
+                          canAdvanceStatus={!!updateStatus}
                         />
                       ))
                     )}
@@ -421,7 +424,7 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
                           key={order.id}
                           order={order}
                           onAdvance={handleAdvance}
-                          canAdvanceStatus={recommended.Order.UpdateStatus}
+                          canAdvanceStatus={!!updateStatus}
                         />
                       ))
                     )}

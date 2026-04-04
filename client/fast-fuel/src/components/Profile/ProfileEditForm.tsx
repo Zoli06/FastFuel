@@ -11,8 +11,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { apiClient } from '../../lib/api-client.ts';
-import type { components } from '../../types/api.ts';
+import type { components } from '../../types/api-schema.generated.ts';
 
 interface ProfileEditFormProps {
   name: string;
@@ -37,27 +36,32 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
     if (email) setFieldValue('email', email);
   }, [email, setFieldValue]);
 
-  const { mutate: updateCustomer } = apiClient.useMutation('put', '/api/Customer/me', {
-    onSuccess: () => {
+  const handleSubmit = form.onSubmit(async (values) => {
+    const payload = {
+      name: values.name,
+      userName: values.userName,
+      email: values.email,
+      themeId: null,
+      password: values.password || null,
+    } as components['schemas']['CustomerRequestDto'];
+
+    const response = await fetch('http://localhost:5249/api/Customer/me', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
       onSaved();
       notifications.show({
         title: 'Profile updated',
         message: 'Your changes have been saved.',
         color: 'green',
       });
-    },
-  });
-
-  const handleSubmit = form.onSubmit((values) => {
-    updateCustomer({
-      body: {
-        name: values.name,
-        userName: values.userName,
-        email: values.email,
-        themeId: null,
-        password: values.password || null,
-      } as components['schemas']['CustomerRequestDto'],
-    });
+    }
   });
 
   return (

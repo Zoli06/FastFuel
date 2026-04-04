@@ -25,8 +25,6 @@ public class AllergyMapper(FastFuelDbContext dbContext)
         {
             Name = dto.Name,
             Message = dto.Message,
-            // TODO: Ask Timi whether is this good practice
-            // The other alternative is to load Ingredients in the service layer
             Ingredients = dbContext.Ingredients
                 .Where(i => dto.IngredientIds.Contains(i.Id))
                 .ToList()
