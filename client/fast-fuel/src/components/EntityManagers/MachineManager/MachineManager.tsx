@@ -104,7 +104,6 @@ export const MachineManager = () => {
   const toRequestDto = (values: MachineFormValues) => ({
     name: values.name,
     userName: values.userName,
-    themeId: null,
     password: values.password ?? null,
     locatedAtRestaurantId: values.locatedAtRestaurantId,
   });

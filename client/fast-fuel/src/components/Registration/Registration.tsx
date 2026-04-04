@@ -20,7 +20,6 @@ export const Register = () => {
       name: '',
       email: '',
       userName: '',
-      themeId: null,
       password: '',
       confirmPassword: '',
     } as RegisterFormValues,
@@ -46,7 +45,6 @@ export const Register = () => {
         name: values.name,
         email: values.email,
         userName: values.userName,
-        themeId: values.themeId,
         password: values.password,
       },
     });

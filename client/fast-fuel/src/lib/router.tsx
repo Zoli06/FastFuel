@@ -25,6 +25,7 @@ import { OrderCreator } from '../components/OrderCreator/OrderCreator.tsx';
 import { OrderHistoryPage } from '../pages/OrderHistoryPage.tsx';
 import { ProfilePage } from '../pages/ProfilePage.tsx';
 import { MyShiftsPage } from '../pages/MyShiftsPage.tsx';
+import { AboutPage } from '../pages/AboutPage.tsx';
 
 type RouteHandle = {
   header?: {
@@ -80,6 +81,11 @@ export const router = createBrowserRouter([
         path: 'profile',
         element: <ProfilePage />,
         handle: withHeader('Profile'),
+      },
+      {
+        path: 'about',
+        element: <AboutPage />,
+        handle: withHeader('About'),
       },
       {
         path: 'manage',
