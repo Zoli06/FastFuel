@@ -12,7 +12,7 @@ namespace FastFuel.Features.Pages.Controllers;
 public class PageController(IPageService pageService) : ControllerBase
 {
     /// <summary>
-    ///     Gets static page permission metadata used by the frontend.
+    /// Gets static page permission metadata used by the frontend.
     /// </summary>
     /// <returns>All page permission requirements.</returns>
     [HttpGet]
