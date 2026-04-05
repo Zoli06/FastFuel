@@ -2,7 +2,7 @@ import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
 
@@ -20,16 +20,16 @@ const authButtonConfig = {
 export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const navigate = useNavigate();
   const shouldLoadCurrentUser = authButton === 'Logout';
-  const { noPerm, invalidateCache } = $api(null);
+  const { useNoPerm, invalidateApiCache } = useApi(null);
 
   const { data: currentUser, refetch: refetchCurrentUser } = useQuery({
-    ...noPerm().queryOptions('get', '/api/User/me'),
+    ...useNoPerm().queryOptions('get', '/api/User/me'),
     enabled: shouldLoadCurrentUser,
   });
 
-  const { mutate: logout } = noPerm().useMutation('post', '/api/Auth/logout', {
+  const { mutate: logout } = useNoPerm().useMutation('post', '/api/Auth/logout', {
     onSuccess: () => {
-      invalidateCache();
+      invalidateApiCache();
       navigate('/login');
     },
   });

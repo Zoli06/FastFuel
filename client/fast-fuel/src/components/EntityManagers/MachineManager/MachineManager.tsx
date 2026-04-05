@@ -1,17 +1,17 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MachineManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('MachineManager');
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('MachineManager');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
 
   const [{ data: restaurants = [] }, { data: machines = [], refetch: refetchMachines }] =
     useConditionalSuspenseQueries([
       restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
-      necessaryPerm('Permission:Machine:Read').queryOptions('get', '/api/Machine'),
+      useNecessaryPerm('Permission:Machine:Read').queryOptions('get', '/api/Machine'),
     ]);
 
   type Machine = (typeof machines)[number];
@@ -79,21 +79,21 @@ export const MachineManager = () => {
     } satisfies Field,
   ];
 
-  const createMachine = recommendedPerm('Permission:Machine:Create')?.useMutation(
+  const createMachine = useRecommendedPerm('Permission:Machine:Create')?.useMutation(
     'post',
     '/api/Machine',
     {
       onSuccess: () => refetchMachines(),
     },
   ).mutate;
-  const updateMachine = recommendedPerm('Permission:Machine:Update')?.useMutation(
+  const updateMachine = useRecommendedPerm('Permission:Machine:Update')?.useMutation(
     'put',
     '/api/Machine/{id}',
     {
       onSuccess: () => refetchMachines(),
     },
   ).mutate;
-  const deleteMachine = recommendedPerm('Permission:Machine:Delete')?.useMutation(
+  const deleteMachine = useRecommendedPerm('Permission:Machine:Delete')?.useMutation(
     'delete',
     '/api/Machine/{id}',
     {

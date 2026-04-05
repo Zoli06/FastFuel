@@ -4,8 +4,8 @@ import createClient from 'openapi-react-query';
 import { router } from './router.tsx';
 import { notifications } from '@mantine/notifications';
 import type {
-  Api,
-  ApiWithoutSpecifiedPage,
+  UseApi,
+  UseApiWithoutSpecifiedPage,
   HooksForPerm,
   HooksWithNoPerm,
   PageName,
@@ -37,7 +37,7 @@ const errorResponseMiddleware: Middleware = {
       return response;
     }
     if (response.status === 403 && !response.url.includes('/api/Permission/my')) {
-      $api(null).invalidateCache();
+      invalidateApiCache();
     }
     if (response.url.includes('/api/User/me') || response.url.includes('/api/Auth/login')) {
       return response;
@@ -56,6 +56,8 @@ const errorResponseMiddleware: Middleware = {
 
 export const queryClient = new QueryClient();
 
+export const invalidateApiCache = () => queryClient.invalidateQueries();
+
 const fetchClient = createFetchClient<paths>({
   baseUrl: API_BASE_URL,
   credentials: 'include',
@@ -64,33 +66,31 @@ fetchClient.use(authenticationMiddleware, errorResponseMiddleware);
 
 const apiClient = createClient<paths>(fetchClient);
 
-export function $api<P extends PageName>(page: P): Api<P>;
-export function $api(page: null): ApiWithoutSpecifiedPage;
-export function $api() {
-  const noPerm = (): HooksWithNoPerm => apiClient as unknown as HooksWithNoPerm;
+export function useApi<P extends PageName>(page: P): UseApi<P>;
+export function useApi(page: null): UseApiWithoutSpecifiedPage;
+export function useApi() {
+  const useNoPerm = (): HooksWithNoPerm => apiClient as unknown as HooksWithNoPerm;
 
-  const hasPerm = (perm: PermissionName): boolean =>
-    noPerm().useSuspenseQuery('get', '/api/Permission/my').data.includes(perm);
+  const useHasPerm = (perm: PermissionName): boolean =>
+    useNoPerm().useSuspenseQuery('get', '/api/Permission/my').data.includes(perm);
 
-  const necessaryPerm = <Perm extends PageNecessaryPermissions[NonNullable<PageName>]>(
+  const useNecessaryPerm = <Perm extends PageNecessaryPermissions[NonNullable<PageName>]>(
     perm: Perm,
   ): HooksForPerm<Perm> => {
-    if (!hasPerm(perm)) {
+    if (!useHasPerm(perm)) {
       throw new Error('User does not have necessary permission: ' + perm);
     }
     return apiClient as unknown as HooksForPerm<Perm>;
   };
 
-  const recommendedPerm = <Perm extends PageRecommendedPermissions[NonNullable<PageName>]>(
+  const useRecommendedPerm = <Perm extends PageRecommendedPermissions[NonNullable<PageName>]>(
     perm: Perm,
   ): HooksForPerm<Perm> | null => {
-    if (!hasPerm(perm)) {
+    if (!useHasPerm(perm)) {
       return null;
     }
     return apiClient as unknown as HooksForPerm<Perm>;
   };
 
-  const invalidateCache = () => queryClient.invalidateQueries();
-
-  return { noPerm, necessaryPerm, recommendedPerm, invalidateCache };
+  return { useNoPerm, useNecessaryPerm, useRecommendedPerm, invalidateApiCache };
 }

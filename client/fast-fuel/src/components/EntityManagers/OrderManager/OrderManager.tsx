@@ -1,16 +1,16 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const OrderManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('OrderManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('OrderManager');
 
-  const menuReadApi = recommendedPerm('Permission:Menu:Read');
-  const foodReadApi = recommendedPerm('Permission:Food:Read');
-  const userReadApi = recommendedPerm('Permission:User:Read');
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const menuReadApi = useRecommendedPerm('Permission:Menu:Read');
+  const foodReadApi = useRecommendedPerm('Permission:Food:Read');
+  const userReadApi = useRecommendedPerm('Permission:User:Read');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
 
   const [
     { data: menus = [] },
@@ -23,7 +23,7 @@ export const OrderManager = () => {
     foodReadApi?.queryOptions('get', '/api/Food'),
     userReadApi?.queryOptions('get', '/api/User'),
     restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
-    necessaryPerm('Permission:Order:Read').queryOptions('get', '/api/Order'),
+    useNecessaryPerm('Permission:Order:Read').queryOptions('get', '/api/Order'),
   ]);
 
   type Order = (typeof orders)[number];
@@ -224,21 +224,21 @@ export const OrderManager = () => {
       : []),
   ];
 
-  const createOrder = recommendedPerm('Permission:Order:Create')?.useMutation(
+  const createOrder = useRecommendedPerm('Permission:Order:Create')?.useMutation(
     'post',
     '/api/Order',
     {
       onSuccess: () => refetchOrders(),
     },
   ).mutate;
-  const updateOrder = recommendedPerm('Permission:Order:Update')?.useMutation(
+  const updateOrder = useRecommendedPerm('Permission:Order:Update')?.useMutation(
     'put',
     '/api/Order/{id}',
     {
       onSuccess: () => refetchOrders(),
     },
   ).mutate;
-  const deleteOrder = recommendedPerm('Permission:Order:Delete')?.useMutation(
+  const deleteOrder = useRecommendedPerm('Permission:Order:Delete')?.useMutation(
     'delete',
     '/api/Order/{id}',
     {

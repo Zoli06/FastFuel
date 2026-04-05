@@ -1,14 +1,14 @@
 import { Card, Group, Stack, Text } from '@mantine/core';
 import type { components } from '../../types/api-schema.generated.ts';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 
 type EmployeeData = components['schemas']['EmployeeResponseDto'];
 
 export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
-  const { recommendedPerm } = $api('Profile');
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
-  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
+  const { useRecommendedPerm } = useApi('Profile');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
+  const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
 
   const [{ data: restaurants }, { data: stationCategories }] = useConditionalSuspenseQueries([
     restaurantReadApi?.queryOptions('get', '/api/Restaurant'),

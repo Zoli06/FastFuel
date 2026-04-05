@@ -1,18 +1,18 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import { getDuration, normalizeDateTime, parseAsUtcDate } from '../../../lib/time.ts';
 
 export const ShiftManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('ShiftManager');
-  const employeeReadApi = recommendedPerm('Permission:Employee:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('ShiftManager');
+  const employeeReadApi = useRecommendedPerm('Permission:Employee:Read');
 
   const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
     useConditionalSuspenseQueries([
       employeeReadApi?.queryOptions('get', '/api/Employee'),
-      necessaryPerm('Permission:Shift:Read').queryOptions('get', '/api/Shift'),
+      useNecessaryPerm('Permission:Shift:Read').queryOptions('get', '/api/Shift'),
     ]);
 
   type Shift = (typeof shifts)[number];
@@ -111,21 +111,21 @@ export const ShiftManager = () => {
     },
   ];
 
-  const createShift = recommendedPerm('Permission:Shift:Create')?.useMutation(
+  const createShift = useRecommendedPerm('Permission:Shift:Create')?.useMutation(
     'post',
     '/api/Shift',
     {
       onSuccess: () => refetchShifts(),
     },
   ).mutate;
-  const updateShift = recommendedPerm('Permission:Shift:Update')?.useMutation(
+  const updateShift = useRecommendedPerm('Permission:Shift:Update')?.useMutation(
     'put',
     '/api/Shift/{id}',
     {
       onSuccess: () => refetchShifts(),
     },
   ).mutate;
-  const deleteShift = recommendedPerm('Permission:Shift:Delete')?.useMutation(
+  const deleteShift = useRecommendedPerm('Permission:Shift:Delete')?.useMutation(
     'delete',
     '/api/Shift/{id}',
     {

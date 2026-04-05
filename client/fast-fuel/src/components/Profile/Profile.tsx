@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Stack } from '@mantine/core';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import { ProfileHeader } from './ProfileHeader.tsx';
 import { ProfileEditForm } from './ProfileEditForm.tsx';
@@ -8,11 +8,12 @@ import { ProfileEmployeeCard } from './ProfileEmployeeCard.tsx';
 import { ProfileMachineCard } from './ProfileMachineCard.tsx';
 
 export const Profile = () => {
-  const { noPerm, recommendedPerm } = $api('Profile');
-  const customerUpdateSelfApi = recommendedPerm('Permission:Customer:UpdateSelf');
+  const { useNoPerm, useRecommendedPerm } = useApi('Profile');
+  const noPermApi = useNoPerm();
+  const customerUpdateSelfApi = useRecommendedPerm('Permission:Customer:UpdateSelf');
 
   const { data: currentUser, refetch: refetchCurrentUser } = useSuspenseQuery(
-    noPerm().queryOptions('get', '/api/User/me'),
+    noPermApi.queryOptions('get', '/api/User/me'),
   );
 
   const isCustomer = currentUser.userType === 'Customer';
@@ -26,9 +27,9 @@ export const Profile = () => {
     { data: employeeData },
     { data: machineData },
   ] = useConditionalSuspenseQueries([
-    isCustomer ? noPerm().queryOptions('get', '/api/Customer/me') : undefined,
-    isEmployee ? noPerm().queryOptions('get', '/api/Employee/me') : undefined,
-    isMachine ? noPerm().queryOptions('get', '/api/Machine/me') : undefined,
+    isCustomer ? noPermApi.queryOptions('get', '/api/Customer/me') : undefined,
+    isEmployee ? noPermApi.queryOptions('get', '/api/Employee/me') : undefined,
+    isMachine ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
   ]);
 
   const email = customerData?.email ?? '';

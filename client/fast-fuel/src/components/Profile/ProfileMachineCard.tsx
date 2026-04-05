@@ -1,13 +1,13 @@
 import { Card, Group, Stack, Text } from '@mantine/core';
 import type { components } from '../../types/api-schema.generated.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 
 type MachineData = components['schemas']['MachineResponseDto'];
 
 export const ProfileMachineCard = ({ data }: { data: MachineData }) => {
-  const { recommendedPerm } = $api('Profile');
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const { useRecommendedPerm } = useApi('Profile');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
 
   const [{ data: restaurants }] = useConditionalSuspenseQueries([
     restaurantReadApi?.queryOptions('get', '/api/Restaurant'),

@@ -1,17 +1,17 @@
-﻿import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const FoodManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('FoodManager');
-  const ingredientReadApi = recommendedPerm('Permission:Ingredient:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('FoodManager');
+  const ingredientReadApi = useRecommendedPerm('Permission:Ingredient:Read');
 
   const [{ data: ingredients = [] }, { data: foods = [], refetch: refetchFoods }] =
     useConditionalSuspenseQueries([
       ingredientReadApi?.queryOptions('get', '/api/Ingredient'),
-      necessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
+      useNecessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
     ]);
 
   type Food = (typeof foods)[number];
@@ -136,17 +136,21 @@ export const FoodManager = () => {
       : []),
   ];
 
-  const createFood = recommendedPerm('Permission:Food:Create')?.useMutation('post', '/api/Food', {
-    onSuccess: () => refetchFoods(),
-  }).mutate;
-  const updateFood = recommendedPerm('Permission:Food:Update')?.useMutation(
+  const createFood = useRecommendedPerm('Permission:Food:Create')?.useMutation(
+    'post',
+    '/api/Food',
+    {
+      onSuccess: () => refetchFoods(),
+    },
+  ).mutate;
+  const updateFood = useRecommendedPerm('Permission:Food:Update')?.useMutation(
     'put',
     '/api/Food/{id}',
     {
       onSuccess: () => refetchFoods(),
     },
   ).mutate;
-  const deleteFood = recommendedPerm('Permission:Food:Delete')?.useMutation(
+  const deleteFood = useRecommendedPerm('Permission:Food:Delete')?.useMutation(
     'delete',
     '/api/Food/{id}',
     {

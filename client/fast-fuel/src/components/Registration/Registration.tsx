@@ -1,7 +1,7 @@
 import { Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Paper } from '../common/Paper/Paper';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 import type { components } from '../../types/api-schema.generated.ts';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ type RegisterFormValues = components['schemas']['CustomerRequestDto'] & {
 
 export const Register = () => {
   const navigate = useNavigate();
-  const { noPerm, invalidateCache } = $api(null);
+  const { useNoPerm, invalidateApiCache } = useApi(null);
 
   const form = useForm<RegisterFormValues>({
     mode: 'uncontrolled',
@@ -29,12 +29,12 @@ export const Register = () => {
     },
   });
 
-  const { mutateAsync: register, isPending: isRegistering } = noPerm().useMutation(
+  const { mutateAsync: register, isPending: isRegistering } = useNoPerm().useMutation(
     'post',
     '/api/Customer',
   );
 
-  const { mutateAsync: login, isPending: isLoggingIn } = noPerm().useMutation(
+  const { mutateAsync: login, isPending: isLoggingIn } = useNoPerm().useMutation(
     'post',
     '/api/Auth/login',
   );
@@ -56,7 +56,7 @@ export const Register = () => {
       },
       params: { query: { useCookies: true, useSessionCookies: true } },
     });
-    invalidateCache();
+    invalidateApiCache();
     navigate('/', { replace: true });
     form.reset();
   };
