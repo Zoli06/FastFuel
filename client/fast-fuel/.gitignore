@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-src/types/api.d.ts
+*.generated.ts
 package-lock.json

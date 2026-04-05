@@ -1,12 +1,14 @@
 import { type ColumnDefinition, EntityTable } from '../EntityManager/EntityTable/EntityTable.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { apiClient } from '../../lib/api-client.ts';
+import { $api } from '../../lib/api.ts';
 import { getDuration, parseAsUtcDate } from '../../lib/time.ts';
 import { Paper } from '../common/Paper/Paper.tsx';
 
 export const MyShifts = () => {
+  const { noPerm } = $api(null);
+
   const [{ data: shifts = [] }] = useConditionalSuspenseQueries([
-    apiClient.queryOptions('get', '/api/Shift/my'),
+    noPerm().queryOptions('get', '/api/Shift/my'),
   ]);
 
   type Shift = (typeof shifts)[number];

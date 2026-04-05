@@ -1,19 +1,19 @@
 import { Card, Group, Stack, Text } from '@mantine/core';
-import type { components } from '../../types/api.ts';
-import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
+import type { components } from '../../types/api-schema.generated.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { apiClient } from '../../lib/api-client.ts';
+import { $api } from '../../lib/api.ts';
 
 type MachineData = components['schemas']['MachineResponseDto'];
 
 export const ProfileMachineCard = ({ data }: { data: MachineData }) => {
-  const { recommended } = usePagePermissions('Profile');
+  const { recommendedPerm } = $api('Profile');
+  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
 
   const [{ data: restaurants }] = useConditionalSuspenseQueries([
-    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
+    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
   ]);
 
-  if (!recommended.Restaurant.Read) return null;
+  if (!restaurantReadApi) return null;
 
   return (
     <Card withBorder radius="md" p="lg">

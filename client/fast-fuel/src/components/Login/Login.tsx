@@ -2,33 +2,32 @@ import { Anchor, Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper';
-import { apiClient, triggerPermissionsRefresh } from '../../lib/api-client';
-import type { components } from '../../types/api';
+import { $api } from '../../lib/api.ts';
+import type { components } from '../../types/api-schema.generated.ts';
 
 type LoginValues = components['schemas']['LoginRequestDto'];
 
 export const Login = () => {
   const navigate = useNavigate();
+  const { noPerm, invalidateCache } = $api(null);
 
   const form = useForm<LoginValues>({
     initialValues: { userName: '', password: '' },
   });
 
-  const { mutate: login, isPending } = apiClient.useMutation('post', '/api/Auth/login', {
-    onSuccess: () => {
-      triggerPermissionsRefresh();
-      navigate('/', { replace: true });
-    },
-    onError: () => {
-      form.setFieldError('password', 'Incorrect username or password');
-    },
-  });
+  const { mutateAsync: login, isPending } = noPerm().useMutation('post', '/api/Auth/login');
 
-  const handleSubmit = (values: LoginValues) => {
-    login({
-      body: values,
-      params: { query: { useCookies: true, useSessionCookies: true } },
-    });
+  const handleSubmit = async (values: LoginValues) => {
+    try {
+      await login({
+        body: values,
+        params: { query: { useCookies: true, useSessionCookies: true } },
+      });
+      invalidateCache();
+      navigate('/', { replace: true });
+    } catch {
+      form.setFieldError('password', 'Incorrect username or password');
+    }
   };
 
   return (

@@ -11,16 +11,18 @@ import { Paper } from '../common/Paper/Paper.tsx';
 import { Link } from 'react-router-dom';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { IconChevronRight, IconShield } from '@tabler/icons-react';
+import { $api } from '../../lib/api.ts';
 import {
   type Group as PageGroup,
   type PageDefinition,
   getPageDefinitions,
 } from '../../lib/page-definitions.ts';
-import { myRolesQueryOptions } from '../../lib/api-client.ts';
 
 export const HomeMenu = () => {
-  const { data: roles } = useSuspenseQuery(myRolesQueryOptions());
-  const accessiblePages = Array.from(new Set(roles.flatMap((role) => role.pages)));
+  const { noPerm } = $api(null);
+  const { data: roles } = useSuspenseQuery(noPerm().queryOptions('get', '/api/Role/my'));
+  // random bug fix, works ig
+  const accessiblePages = Array.from(new Set((roles ?? []).flatMap((role) => role.pages)));
   const pageDefinitions = getPageDefinitions(accessiblePages);
 
   const MenuCard = ({

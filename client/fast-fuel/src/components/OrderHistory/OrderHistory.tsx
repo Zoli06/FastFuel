@@ -2,26 +2,30 @@ import { useState } from 'react';
 import { Box, Group, Stack, Text } from '@mantine/core';
 import { IconShoppingBag } from '@tabler/icons-react';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { apiClient } from '../../lib/api-client.ts';
+import { $api } from '../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import { OrderHistoryFilters } from './OrderHistoryFilter.tsx';
 import { OrderHistoryList } from './OrderHistoryList.tsx';
-import { sortOrders, resolveItems } from './helpers.ts';
+import { resolveItems, sortOrders } from './helpers.ts';
 import type { OrderStatus, OrderSummary, SortKey } from './types.ts';
 
 export const OrderHistory = () => {
+  const { noPerm, necessaryPerm } = $api('OrderHistory');
+
+  const foodReadApi = necessaryPerm('Permission:Food:Read');
+  const menuReadApi = necessaryPerm('Permission:Menu:Read');
+  const restaurantReadApi = necessaryPerm('Permission:Restaurant:Read');
+
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date-desc');
-  const { data: rawOrders = [] } = useSuspenseQuery(
-    apiClient.queryOptions('get', '/api/Order/my' as '/api/Order'),
-  );
+  const { data: rawOrders = [] } = useSuspenseQuery(noPerm().queryOptions('get', '/api/Order/my'));
 
   const [{ data: foods = [] }, { data: menus = [] }, { data: restaurants = [] }] =
     useConditionalSuspenseQueries([
-      apiClient.queryOptions('get', '/api/Food'),
-      apiClient.queryOptions('get', '/api/Menu'),
-      apiClient.queryOptions('get', '/api/Restaurant'),
+      foodReadApi?.queryOptions('get', '/api/Food'),
+      menuReadApi?.queryOptions('get', '/api/Menu'),
+      restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
     ]);
 
   const foodMap = new Map(foods.map((f) => [f.id, f]));

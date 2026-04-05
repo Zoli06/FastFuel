@@ -19,7 +19,7 @@ const highlights = [
   },
 ];
 
-export const AboutPage = () => {
+export const About = () => {
   return (
     <Paper>
       <Stack gap="xl" pb={80}>

@@ -9,19 +9,21 @@ import {
   TextInput,
   ThemeIcon,
 } from '@mantine/core';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { pageDefinitions, type Page, type Permission } from '../../../lib/page-definitions.ts';
-import type { components } from '../../../types/api';
+import type { components } from '../../../types/api-schema.generated.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 
 export const RoleManager = () => {
-  const { recommended } = usePagePermissions('RoleManager');
-  const { data: pagePermissions = [] } = apiClient.useSuspenseQuery('get', '/api/Page');
+  const { noPerm, necessaryPerm, recommendedPerm } = $api('RoleManager');
+  type PageKey = keyof typeof pageDefinitions;
+  const { data: pagePermissions = [] } = noPerm().useSuspenseQuery('get', '/api/Page');
+  const userReadApi = recommendedPerm('Permission:User:Read');
+  const permissionReadApi = recommendedPerm('Permission:Permission:Read');
 
   const pagePermissionsByPage = Object.fromEntries(
     pagePermissions.map((entry) => [entry.page, entry]),
@@ -50,16 +52,16 @@ export const RoleManager = () => {
     { data: permissions = [] },
     { data: roles = [], refetch: refetchRoles },
   ] = useConditionalSuspenseQueries([
-    recommended.User.Read && apiClient.queryOptions('get', '/api/User'),
-    recommended.Permission.Read && apiClient.queryOptions('get', '/api/Permission'),
-    apiClient.queryOptions('get', '/api/Role'),
+    userReadApi?.queryOptions('get', '/api/User'),
+    permissionReadApi?.queryOptions('get', '/api/Permission'),
+    necessaryPerm('Permission:Role:Read').queryOptions('get', '/api/Role'),
   ]);
 
   type Role = (typeof roles)[number];
   type RoleFormValues = Pick<Role, 'id' | 'name' | 'permissions' | 'pages' | 'userIds'>;
 
   const pageEntries = (
-    Object.entries(pageDefinitions) as [Page, (typeof pageDefinitions)[Page]][]
+    Object.entries(pageDefinitions) as [PageKey, (typeof pageDefinitions)[PageKey]][]
   ).sort(([, left], [, right]) => left.displayName.localeCompare(right.displayName));
 
   const getMissingNecessaryPermissions = (pages: Page[], selectedPermissions: Permission[]) => {
@@ -91,7 +93,7 @@ export const RoleManager = () => {
     if (restrictedPages.length === 0) return undefined;
 
     const pageDescriptions = restrictedPages.map((page) => {
-      const definition = pageDefinitions[page];
+      const definition = pageDefinitions[page as PageKey];
       const roles = getPagePermissions(page).requiresDefaultRole.join(', ') || '-';
       return `${definition.displayName} (default roles: ${roles})`;
     });
@@ -136,7 +138,7 @@ export const RoleManager = () => {
         );
       },
     },
-    ...(recommended.Permission.Read
+    ...(permissionReadApi
       ? [
           {
             type: 'custom',
@@ -175,7 +177,7 @@ export const RoleManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(recommended.User.Read
+    ...(userReadApi
       ? [
           {
             type: 'custom',
@@ -357,15 +359,23 @@ export const RoleManager = () => {
     } satisfies Field,
   ];
 
-  const { mutate: createRole } = apiClient.useMutation('post', '/api/Role', {
+  const createRole = recommendedPerm('Permission:Role:Create')?.useMutation('post', '/api/Role', {
     onSuccess: () => refetchRoles(),
-  });
-  const { mutate: updateRole } = apiClient.useMutation('put', '/api/Role/{id}', {
-    onSuccess: () => refetchRoles(),
-  });
-  const { mutate: deleteRole } = apiClient.useMutation('delete', '/api/Role/{id}', {
-    onSuccess: () => refetchRoles(),
-  });
+  }).mutate;
+  const updateRole = recommendedPerm('Permission:Role:Update')?.useMutation(
+    'put',
+    '/api/Role/{id}',
+    {
+      onSuccess: () => refetchRoles(),
+    },
+  ).mutate;
+  const deleteRole = recommendedPerm('Permission:Role:Delete')?.useMutation(
+    'delete',
+    '/api/Role/{id}',
+    {
+      onSuccess: () => refetchRoles(),
+    },
+  ).mutate;
 
   const toRequestDto = (values: RoleFormValues, fallbackRole?: Role) => ({
     name: values.name,
@@ -399,9 +409,10 @@ export const RoleManager = () => {
   const canDeleteRole = (role: Role) => !role.isDefault && !role.isImmutable;
 
   const handleSubmit = (values: RoleFormValues, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createRole) {
       createRole({ body: toRequestDto(values) });
-    } else {
+    } else if (mode === 'edit') {
+      if (!updateRole) return;
       const role = roles.find((r) => r.id === values.id);
       if (role && !canEditRole(role)) return;
       updateRole({ params: { path: { id: values.id } }, body: toRequestDto(values, role) });
@@ -418,12 +429,13 @@ export const RoleManager = () => {
       validate={validateRole}
       onSubmit={handleSubmit}
       onDelete={(r) => {
+        if (!deleteRole) return;
         if (!canDeleteRole(r)) return;
         deleteRole({ params: { path: { id: r.id } } });
       }}
-      canCreate={recommended.Role.Create}
-      canEdit={recommended.Role.Update}
-      canDelete={recommended.Role.Delete}
+      canCreate={!!createRole}
+      canEdit={!!updateRole}
+      canDelete={!!deleteRole}
       canEditItem={canEditRole}
       canDeleteItem={canDeleteRole}
     />

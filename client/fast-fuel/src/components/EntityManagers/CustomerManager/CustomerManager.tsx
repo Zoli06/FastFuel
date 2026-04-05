@@ -1,9 +1,8 @@
-﻿import type { components } from '../../../types/api';
+﻿import type { components } from '../../../types/api-schema.generated.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 type Customer = components['schemas']['CustomerResponseDto'];
@@ -11,10 +10,10 @@ type Customer = components['schemas']['CustomerResponseDto'];
 type CustomerFormValues = Customer & { password?: string | null };
 
 export const CustomerManager = () => {
-  const { recommended } = usePagePermissions('CustomerManager');
+  const { noPerm, necessaryPerm, recommendedPerm } = $api('CustomerManager');
 
   const [{ data: customers = [], refetch: refetchCustomers }] = useConditionalSuspenseQueries([
-    apiClient.queryOptions('get', '/api/Customer'),
+    necessaryPerm('Permission:Customer:Read').queryOptions('get', '/api/Customer'),
   ]);
 
   const tableColumns: ColumnDefinition<Customer>[] = [
@@ -58,15 +57,23 @@ export const CustomerManager = () => {
     },
   ];
 
-  const { mutate: createCustomer } = apiClient.useMutation('post', '/api/Customer', {
+  const createCustomer = noPerm().useMutation('post', '/api/Customer', {
     onSuccess: () => refetchCustomers(),
-  });
-  const { mutate: updateCustomer } = apiClient.useMutation('put', '/api/Customer/{id}', {
-    onSuccess: () => refetchCustomers(),
-  });
-  const { mutate: deleteCustomer } = apiClient.useMutation('delete', '/api/Customer/{id}', {
-    onSuccess: () => refetchCustomers(),
-  });
+  }).mutate;
+  const updateCustomer = recommendedPerm('Permission:Customer:Update')?.useMutation(
+    'put',
+    '/api/Customer/{id}',
+    {
+      onSuccess: () => refetchCustomers(),
+    },
+  ).mutate;
+  const deleteCustomer = recommendedPerm('Permission:Customer:Delete')?.useMutation(
+    'delete',
+    '/api/Customer/{id}',
+    {
+      onSuccess: () => refetchCustomers(),
+    },
+  ).mutate;
 
   const toRequestDto = (values: CustomerFormValues) =>
     ({
@@ -80,7 +87,7 @@ export const CustomerManager = () => {
   const handleSubmit = (values: CustomerFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create') {
       createCustomer({ body: toRequestDto(values) });
-    } else {
+    } else if (updateCustomer) {
       updateCustomer({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
@@ -93,10 +100,12 @@ export const CustomerManager = () => {
       tableColumns={tableColumns as ColumnDefinition<CustomerFormValues>[]}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(e) => deleteCustomer({ params: { path: { id: e.id } } })}
+      onDelete={
+        deleteCustomer ? (e) => deleteCustomer({ params: { path: { id: e.id } } }) : undefined
+      }
       canCreate={true}
-      canEdit={recommended.Customer.Update}
-      canDelete={recommended.Customer.Delete}
+      canEdit={!!updateCustomer}
+      canDelete={!!deleteCustomer}
     />
   );
 };

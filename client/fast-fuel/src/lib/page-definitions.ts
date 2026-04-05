@@ -14,7 +14,7 @@ import {
   IconUser,
   IconUsers,
 } from '@tabler/icons-react';
-import type { components, operations } from '../types/api';
+import type { components, operations } from '../types/api-schema.generated.ts';
 
 export type Page = components['schemas']['Page'];
 export type Permission =

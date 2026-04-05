@@ -1,17 +1,17 @@
-﻿import { apiClient } from '../../../lib/api-client.ts';
-import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+﻿import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
+import { $api } from '../../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const AllergyManager = () => {
-  const { recommended } = usePagePermissions('AllergyManager');
+  const { necessaryPerm, recommendedPerm } = $api('AllergyManager');
+  const ingredientReadApi = recommendedPerm('Permission:Ingredient:Read');
 
   const [{ data: ingredients = [] }, { data: allergies = [], refetch: refetchAllergies }] =
     useConditionalSuspenseQueries([
-      recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-      apiClient.queryOptions('get', '/api/Allergy'),
+      ingredientReadApi?.queryOptions('get', '/api/Ingredient'),
+      necessaryPerm('Permission:Allergy:Read').queryOptions('get', '/api/Allergy'),
     ]);
 
   type Allergy = (typeof allergies)[number];
@@ -23,7 +23,7 @@ export const AllergyManager = () => {
 
   const tableColumns: ColumnDefinition<Allergy>[] = [
     { header: 'Name', accessor: 'name' },
-    ...(recommended.Ingredient.Read
+    ...(ingredientReadApi
       ? [
           {
             header: 'Ingredients',
@@ -56,7 +56,7 @@ export const AllergyManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(recommended.Ingredient.Read
+    ...(ingredientReadApi
       ? [
           {
             type: 'numericMultiSelect',
@@ -76,20 +76,32 @@ export const AllergyManager = () => {
       : []),
   ];
 
-  const { mutate: createAllergy } = apiClient.useMutation('post', '/api/Allergy', {
-    onSuccess: () => refetchAllergies(),
-  });
-  const { mutate: updateAllergy } = apiClient.useMutation('put', '/api/Allergy/{id}', {
-    onSuccess: () => refetchAllergies(),
-  });
-  const { mutate: deleteAllergy } = apiClient.useMutation('delete', '/api/Allergy/{id}', {
-    onSuccess: () => refetchAllergies(),
-  });
+  const createAllergy = recommendedPerm('Permission:Allergy:Create')?.useMutation(
+    'post',
+    '/api/Allergy',
+    {
+      onSuccess: () => refetchAllergies(),
+    },
+  ).mutate;
+  const updateAllergy = recommendedPerm('Permission:Allergy:Update')?.useMutation(
+    'put',
+    '/api/Allergy/{id}',
+    {
+      onSuccess: () => refetchAllergies(),
+    },
+  ).mutate;
+  const deleteAllergy = recommendedPerm('Permission:Allergy:Delete')?.useMutation(
+    'delete',
+    '/api/Allergy/{id}',
+    {
+      onSuccess: () => refetchAllergies(),
+    },
+  ).mutate;
 
   const handleSubmit = (values: Allergy, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createAllergy) {
       createAllergy({ body: values });
-    } else {
+    } else if (mode === 'edit' && updateAllergy) {
       updateAllergy({ params: { path: { id: values.id } }, body: values });
     }
   };
@@ -102,10 +114,12 @@ export const AllergyManager = () => {
       tableColumns={tableColumns}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteAllergy({ params: { path: { id: r.id } } })}
-      canCreate={recommended.Allergy.Create}
-      canEdit={recommended.Allergy.Update}
-      canDelete={recommended.Allergy.Delete}
+      onDelete={
+        deleteAllergy ? (r) => deleteAllergy({ params: { path: { id: r.id } } }) : undefined
+      }
+      canCreate={!!createAllergy}
+      canEdit={!!updateAllergy}
+      canDelete={!!deleteAllergy}
     />
   );
 };

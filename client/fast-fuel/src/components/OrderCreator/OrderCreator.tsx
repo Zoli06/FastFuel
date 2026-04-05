@@ -11,14 +11,15 @@ import { RestaurantPickerModal } from './modals/RestaurantPickerModal.tsx';
 import { CheckoutModal } from './modals/CheckoutModal.tsx';
 import { EditCartEntryModal } from './modals/EditCartEntryModal.tsx';
 import type { CategoryValue } from './constants.ts';
-import { apiClient } from '../../lib/api-client.ts';
+import { $api } from '../../lib/api.ts';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import type { CartEntry, CartItem, CheckoutStep, SortKey, UnifiedItem } from './types.ts';
-import { myCurrentUserQueryOptions } from '../../lib/api-client.ts';
 
 export const OrderCreator = () => {
-  const { data: currentUser } = useSuspenseQuery(myCurrentUserQueryOptions());
+  const { noPerm, necessaryPerm } = $api('OrderCreator');
+
+  const { data: currentUser } = useSuspenseQuery(noPerm().queryOptions('get', '/api/User/me'));
   const currentUserType = currentUser.userType.toLowerCase();
   const isEmployeeUser = currentUserType === 'employee';
   const isMachineUser = currentUserType === 'machine';
@@ -33,11 +34,11 @@ export const OrderCreator = () => {
     { data: foods = [] },
     { data: restaurants = [] },
   ] = useConditionalSuspenseQueries([
-    isEmployeeUser ? apiClient.queryOptions('get', '/api/Employee/me') : false,
-    isMachineUser ? apiClient.queryOptions('get', '/api/Machine/me') : false,
-    apiClient.queryOptions('get', '/api/Menu'),
-    apiClient.queryOptions('get', '/api/Food'),
-    apiClient.queryOptions('get', '/api/Restaurant'),
+    isEmployeeUser ? noPerm().queryOptions('get', '/api/Employee/me') : undefined,
+    isMachineUser ? noPerm().queryOptions('get', '/api/Machine/me') : undefined,
+    necessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
+    necessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
+    necessaryPerm('Permission:Restaurant:Read').queryOptions('get', '/api/Restaurant'),
   ]);
 
   const lockedRestaurantId = isEmployeeUser
@@ -72,7 +73,9 @@ export const OrderCreator = () => {
     }
   }, [lockedRestaurantId]);
 
-  const { mutateAsync: createOrder, isPending } = apiClient.useMutation('post', '/api/Order');
+  const { mutateAsync: createOrder, isPending } = necessaryPerm(
+    'Permission:Order:Create',
+  ).useMutation('post', '/api/Order');
 
   const selectedRestaurant = restaurants.find((r) => r.id === restaurantId);
   const filteredRestaurants = restaurants.filter((r) =>

@@ -1,10 +1,9 @@
 import { Box, Button, Group, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
-import type { components, paths } from '../../types/api';
-import { apiClient } from '../../lib/api-client.ts';
+import type { components, paths } from '../../types/api-schema.generated.ts';
+import { $api } from '../../lib/api.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
-import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 
 type Order = components['schemas']['OrderResponseDto'];
@@ -38,7 +37,8 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) => {
-  const { recommended } = usePagePermissions('OrderStatusDisplay');
+  const { necessaryPerm, recommendedPerm } = $api('OrderStatusDisplay');
+  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
   const hideExitButtonTimeoutRef = useRef<number | null>(null);
@@ -50,11 +50,10 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
 
   const [{ data: restaurant }, { data: inProgressOrders = [] }, { data: readyOrders = [] }] =
     useConditionalSuspenseQueries([
-      recommended.Restaurant.Read &&
-        apiClient.queryOptions('get', '/api/Restaurant/{id}', {
-          params: { path: { id: restaurantId } },
-        }),
-      apiClient.queryOptions(
+      restaurantReadApi?.queryOptions('get', '/api/Restaurant/{id}', {
+        params: { path: { id: restaurantId } },
+      }),
+      necessaryPerm('Permission:Order:Read').queryOptions(
         'get',
         '/api/Order',
         {
@@ -64,7 +63,7 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
           refetchInterval: 2500,
         },
       ),
-      apiClient.queryOptions(
+      necessaryPerm('Permission:Order:Read').queryOptions(
         'get',
         '/api/Order',
         {
@@ -138,8 +137,7 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
     };
   }, [isFullscreen, showExitButton]);
 
-  const headerTitle =
-    recommended.Restaurant.Read && restaurant ? `Orders - ${restaurant.name}` : 'Orders';
+  const headerTitle = restaurantReadApi && restaurant ? `Orders - ${restaurant.name}` : 'Orders';
 
   return (
     <>

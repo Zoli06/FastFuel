@@ -1,22 +1,23 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const IngredientManager = () => {
-  const { recommended } = usePagePermissions('IngredientManager');
+  const { necessaryPerm, recommendedPerm } = $api('IngredientManager');
+  const allergyReadApi = recommendedPerm('Permission:Allergy:Read');
+  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
 
   const [
     { data: allergies = [] },
     { data: stationCategories = [] },
     { data: ingredients = [], refetch: refetchIngredients },
   ] = useConditionalSuspenseQueries([
-    recommended.Allergy.Read && apiClient.queryOptions('get', '/api/Allergy'),
-    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    apiClient.queryOptions('get', '/api/Ingredient'),
+    allergyReadApi?.queryOptions('get', '/api/Allergy'),
+    stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
+    necessaryPerm('Permission:Ingredient:Read').queryOptions('get', '/api/Ingredient'),
   ]);
 
   type Ingredient = (typeof ingredients)[number];
@@ -32,7 +33,7 @@ export const IngredientManager = () => {
           'No image'
         ),
     },
-    ...(recommended.Allergy.Read
+    ...(allergyReadApi
       ? [
           {
             header: 'Allergies',
@@ -45,7 +46,7 @@ export const IngredientManager = () => {
           },
         ]
       : []),
-    ...(recommended.StationCategory.Read
+    ...(stationCategoryReadApi
       ? [
           {
             header: 'Station Categories',
@@ -65,6 +66,9 @@ export const IngredientManager = () => {
     },
   ];
 
+  const allergyOptions = allergies.map((allergy) => ({ value: allergy.id, label: allergy.name }));
+  const stationCategoryOptions = stationCategories.map((sc) => ({ value: sc.id, label: sc.name }));
+
   const editorFields: Field[] = [
     {
       type: 'text',
@@ -82,7 +86,7 @@ export const IngredientManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(recommended.Allergy.Read
+    ...(allergyReadApi
       ? [
           {
             type: 'numericMultiSelect',
@@ -92,14 +96,14 @@ export const IngredientManager = () => {
             nullable: 'never',
             required: 'never',
             fieldProps: {
-              data: allergies.map((allergy) => ({ value: allergy.id, label: allergy.name })),
+              data: allergyOptions,
               placeholder: 'Select allergies',
               searchable: true,
             },
           } satisfies Field,
         ]
       : []),
-    ...(recommended.StationCategory.Read
+    ...(stationCategoryReadApi
       ? [
           {
             type: 'numericMultiSelect',
@@ -109,7 +113,7 @@ export const IngredientManager = () => {
             nullable: 'never',
             required: 'never',
             fieldProps: {
-              data: stationCategories.map((sc) => ({ value: sc.id, label: sc.name })),
+              data: stationCategoryOptions,
               placeholder: 'Select station categories',
               searchable: true,
             },
@@ -126,20 +130,32 @@ export const IngredientManager = () => {
     },
   ];
 
-  const { mutate: createIngredient } = apiClient.useMutation('post', '/api/Ingredient', {
-    onSuccess: () => refetchIngredients(),
-  });
-  const { mutate: updateIngredient } = apiClient.useMutation('put', '/api/Ingredient/{id}', {
-    onSuccess: () => refetchIngredients(),
-  });
-  const { mutate: deleteIngredient } = apiClient.useMutation('delete', '/api/Ingredient/{id}', {
-    onSuccess: () => refetchIngredients(),
-  });
+  const createIngredient = recommendedPerm('Permission:Ingredient:Create')?.useMutation(
+    'post',
+    '/api/Ingredient',
+    {
+      onSuccess: () => refetchIngredients(),
+    },
+  ).mutate;
+  const updateIngredient = recommendedPerm('Permission:Ingredient:Update')?.useMutation(
+    'put',
+    '/api/Ingredient/{id}',
+    {
+      onSuccess: () => refetchIngredients(),
+    },
+  ).mutate;
+  const deleteIngredient = recommendedPerm('Permission:Ingredient:Delete')?.useMutation(
+    'delete',
+    '/api/Ingredient/{id}',
+    {
+      onSuccess: () => refetchIngredients(),
+    },
+  ).mutate;
 
   const handleSubmit = (values: Ingredient, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createIngredient) {
       createIngredient({ body: values });
-    } else {
+    } else if (mode === 'edit' && updateIngredient) {
       updateIngredient({ params: { path: { id: values.id } }, body: values });
     }
   };
@@ -152,10 +168,12 @@ export const IngredientManager = () => {
       tableColumns={tableColumns}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteIngredient({ params: { path: { id: r.id } } })}
-      canCreate={recommended.Ingredient.Create}
-      canEdit={recommended.Ingredient.Update}
-      canDelete={recommended.Ingredient.Delete}
+      onDelete={
+        deleteIngredient ? (r) => deleteIngredient({ params: { path: { id: r.id } } }) : undefined
+      }
+      canCreate={!!createIngredient}
+      canEdit={!!updateIngredient}
+      canDelete={!!deleteIngredient}
     />
   );
 };

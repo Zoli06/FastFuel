@@ -1,13 +1,29 @@
 import type { ReactNode } from 'react';
 import { Alert, Text } from '@mantine/core';
 import type { Page } from '../../../lib/page-definitions.ts';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
+import { $api } from '../../../lib/api.ts';
 import { Paper } from '../Paper/Paper.tsx';
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const PagePermissionGuard = ({ page, children }: { page: Page; children: ReactNode }) => {
-  const perms = usePagePermissions(page);
+  const { noPerm } = $api(null);
 
-  if (!perms.hasNecessary) {
+  // Fetch both user permissions and page definitions using noPerm()
+  const [{ data: permissions = [] }, { data: pages = [] }] = useConditionalSuspenseQueries([
+    noPerm().queryOptions('get', '/api/Permission/my'),
+    noPerm().queryOptions('get', '/api/Page'),
+  ]);
+
+  // Find the page definition for this page
+  const pageDefinition = pages.find((p) => p.page === page);
+  const necessaryPermissions = pageDefinition?.necessaryPermissions ?? [];
+
+  // Check if user has all necessary permissions
+  const hasAllNecessary = necessaryPermissions.every((permission: string) =>
+    (permissions as string[]).includes(permission),
+  );
+
+  if (!hasAllNecessary) {
     return (
       <Paper>
         <Alert icon="⚠️" color="red" title="Access Denied">

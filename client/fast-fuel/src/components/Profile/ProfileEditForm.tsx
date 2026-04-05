@@ -9,10 +9,9 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { useForm } from '@mantine/form';
+import { Form, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { apiClient } from '../../lib/api-client.ts';
-import type { components } from '../../types/api.ts';
+import { $api } from '../../lib/api.ts';
 
 interface ProfileEditFormProps {
   name: string;
@@ -37,34 +36,38 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
     if (email) setFieldValue('email', email);
   }, [email, setFieldValue]);
 
-  const { mutate: updateCustomer } = apiClient.useMutation('put', '/api/Customer/me', {
-    onSuccess: () => {
-      onSaved();
-      notifications.show({
-        title: 'Profile updated',
-        message: 'Your changes have been saved.',
-        color: 'green',
-      });
-    },
-  });
+  const updateCustomer = $api('Profile')
+    .recommendedPerm('Permission:Customer:UpdateSelf')
+    ?.useMutation('put', '/api/Customer/me', {
+      onSuccess: () => {
+        onSaved();
+        notifications.show({
+          title: 'Profile updated',
+          message: 'Your changes have been saved.',
+          color: 'green',
+        });
+      },
+    }).mutate;
 
-  const handleSubmit = form.onSubmit((values) => {
-    updateCustomer({
-      body: {
-        name: values.name,
-        userName: values.userName,
-        email: values.email,
-        password: values.password || null,
-      } as components['schemas']['CustomerRequestDto'],
-    });
-  });
+  const handleSubmit = (values: typeof form.values) => {
+    if (updateCustomer) {
+      updateCustomer({
+        body: {
+          name: values.name,
+          userName: values.userName,
+          email: values.email,
+          password: values.password || null,
+        },
+      });
+    }
+  };
 
   return (
     <Card withBorder radius="md" p="lg">
       <Text fw={500} mb="md">
         Edit profile
       </Text>
-      <form onSubmit={handleSubmit}>
+      <Form form={form} onSubmit={handleSubmit}>
         <Stack>
           <SimpleGrid cols={2}>
             <TextInput label="Name" {...form.getInputProps('name')} />
@@ -82,7 +85,7 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
             </Button>
           </Group>
         </Stack>
-      </form>
+      </Form>
     </Card>
   );
 };

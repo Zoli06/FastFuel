@@ -1,21 +1,22 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const { recommended } = usePagePermissions('EmployeeManager');
+  const { necessaryPerm, recommendedPerm } = $api('EmployeeManager');
+  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
+  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
 
   const [
     { data: stationCategories = [] },
     { data: restaurants = [] },
     { data: employees = [], refetch: refetchEmployees },
   ] = useConditionalSuspenseQueries([
-    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    apiClient.queryOptions('get', '/api/Employee'),
+    stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
+    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    necessaryPerm('Permission:Employee:Read').queryOptions('get', '/api/Employee'),
   ]);
 
   type Employee = (typeof employees)[number];
@@ -38,7 +39,7 @@ export const EmployeeManager = () => {
     {
       header: 'Works At',
       render: (e: Employee) => {
-        if (recommended.Restaurant.Read) {
+        if (restaurantReadApi) {
           return (
             restaurantOptions.find((o) => o.value === e.worksAtRestaurantId)?.label ??
             `#${e.worksAtRestaurantId}`
@@ -47,7 +48,7 @@ export const EmployeeManager = () => {
         return `#${e.worksAtRestaurantId}`;
       },
     },
-    ...(recommended.StationCategory.Read
+    ...(stationCategoryReadApi
       ? [
           {
             header: 'Station Categories',
@@ -108,7 +109,7 @@ export const EmployeeManager = () => {
         searchable: true,
       },
     } satisfies Field,
-    ...(recommended.StationCategory.Read
+    ...(stationCategoryReadApi
       ? [
           {
             type: 'numericMultiSelect',
@@ -128,15 +129,27 @@ export const EmployeeManager = () => {
       : []),
   ];
 
-  const { mutate: createEmployee } = apiClient.useMutation('post', '/api/Employee', {
-    onSuccess: () => refetchEmployees(),
-  });
-  const { mutate: updateEmployee } = apiClient.useMutation('put', '/api/Employee/{id}', {
-    onSuccess: () => refetchEmployees(),
-  });
-  const { mutate: deleteEmployee } = apiClient.useMutation('delete', '/api/Employee/{id}', {
-    onSuccess: () => refetchEmployees(),
-  });
+  const createEmployee = recommendedPerm('Permission:Employee:Create')?.useMutation(
+    'post',
+    '/api/Employee',
+    {
+      onSuccess: () => refetchEmployees(),
+    },
+  ).mutate;
+  const updateEmployee = recommendedPerm('Permission:Employee:Update')?.useMutation(
+    'put',
+    '/api/Employee/{id}',
+    {
+      onSuccess: () => refetchEmployees(),
+    },
+  ).mutate;
+  const deleteEmployee = recommendedPerm('Permission:Employee:Delete')?.useMutation(
+    'delete',
+    '/api/Employee/{id}',
+    {
+      onSuccess: () => refetchEmployees(),
+    },
+  ).mutate;
 
   const toRequestDto = (values: EmployeeFormValues) => ({
     name: values.name,
@@ -149,12 +162,9 @@ export const EmployeeManager = () => {
   });
 
   const handleSubmit = (values: EmployeeFormValues, mode: 'create' | 'edit') => {
-    console.log(values);
-    console.log(toRequestDto(values));
-
-    if (mode === 'create') {
+    if (mode === 'create' && createEmployee) {
       createEmployee({ body: toRequestDto(values) });
-    } else {
+    } else if (mode === 'edit' && updateEmployee) {
       updateEmployee({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
@@ -167,10 +177,12 @@ export const EmployeeManager = () => {
       tableColumns={tableColumns as ColumnDefinition<EmployeeFormValues>[]}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(e) => deleteEmployee({ params: { path: { id: e.id } } })}
-      canCreate={recommended.Employee.Create}
-      canEdit={recommended.Employee.Update}
-      canDelete={recommended.Employee.Delete}
+      onDelete={
+        deleteEmployee ? (e) => deleteEmployee({ params: { path: { id: e.id } } }) : undefined
+      }
+      canCreate={!!createEmployee}
+      canEdit={!!updateEmployee}
+      canDelete={!!deleteEmployee}
     />
   );
 };

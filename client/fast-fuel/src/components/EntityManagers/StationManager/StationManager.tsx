@@ -1,23 +1,26 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { $api } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
-  const { recommended } = usePagePermissions('StationManager');
+  const { necessaryPerm, recommendedPerm } = $api('StationManager');
+
+  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
+  const viewTasksApi = recommendedPerm('Permission:Station:ViewTasks');
 
   const [
     { data: restaurants = [] },
     { data: stationCategories = [] },
     { data: stations = [], refetch: refetchStations },
   ] = useConditionalSuspenseQueries([
-    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    recommended.StationCategory.Read && apiClient.queryOptions('get', '/api/StationCategory'),
-    apiClient.queryOptions('get', '/api/Station'),
+    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
+    necessaryPerm('Permission:Station:Read').queryOptions('get', '/api/Station'),
   ]);
 
   type Station = (typeof stations)[number];
@@ -31,7 +34,7 @@ export const StationManager = () => {
   const tableColumns: ColumnDefinition<Station>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'In Operation', render: (s) => (s.inOperation ? 'Yes' : 'No') },
-    ...(recommended.Restaurant.Read
+    ...(restaurantReadApi
       ? [
           {
             header: 'Restaurant',
@@ -39,7 +42,7 @@ export const StationManager = () => {
           },
         ]
       : []),
-    ...(recommended.StationCategory.Read
+    ...(stationCategoryReadApi
       ? [
           {
             header: 'Category',
@@ -48,7 +51,7 @@ export const StationManager = () => {
           },
         ]
       : []),
-    ...(recommended.Station.ViewTasks
+    ...(viewTasksApi
       ? [
           {
             header: 'Tasks',
@@ -79,7 +82,7 @@ export const StationManager = () => {
       nullable: 'never',
       required: 'always',
     },
-    ...(recommended.Restaurant.Read
+    ...(restaurantReadApi
       ? [
           {
             type: 'numericSelect',
@@ -96,7 +99,7 @@ export const StationManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(recommended.StationCategory.Read
+    ...(stationCategoryReadApi
       ? [
           {
             type: 'numericSelect',
@@ -115,20 +118,32 @@ export const StationManager = () => {
       : []),
   ];
 
-  const { mutate: createStation } = apiClient.useMutation('post', '/api/Station', {
-    onSuccess: () => refetchStations(),
-  });
-  const { mutate: updateStation } = apiClient.useMutation('put', '/api/Station/{id}', {
-    onSuccess: () => refetchStations(),
-  });
-  const { mutate: deleteStation } = apiClient.useMutation('delete', '/api/Station/{id}', {
-    onSuccess: () => refetchStations(),
-  });
+  const createStation = recommendedPerm('Permission:Station:Create')?.useMutation(
+    'post',
+    '/api/Station',
+    {
+      onSuccess: () => refetchStations(),
+    },
+  ).mutate;
+  const updateStation = recommendedPerm('Permission:Station:Update')?.useMutation(
+    'put',
+    '/api/Station/{id}',
+    {
+      onSuccess: () => refetchStations(),
+    },
+  ).mutate;
+  const deleteStation = recommendedPerm('Permission:Station:Delete')?.useMutation(
+    'delete',
+    '/api/Station/{id}',
+    {
+      onSuccess: () => refetchStations(),
+    },
+  ).mutate;
 
   const handleSubmit = (values: Station, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
+    if (mode === 'create' && createStation) {
       createStation({ body: values });
-    } else {
+    } else if (mode === 'edit' && updateStation) {
       updateStation({ params: { path: { id: values.id } }, body: values });
     }
   };
@@ -141,10 +156,12 @@ export const StationManager = () => {
       tableColumns={tableColumns}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(s) => deleteStation({ params: { path: { id: s.id } } })}
-      canCreate={recommended.Station.Create}
-      canEdit={recommended.Station.Update}
-      canDelete={recommended.Station.Delete}
+      onDelete={
+        deleteStation ? (s) => deleteStation({ params: { path: { id: s.id } } }) : undefined
+      }
+      canCreate={!!createStation}
+      canEdit={!!updateStation}
+      canDelete={!!deleteStation}
     />
   );
 };
