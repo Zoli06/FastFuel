@@ -113,7 +113,10 @@ export const RoleManager = () => {
   const tableColumns: ColumnDefinition<Role>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Is Default', render: (r) => (r.isDefault ? 'Yes' : 'No') },
-    { header: 'Is Immutable', render: (r) => (r.isImmutable ? 'Yes' : 'No') },
+    {
+      header: 'Permissions Immutable',
+      render: (r) => (r.arePermissionsImmutable ? 'Yes' : 'No'),
+    },
   ];
 
   const isEditingDefaultRole = (roleId: number | undefined, mode: 'create' | 'edit') => {
@@ -142,7 +145,13 @@ export const RoleManager = () => {
       ? [
           {
             type: 'custom',
-            render: (form) => {
+            render: (form, mode) => {
+              const roleId = form.getValues().id as number | undefined;
+              const role =
+                mode === 'edit' && roleId != null
+                  ? roles.find((candidate) => candidate.id === roleId)
+                  : undefined;
+              const isPermissionsImmutable = !!role?.arePermissionsImmutable;
               const selectedPermissions =
                 (form.getValues().permissions as Permission[] | undefined) ?? [];
 
@@ -154,9 +163,11 @@ export const RoleManager = () => {
                   placeholder="Search permissions..."
                   searchable
                   clearable
+                  disabled={isPermissionsImmutable}
                   value={selectedPermissions}
                   error={form.errors.permissions}
                   onChange={(value) => {
+                    if (isPermissionsImmutable) return;
                     const nextPermissions = value as Permission[];
                     form.setFieldValue('permissions', nextPermissions);
 
@@ -213,6 +224,7 @@ export const RoleManager = () => {
             : undefined;
         const roleName = (values.name ?? role?.name ?? '').trim();
         const isDefaultRole = !!role?.isDefault;
+        const isPermissionsImmutable = !!role?.arePermissionsImmutable;
         const selectedPermissions =
           (form.getValues().permissions as Permission[] | undefined) ?? [];
         const selectedPages = (form.getValues().pages as Page[] | undefined) ?? [];
@@ -343,10 +355,20 @@ export const RoleManager = () => {
                     Recommended: {pagePermissionDefinition.recommendedPermissions.join(', ') || '-'}
                   </Text>
                   <Group gap="sm">
-                    <Button size="xs" variant="light" onClick={addNecessaryPermissions}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      disabled={isPermissionsImmutable}
+                      onClick={addNecessaryPermissions}
+                    >
                       Add Necessary Permissions
                     </Button>
-                    <Button size="xs" variant="light" onClick={addAllPermissions}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      disabled={isPermissionsImmutable}
+                      onClick={addAllPermissions}
+                    >
                       Add All Permissions
                     </Button>
                   </Group>
@@ -377,13 +399,6 @@ export const RoleManager = () => {
     },
   ).mutate;
 
-  const toRequestDto = (values: RoleFormValues, fallbackRole?: Role) => ({
-    name: values.name,
-    permissions: values.permissions ?? fallbackRole?.permissions ?? [],
-    pages: values.pages ?? fallbackRole?.pages ?? [],
-    userIds: values.userIds ?? fallbackRole?.userIds ?? [],
-  });
-
   const validateRole = (values: RoleFormValues) => {
     const pagesPermissionError = getPagesPermissionError(
       values.pages ?? [],
@@ -405,17 +420,14 @@ export const RoleManager = () => {
     };
   };
 
-  const canEditRole = (role: Role) => !role.isImmutable;
-  const canDeleteRole = (role: Role) => !role.isDefault && !role.isImmutable;
+  const canDeleteRole = (role: Role) => !role.isDefault;
 
   const handleSubmit = (values: RoleFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createRole) {
-      createRole({ body: toRequestDto(values) });
+      createRole({ body: values });
     } else if (mode === 'edit') {
       if (!updateRole) return;
-      const role = roles.find((r) => r.id === values.id);
-      if (role && !canEditRole(role)) return;
-      updateRole({ params: { path: { id: values.id } }, body: toRequestDto(values, role) });
+      updateRole({ params: { path: { id: values.id } }, body: values });
     }
   };
 
@@ -436,7 +448,7 @@ export const RoleManager = () => {
       canCreate={!!createRole}
       canEdit={!!updateRole}
       canDelete={!!deleteRole}
-      canEditItem={canEditRole}
+      canEditItem={() => true}
       canDeleteItem={canDeleteRole}
     />
   );

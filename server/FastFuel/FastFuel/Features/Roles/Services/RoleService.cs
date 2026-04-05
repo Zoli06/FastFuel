@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Pages.Common;
 using FastFuel.Features.Roles.DTOs;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
@@ -108,6 +109,31 @@ public class RoleService(
                 $"Users of default role '{role.Name}' cannot be modified.");
     }
 
+    private static async Task EnsurePermissionsUnchangedIfImmutableAsync(RoleManager<Role> roleManager, Role role,
+        List<string> requestedPermissions)
+    {
+        if (!role.ArePermissionsImmutable)
+            return;
+
+        var currentPermissions = (await roleManager.GetClaimsAsync(role))
+            .Where(claim => claim.Type == "Permission")
+            .Select(claim => claim.Value)
+            .ToHashSet();
+
+        if (!currentPermissions.SetEquals(requestedPermissions))
+            throw new UnauthorizedAppException($"Permissions of role '{role.Name}' cannot be modified.");
+    }
+
+    private static void EnsureAdminRoleHasRoleManagerPage(Role role, List<Page> requestedPages)
+    {
+        if (!role.IsDefault || !string.Equals(role.Name, nameof(DefaultRole.Admin), StringComparison.Ordinal))
+            return;
+
+        if (!requestedPages.Contains(Page.RoleManager))
+            throw new UnauthorizedAppException(
+                $"Page '{Page.RoleManager}' cannot be removed from role '{role.Name}'.");
+    }
+
     private class Create(
         FastFuelDbContext dbContext,
         DbSet<Role> dbSet,
@@ -137,9 +163,6 @@ public class RoleService(
         protected override Task UpdateEntityAsync(uint id, RoleRequestDto requestDto, Role entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-            if (entity.IsImmutable)
-                throw new UnauthorizedAppException($"The role '{entity.Name}' is immutable and cannot be edited.");
-
             if (entity.IsDefault && !string.Equals(entity.Name, requestDto.Name, StringComparison.Ordinal))
                 throw new UnauthorizedAppException($"The default role '{entity.Name}' cannot be renamed.");
 
@@ -153,6 +176,8 @@ public class RoleService(
             CancellationToken cancellationToken = default)
         {
             await EnsureDefaultRoleUsersUnchangedAsync(userManager, entity, requestDto.UserIds);
+            await EnsurePermissionsUnchangedIfImmutableAsync(roleManager, entity, requestDto.Permissions);
+            EnsureAdminRoleHasRoleManagerPage(entity, requestDto.Pages);
 
             await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
 
@@ -167,9 +192,6 @@ public class RoleService(
         protected override async Task DeleteEntityAsync(uint id, Role entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-            if (entity.IsImmutable)
-                throw new UnauthorizedAppException(
-                    $"The role '{entity.Name}' is immutable and cannot be deleted.");
 
             if (entity.IsDefault)
                 throw new UnauthorizedAppException(
