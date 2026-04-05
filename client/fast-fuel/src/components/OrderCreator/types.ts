@@ -1,4 +1,4 @@
-import type { components } from '../../types/api';
+import type { components } from '../../types/api-schema.generated.ts';
 
 export type Menu = components['schemas']['MenuResponseDto'];
 export type Food = components['schemas']['FoodResponseDto'];

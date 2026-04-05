@@ -4,8 +4,6 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.ts';
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
-import { Button } from '@mantine/core';
-import { Link } from 'react-router-dom';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 // TODO: Remove this or at least extract to a helper
@@ -44,14 +42,6 @@ export const RestaurantManager = () => {
     { header: 'Address', accessor: 'address' },
     { header: 'Description', render: (r) => getDisplayedDescription(r.description) },
     { header: 'Phone', accessor: 'phone' },
-    {
-      header: 'Display Order Statuses',
-      render: (r) => (
-        <Link to={`/restaurants/${r.id}/status-display`}>
-          <Button>Display</Button>
-        </Link>
-      ),
-    },
   ];
 
   const editorFields: Field[] = [

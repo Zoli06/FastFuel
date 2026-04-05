@@ -46,8 +46,8 @@ export const pageDefinitions = {
     displayName: 'Order Status Display',
     color: 'cyan',
     icon: IconClipboardList,
-    routePath: '/restaurants/:id/status-display',
-    showInHomeMenu: false,
+    routePath: '/restaurants/order-status-display',
+    showInHomeMenu: true,
     group: 'Display',
   },
   OrderCreator: {
