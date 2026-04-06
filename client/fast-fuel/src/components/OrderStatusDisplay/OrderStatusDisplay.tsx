@@ -35,18 +35,19 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = () => {
-  const { noPerm, necessaryPerm, recommendedPerm } = useApi('OrderStatusDisplay');
-  const { data: currentUser } = useSuspenseQuery(noPerm().queryOptions('get', '/api/User/me'));
+  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('OrderStatusDisplay');
+  const { data: currentUser } = useSuspenseQuery(useNoPerm().queryOptions('get', '/api/User/me'));
   const currentUserType = currentUser.userType.toLowerCase();
   const isEmployeeUser = currentUserType === 'employee';
   const isMachineUser = currentUserType === 'machine';
   const isCustomer = currentUserType === 'customer';
   const isAdmin = currentUserType === 'admin';
   const needsRestaurantPicker = isCustomer || isAdmin;
+  const noPermApi = useNoPerm();
 
   const [{ data: employeeProfile }, { data: machineProfile }] = useConditionalSuspenseQueries([
-    isEmployeeUser ? noPerm().queryOptions('get', '/api/Employee/me') : undefined,
-    isMachineUser ? noPerm().queryOptions('get', '/api/Machine/me') : undefined,
+    isEmployeeUser ? noPermApi.queryOptions('get', '/api/Employee/me') : undefined,
+    isMachineUser ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
   ]);
 
   const lockedRestaurantId = isEmployeeUser
@@ -55,8 +56,8 @@ export const OrderStatusDisplay = () => {
       ? (machineProfile?.locatedAtRestaurantId ?? null)
       : null;
 
-  const orderReadApi = necessaryPerm('Permission:Order:Read');
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const orderReadApi = useNecessaryPerm('Permission:Order:Read');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
   const [restaurantId, setRestaurantId] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
