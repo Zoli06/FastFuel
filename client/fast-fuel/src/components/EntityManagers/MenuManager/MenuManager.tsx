@@ -1,18 +1,18 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MenuManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('MenuManager');
-  const foodReadApi = recommendedPerm('Permission:Food:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('MenuManager');
+  const foodReadApi = useRecommendedPerm('Permission:Food:Read');
 
   const [{ data: foods = [] }, { data: menus = [], refetch: refetchMenus }] =
     useConditionalSuspenseQueries([
       foodReadApi?.queryOptions('get', '/api/Food'),
-      necessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
+      useNecessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
     ]);
 
   type Menu = (typeof menus)[number];
@@ -135,17 +135,21 @@ export const MenuManager = () => {
       : []),
   ];
 
-  const createMenu = recommendedPerm('Permission:Menu:Create')?.useMutation('post', '/api/Menu', {
-    onSuccess: () => refetchMenus(),
-  }).mutate;
-  const updateMenu = recommendedPerm('Permission:Menu:Update')?.useMutation(
+  const createMenu = useRecommendedPerm('Permission:Menu:Create')?.useMutation(
+    'post',
+    '/api/Menu',
+    {
+      onSuccess: () => refetchMenus(),
+    },
+  ).mutate;
+  const updateMenu = useRecommendedPerm('Permission:Menu:Update')?.useMutation(
     'put',
     '/api/Menu/{id}',
     {
       onSuccess: () => refetchMenus(),
     },
   ).mutate;
-  const deleteMenu = recommendedPerm('Permission:Menu:Delete')?.useMutation(
+  const deleteMenu = useRecommendedPerm('Permission:Menu:Delete')?.useMutation(
     'delete',
     '/api/Menu/{id}',
     {

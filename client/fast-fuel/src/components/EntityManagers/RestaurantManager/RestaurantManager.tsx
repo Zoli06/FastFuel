@@ -1,4 +1,4 @@
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.ts';
@@ -31,10 +31,10 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('RestaurantManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('RestaurantManager');
 
   const [{ data: restaurants = [], refetch: refetchRestaurants }] = useConditionalSuspenseQueries([
-    necessaryPerm('Permission:Restaurant:Read').queryOptions('get', '/api/Restaurant'),
+    useNecessaryPerm('Permission:Restaurant:Read').queryOptions('get', '/api/Restaurant'),
   ]);
 
   type Restaurant = (typeof restaurants)[number];
@@ -163,21 +163,21 @@ export const RestaurantManager = () => {
     },
   ];
 
-  const createRestaurant = recommendedPerm('Permission:Restaurant:Create')?.useMutation(
+  const createRestaurant = useRecommendedPerm('Permission:Restaurant:Create')?.useMutation(
     'post',
     '/api/Restaurant',
     {
       onSuccess: () => refetchRestaurants(),
     },
   ).mutate;
-  const updateRestaurant = recommendedPerm('Permission:Restaurant:Update')?.useMutation(
+  const updateRestaurant = useRecommendedPerm('Permission:Restaurant:Update')?.useMutation(
     'put',
     '/api/Restaurant/{id}',
     {
       onSuccess: () => refetchRestaurants(),
     },
   ).mutate;
-  const deleteRestaurant = recommendedPerm('Permission:Restaurant:Delete')?.useMutation(
+  const deleteRestaurant = useRecommendedPerm('Permission:Restaurant:Delete')?.useMutation(
     'delete',
     '/api/Restaurant/{id}',
     {

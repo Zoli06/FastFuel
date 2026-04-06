@@ -1,17 +1,17 @@
-﻿import { EntityManager } from '../../EntityManager/EntityManager.tsx';
+import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const AllergyManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('AllergyManager');
-  const ingredientReadApi = recommendedPerm('Permission:Ingredient:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('AllergyManager');
+  const ingredientReadApi = useRecommendedPerm('Permission:Ingredient:Read');
 
   const [{ data: ingredients = [] }, { data: allergies = [], refetch: refetchAllergies }] =
     useConditionalSuspenseQueries([
       ingredientReadApi?.queryOptions('get', '/api/Ingredient'),
-      necessaryPerm('Permission:Allergy:Read').queryOptions('get', '/api/Allergy'),
+      useNecessaryPerm('Permission:Allergy:Read').queryOptions('get', '/api/Allergy'),
     ]);
 
   type Allergy = (typeof allergies)[number];
@@ -76,21 +76,21 @@ export const AllergyManager = () => {
       : []),
   ];
 
-  const createAllergy = recommendedPerm('Permission:Allergy:Create')?.useMutation(
+  const createAllergy = useRecommendedPerm('Permission:Allergy:Create')?.useMutation(
     'post',
     '/api/Allergy',
     {
       onSuccess: () => refetchAllergies(),
     },
   ).mutate;
-  const updateAllergy = recommendedPerm('Permission:Allergy:Update')?.useMutation(
+  const updateAllergy = useRecommendedPerm('Permission:Allergy:Update')?.useMutation(
     'put',
     '/api/Allergy/{id}',
     {
       onSuccess: () => refetchAllergies(),
     },
   ).mutate;
-  const deleteAllergy = recommendedPerm('Permission:Allergy:Delete')?.useMutation(
+  const deleteAllergy = useRecommendedPerm('Permission:Allergy:Delete')?.useMutation(
     'delete',
     '/api/Allergy/{id}',
     {

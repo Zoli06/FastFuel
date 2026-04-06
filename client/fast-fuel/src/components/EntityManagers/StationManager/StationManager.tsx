@@ -1,17 +1,17 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('StationManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('StationManager');
 
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
-  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
-  const viewTasksApi = recommendedPerm('Permission:Station:ViewTasks');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
+  const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
+  const viewTasksApi = useRecommendedPerm('Permission:Station:ViewTasks');
 
   const [
     { data: restaurants = [] },
@@ -20,7 +20,7 @@ export const StationManager = () => {
   ] = useConditionalSuspenseQueries([
     restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
     stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
-    necessaryPerm('Permission:Station:Read').queryOptions('get', '/api/Station'),
+    useNecessaryPerm('Permission:Station:Read').queryOptions('get', '/api/Station'),
   ]);
 
   type Station = (typeof stations)[number];
@@ -118,21 +118,21 @@ export const StationManager = () => {
       : []),
   ];
 
-  const createStation = recommendedPerm('Permission:Station:Create')?.useMutation(
+  const createStation = useRecommendedPerm('Permission:Station:Create')?.useMutation(
     'post',
     '/api/Station',
     {
       onSuccess: () => refetchStations(),
     },
   ).mutate;
-  const updateStation = recommendedPerm('Permission:Station:Update')?.useMutation(
+  const updateStation = useRecommendedPerm('Permission:Station:Update')?.useMutation(
     'put',
     '/api/Station/{id}',
     {
       onSuccess: () => refetchStations(),
     },
   ).mutate;
-  const deleteStation = recommendedPerm('Permission:Station:Delete')?.useMutation(
+  const deleteStation = useRecommendedPerm('Permission:Station:Delete')?.useMutation(
     'delete',
     '/api/Station/{id}',
     {

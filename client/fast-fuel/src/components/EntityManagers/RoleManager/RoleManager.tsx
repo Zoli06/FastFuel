@@ -9,7 +9,7 @@ import {
   TextInput,
   ThemeIcon,
 } from '@mantine/core';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import { pageDefinitions, type Page, type Permission } from '../../../lib/page-definitions.ts';
 import type { components } from '../../../types/api-schema.generated.ts';
@@ -19,11 +19,11 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 
 export const RoleManager = () => {
-  const { noPerm, necessaryPerm, recommendedPerm } = $api('RoleManager');
+  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('RoleManager');
   type PageKey = keyof typeof pageDefinitions;
-  const { data: pagePermissions = [] } = noPerm().useSuspenseQuery('get', '/api/Page');
-  const userReadApi = recommendedPerm('Permission:User:Read');
-  const permissionReadApi = recommendedPerm('Permission:Permission:Read');
+  const { data: pagePermissions = [] } = useNoPerm().useSuspenseQuery('get', '/api/Page');
+  const userReadApi = useRecommendedPerm('Permission:User:Read');
+  const permissionReadApi = useRecommendedPerm('Permission:Permission:Read');
 
   const pagePermissionsByPage = Object.fromEntries(
     pagePermissions.map((entry) => [entry.page, entry]),
@@ -54,7 +54,7 @@ export const RoleManager = () => {
   ] = useConditionalSuspenseQueries([
     userReadApi?.queryOptions('get', '/api/User'),
     permissionReadApi?.queryOptions('get', '/api/Permission'),
-    necessaryPerm('Permission:Role:Read').queryOptions('get', '/api/Role'),
+    useNecessaryPerm('Permission:Role:Read').queryOptions('get', '/api/Role'),
   ]);
 
   type Role = (typeof roles)[number];
@@ -359,17 +359,21 @@ export const RoleManager = () => {
     } satisfies Field,
   ];
 
-  const createRole = recommendedPerm('Permission:Role:Create')?.useMutation('post', '/api/Role', {
-    onSuccess: () => refetchRoles(),
-  }).mutate;
-  const updateRole = recommendedPerm('Permission:Role:Update')?.useMutation(
+  const createRole = useRecommendedPerm('Permission:Role:Create')?.useMutation(
+    'post',
+    '/api/Role',
+    {
+      onSuccess: () => refetchRoles(),
+    },
+  ).mutate;
+  const updateRole = useRecommendedPerm('Permission:Role:Update')?.useMutation(
     'put',
     '/api/Role/{id}',
     {
       onSuccess: () => refetchRoles(),
     },
   ).mutate;
-  const deleteRole = recommendedPerm('Permission:Role:Delete')?.useMutation(
+  const deleteRole = useRecommendedPerm('Permission:Role:Delete')?.useMutation(
     'delete',
     '/api/Role/{id}',
     {

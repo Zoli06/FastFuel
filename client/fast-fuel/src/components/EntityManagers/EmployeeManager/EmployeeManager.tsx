@@ -1,13 +1,13 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('EmployeeManager');
-  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
-  const restaurantReadApi = recommendedPerm('Permission:Restaurant:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('EmployeeManager');
+  const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
 
   const [
     { data: stationCategories = [] },
@@ -16,7 +16,7 @@ export const EmployeeManager = () => {
   ] = useConditionalSuspenseQueries([
     stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
     restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
-    necessaryPerm('Permission:Employee:Read').queryOptions('get', '/api/Employee'),
+    useNecessaryPerm('Permission:Employee:Read').queryOptions('get', '/api/Employee'),
   ]);
 
   type Employee = (typeof employees)[number];
@@ -129,21 +129,21 @@ export const EmployeeManager = () => {
       : []),
   ];
 
-  const createEmployee = recommendedPerm('Permission:Employee:Create')?.useMutation(
+  const createEmployee = useRecommendedPerm('Permission:Employee:Create')?.useMutation(
     'post',
     '/api/Employee',
     {
       onSuccess: () => refetchEmployees(),
     },
   ).mutate;
-  const updateEmployee = recommendedPerm('Permission:Employee:Update')?.useMutation(
+  const updateEmployee = useRecommendedPerm('Permission:Employee:Update')?.useMutation(
     'put',
     '/api/Employee/{id}',
     {
       onSuccess: () => refetchEmployees(),
     },
   ).mutate;
-  const deleteEmployee = recommendedPerm('Permission:Employee:Delete')?.useMutation(
+  const deleteEmployee = useRecommendedPerm('Permission:Employee:Delete')?.useMutation(
     'delete',
     '/api/Employee/{id}',
     {

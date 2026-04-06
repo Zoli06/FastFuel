@@ -1,7 +1,7 @@
-﻿import type { components } from '../../../types/api-schema.generated.ts';
+import type { components } from '../../../types/api-schema.generated.ts';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
@@ -10,10 +10,10 @@ type Customer = components['schemas']['CustomerResponseDto'];
 type CustomerFormValues = Customer & { password?: string | null };
 
 export const CustomerManager = () => {
-  const { noPerm, necessaryPerm, recommendedPerm } = $api('CustomerManager');
+  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('CustomerManager');
 
   const [{ data: customers = [], refetch: refetchCustomers }] = useConditionalSuspenseQueries([
-    necessaryPerm('Permission:Customer:Read').queryOptions('get', '/api/Customer'),
+    useNecessaryPerm('Permission:Customer:Read').queryOptions('get', '/api/Customer'),
   ]);
 
   const tableColumns: ColumnDefinition<Customer>[] = [
@@ -57,17 +57,17 @@ export const CustomerManager = () => {
     },
   ];
 
-  const createCustomer = noPerm().useMutation('post', '/api/Customer', {
+  const createCustomer = useNoPerm().useMutation('post', '/api/Customer', {
     onSuccess: () => refetchCustomers(),
   }).mutate;
-  const updateCustomer = recommendedPerm('Permission:Customer:Update')?.useMutation(
+  const updateCustomer = useRecommendedPerm('Permission:Customer:Update')?.useMutation(
     'put',
     '/api/Customer/{id}',
     {
       onSuccess: () => refetchCustomers(),
     },
   ).mutate;
-  const deleteCustomer = recommendedPerm('Permission:Customer:Delete')?.useMutation(
+  const deleteCustomer = useRecommendedPerm('Permission:Customer:Delete')?.useMutation(
     'delete',
     '/api/Customer/{id}',
     {

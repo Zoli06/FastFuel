@@ -11,7 +11,7 @@ import {
 } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 
 interface ProfileEditFormProps {
   name: string;
@@ -36,8 +36,8 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
     if (email) setFieldValue('email', email);
   }, [email, setFieldValue]);
 
-  const updateCustomer = $api('Profile')
-    .recommendedPerm('Permission:Customer:UpdateSelf')
+  const updateCustomer = useApi('Profile')
+    .useRecommendedPerm('Permission:Customer:UpdateSelf')
     ?.useMutation('put', '/api/Customer/me', {
       onSuccess: () => {
         onSaved();

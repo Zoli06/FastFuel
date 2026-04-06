@@ -1,15 +1,15 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import type { components } from '../../../types/api-schema.generated.ts';
 
 export const AdminManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('AdminManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('AdminManager');
 
   const [{ data: admins = [], refetch: refetchAdmins }] = useConditionalSuspenseQueries([
-    necessaryPerm('Permission:Admin:Read').queryOptions('get', '/api/Admin'),
+    useNecessaryPerm('Permission:Admin:Read').queryOptions('get', '/api/Admin'),
   ]);
 
   type Admin = (typeof admins)[number];
@@ -56,21 +56,21 @@ export const AdminManager = () => {
     },
   ];
 
-  const createAdmin = recommendedPerm('Permission:Admin:Create')?.useMutation(
+  const createAdmin = useRecommendedPerm('Permission:Admin:Create')?.useMutation(
     'post',
     '/api/Admin',
     {
       onSuccess: () => refetchAdmins(),
     },
   ).mutate;
-  const updateAdmin = recommendedPerm('Permission:Admin:Update')?.useMutation(
+  const updateAdmin = useRecommendedPerm('Permission:Admin:Update')?.useMutation(
     'put',
     '/api/Admin/{id}',
     {
       onSuccess: () => refetchAdmins(),
     },
   ).mutate;
-  const deleteAdmin = recommendedPerm('Permission:Admin:Delete')?.useMutation(
+  const deleteAdmin = useRecommendedPerm('Permission:Admin:Delete')?.useMutation(
     'delete',
     '/api/Admin/{id}',
     {
