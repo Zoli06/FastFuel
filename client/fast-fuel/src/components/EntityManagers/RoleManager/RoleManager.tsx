@@ -9,7 +9,7 @@ import {
   TextInput,
   ThemeIcon,
 } from '@mantine/core';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 import { pageDefinitions, type Page, type Permission } from '../../../lib/page-definitions.ts';
 import type { components } from '../../../types/api-schema.generated.ts';
@@ -19,11 +19,11 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 
 export const RoleManager = () => {
-  const { noPerm, necessaryPerm, recommendedPerm } = $api('RoleManager');
+  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('RoleManager');
   type PageKey = keyof typeof pageDefinitions;
-  const { data: pagePermissions = [] } = noPerm().useSuspenseQuery('get', '/api/Page');
-  const userReadApi = recommendedPerm('Permission:User:Read');
-  const permissionReadApi = recommendedPerm('Permission:Permission:Read');
+  const { data: pagePermissions = [] } = useNoPerm().useSuspenseQuery('get', '/api/Page');
+  const userReadApi = useRecommendedPerm('Permission:User:Read');
+  const permissionReadApi = useRecommendedPerm('Permission:Permission:Read');
 
   const pagePermissionsByPage = Object.fromEntries(
     pagePermissions.map((entry) => [entry.page, entry]),
@@ -34,6 +34,7 @@ export const RoleManager = () => {
         necessaryPermissions: Permission[];
         recommendedPermissions: Permission[];
         requiresDefaultRole: components['schemas']['DefaultRole'][];
+        requiredForDefaultRole: components['schemas']['DefaultRole'][];
       }
     >
   >;
@@ -44,6 +45,7 @@ export const RoleManager = () => {
       necessaryPermissions: entry?.necessaryPermissions ?? [],
       recommendedPermissions: entry?.recommendedPermissions ?? [],
       requiresDefaultRole: entry?.requiresDefaultRole ?? [],
+      requiredForDefaultRole: entry?.requiredForDefaultRole ?? [],
     };
   };
 
@@ -54,7 +56,7 @@ export const RoleManager = () => {
   ] = useConditionalSuspenseQueries([
     userReadApi?.queryOptions('get', '/api/User'),
     permissionReadApi?.queryOptions('get', '/api/Permission'),
-    necessaryPerm('Permission:Role:Read').queryOptions('get', '/api/Role'),
+    useNecessaryPerm('Permission:Role:Read').queryOptions('get', '/api/Role'),
   ]);
 
   type Role = (typeof roles)[number];
@@ -113,7 +115,10 @@ export const RoleManager = () => {
   const tableColumns: ColumnDefinition<Role>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Is Default', render: (r) => (r.isDefault ? 'Yes' : 'No') },
-    { header: 'Is Immutable', render: (r) => (r.isImmutable ? 'Yes' : 'No') },
+    {
+      header: 'Permissions Immutable',
+      render: (r) => (r.arePermissionsImmutable ? 'Yes' : 'No'),
+    },
   ];
 
   const isEditingDefaultRole = (roleId: number | undefined, mode: 'create' | 'edit') => {
@@ -142,7 +147,13 @@ export const RoleManager = () => {
       ? [
           {
             type: 'custom',
-            render: (form) => {
+            render: (form, mode) => {
+              const roleId = form.getValues().id as number | undefined;
+              const role =
+                mode === 'edit' && roleId != null
+                  ? roles.find((candidate) => candidate.id === roleId)
+                  : undefined;
+              const isPermissionsImmutable = !!role?.arePermissionsImmutable;
               const selectedPermissions =
                 (form.getValues().permissions as Permission[] | undefined) ?? [];
 
@@ -154,9 +165,11 @@ export const RoleManager = () => {
                   placeholder="Search permissions..."
                   searchable
                   clearable
+                  disabled={isPermissionsImmutable}
                   value={selectedPermissions}
                   error={form.errors.permissions}
                   onChange={(value) => {
+                    if (isPermissionsImmutable) return;
                     const nextPermissions = value as Permission[];
                     form.setFieldValue('permissions', nextPermissions);
 
@@ -213,6 +226,7 @@ export const RoleManager = () => {
             : undefined;
         const roleName = (values.name ?? role?.name ?? '').trim();
         const isDefaultRole = !!role?.isDefault;
+        const isPermissionsImmutable = !!role?.arePermissionsImmutable;
         const selectedPermissions =
           (form.getValues().permissions as Permission[] | undefined) ?? [];
         const selectedPages = (form.getValues().pages as Page[] | undefined) ?? [];
@@ -255,13 +269,20 @@ export const RoleManager = () => {
                 (permission) => selectedPermissionSet.has(permission),
               );
               const requiredDefaultRoles = pagePermissionDefinition.requiresDefaultRole;
+              const requiredForDefaultRole = pagePermissionDefinition.requiredForDefaultRole;
               const hasRequiredDefaultRole =
                 !requiredDefaultRoles ||
                 requiredDefaultRoles.length === 0 ||
                 (isDefaultRole &&
                   requiredDefaultRoles.includes(roleName as components['schemas']['DefaultRole']));
+              const isRequiredForCurrentRole =
+                isDefaultRole &&
+                requiredForDefaultRole.includes(roleName as components['schemas']['DefaultRole']);
               const isChecked = selectedPages.includes(page);
-              const canTogglePage = hasRequiredPermissions && (hasRequiredDefaultRole || isChecked);
+              const canTogglePage =
+                !isRequiredForCurrentRole &&
+                hasRequiredPermissions &&
+                (hasRequiredDefaultRole || isChecked);
 
               const addNecessaryPermissions = () => {
                 const newPermissions = [...selectedPermissions];
@@ -288,16 +309,20 @@ export const RoleManager = () => {
                 setSelectionErrors(selectedPages, newPermissions);
               };
 
-              const statusColor = hasRequiredDefaultRole
-                ? hasRequiredPermissions
-                  ? 'green'
-                  : 'red'
-                : 'orange';
-              const statusLabel = hasRequiredDefaultRole
-                ? hasRequiredPermissions
-                  ? 'Available'
-                  : 'Missing required permissions'
-                : `Requires default role: ${(requiredDefaultRoles ?? []).join(', ')}`;
+              const statusColor = isRequiredForCurrentRole
+                ? 'blue'
+                : hasRequiredDefaultRole
+                  ? hasRequiredPermissions
+                    ? 'green'
+                    : 'red'
+                  : 'orange';
+              const statusLabel = isRequiredForCurrentRole
+                ? 'Required for this role'
+                : hasRequiredDefaultRole
+                  ? hasRequiredPermissions
+                    ? 'Available'
+                    : 'Missing required permissions'
+                  : `Requires default role: ${(requiredDefaultRoles ?? []).join(', ')}`;
 
               return (
                 <Stack
@@ -315,6 +340,7 @@ export const RoleManager = () => {
                         checked={isChecked}
                         disabled={!canTogglePage}
                         onChange={(event) => {
+                          if (isRequiredForCurrentRole) return;
                           if (!hasRequiredPermissions || !hasRequiredDefaultRole) return;
                           if (event.currentTarget.checked) {
                             updatePages([...selectedPages, page]);
@@ -343,10 +369,20 @@ export const RoleManager = () => {
                     Recommended: {pagePermissionDefinition.recommendedPermissions.join(', ') || '-'}
                   </Text>
                   <Group gap="sm">
-                    <Button size="xs" variant="light" onClick={addNecessaryPermissions}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      disabled={isPermissionsImmutable}
+                      onClick={addNecessaryPermissions}
+                    >
                       Add Necessary Permissions
                     </Button>
-                    <Button size="xs" variant="light" onClick={addAllPermissions}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      disabled={isPermissionsImmutable}
+                      onClick={addAllPermissions}
+                    >
                       Add All Permissions
                     </Button>
                   </Group>
@@ -359,30 +395,27 @@ export const RoleManager = () => {
     } satisfies Field,
   ];
 
-  const createRole = recommendedPerm('Permission:Role:Create')?.useMutation('post', '/api/Role', {
-    onSuccess: () => refetchRoles(),
-  }).mutate;
-  const updateRole = recommendedPerm('Permission:Role:Update')?.useMutation(
+  const createRole = useRecommendedPerm('Permission:Role:Create')?.useMutation(
+    'post',
+    '/api/Role',
+    {
+      onSuccess: () => refetchRoles(),
+    },
+  ).mutate;
+  const updateRole = useRecommendedPerm('Permission:Role:Update')?.useMutation(
     'put',
     '/api/Role/{id}',
     {
       onSuccess: () => refetchRoles(),
     },
   ).mutate;
-  const deleteRole = recommendedPerm('Permission:Role:Delete')?.useMutation(
+  const deleteRole = useRecommendedPerm('Permission:Role:Delete')?.useMutation(
     'delete',
     '/api/Role/{id}',
     {
       onSuccess: () => refetchRoles(),
     },
   ).mutate;
-
-  const toRequestDto = (values: RoleFormValues, fallbackRole?: Role) => ({
-    name: values.name,
-    permissions: values.permissions ?? fallbackRole?.permissions ?? [],
-    pages: values.pages ?? fallbackRole?.pages ?? [],
-    userIds: values.userIds ?? fallbackRole?.userIds ?? [],
-  });
 
   const validateRole = (values: RoleFormValues) => {
     const pagesPermissionError = getPagesPermissionError(
@@ -405,17 +438,14 @@ export const RoleManager = () => {
     };
   };
 
-  const canEditRole = (role: Role) => !role.isImmutable;
-  const canDeleteRole = (role: Role) => !role.isDefault && !role.isImmutable;
+  const canDeleteRole = (role: Role) => !role.isDefault;
 
   const handleSubmit = (values: RoleFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createRole) {
-      createRole({ body: toRequestDto(values) });
+      createRole({ body: values });
     } else if (mode === 'edit') {
       if (!updateRole) return;
-      const role = roles.find((r) => r.id === values.id);
-      if (role && !canEditRole(role)) return;
-      updateRole({ params: { path: { id: values.id } }, body: toRequestDto(values, role) });
+      updateRole({ params: { path: { id: values.id } }, body: values });
     }
   };
 
@@ -436,7 +466,7 @@ export const RoleManager = () => {
       canCreate={!!createRole}
       canEdit={!!updateRole}
       canDelete={!!deleteRole}
-      canEditItem={canEditRole}
+      canEditItem={() => true}
       canDeleteItem={canDeleteRole}
     />
   );

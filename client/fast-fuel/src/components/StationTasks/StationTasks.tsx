@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import type { components } from '../../types/api-schema.generated.ts';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
@@ -188,15 +188,15 @@ const OrderCard = ({
 type Category = 'Pending' | 'InProgress' | 'Ready';
 
 export const StationTasks = ({ stationId }: StationTasksProps) => {
-  const { necessaryPerm, recommendedPerm } = $api('StationTasks');
-  const stationReadApi = recommendedPerm('Permission:Station:Read');
-  const updateStatusApi = recommendedPerm('Permission:Order:UpdateStatus');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('StationTasks');
+  const stationReadApi = useRecommendedPerm('Permission:Station:Read');
+  const updateStatusApi = useRecommendedPerm('Permission:Order:UpdateStatus');
   const isWideScreen = useMediaQuery('(min-width: 1400px)');
   const [selectedCategory, setSelectedCategory] = useState<Category>('Pending');
 
   const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useConditionalSuspenseQueries(
     [
-      necessaryPerm('Permission:Station:ViewTasks').queryOptions(
+      useNecessaryPerm('Permission:Station:ViewTasks').queryOptions(
         'get',
         '/api/Station/{id}/tasks',
         {

@@ -1,19 +1,19 @@
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationCategoryManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('StationCategoryManager');
-  const ingredientReadApi = recommendedPerm('Permission:Ingredient:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('StationCategoryManager');
+  const ingredientReadApi = useRecommendedPerm('Permission:Ingredient:Read');
 
   const [
     { data: ingredients = [] },
     { data: stationCategories = [], refetch: refetchStationCategories },
   ] = useConditionalSuspenseQueries([
     ingredientReadApi?.queryOptions('get', '/api/Ingredient'),
-    necessaryPerm('Permission:StationCategory:Read').queryOptions('get', '/api/StationCategory'),
+    useNecessaryPerm('Permission:StationCategory:Read').queryOptions('get', '/api/StationCategory'),
   ]);
 
   type StationCategory = (typeof stationCategories)[number];
@@ -69,23 +69,21 @@ export const StationCategoryManager = () => {
       : []),
   ];
 
-  const createStationCategory = recommendedPerm('Permission:StationCategory:Create')?.useMutation(
-    'post',
-    '/api/StationCategory',
-    {
-      onSuccess: () => refetchStationCategories(),
-    },
-  ).mutate;
-  const updateStationCategory = recommendedPerm('Permission:StationCategory:Update')?.useMutation(
-    'put',
-    '/api/StationCategory/{id}',
-    { onSuccess: () => refetchStationCategories() },
-  ).mutate;
-  const deleteStationCategory = recommendedPerm('Permission:StationCategory:Delete')?.useMutation(
-    'delete',
-    '/api/StationCategory/{id}',
-    { onSuccess: () => refetchStationCategories() },
-  ).mutate;
+  const createStationCategory = useRecommendedPerm(
+    'Permission:StationCategory:Create',
+  )?.useMutation('post', '/api/StationCategory', {
+    onSuccess: () => refetchStationCategories(),
+  }).mutate;
+  const updateStationCategory = useRecommendedPerm(
+    'Permission:StationCategory:Update',
+  )?.useMutation('put', '/api/StationCategory/{id}', {
+    onSuccess: () => refetchStationCategories(),
+  }).mutate;
+  const deleteStationCategory = useRecommendedPerm(
+    'Permission:StationCategory:Delete',
+  )?.useMutation('delete', '/api/StationCategory/{id}', {
+    onSuccess: () => refetchStationCategories(),
+  }).mutate;
 
   const handleSubmit = (values: StationCategory, mode: 'create' | 'edit') => {
     if (mode === 'create' && createStationCategory) {

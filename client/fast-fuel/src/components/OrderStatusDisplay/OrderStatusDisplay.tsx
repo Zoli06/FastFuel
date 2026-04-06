@@ -2,7 +2,7 @@ import { Box, Button, Group, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { components, paths } from '../../types/api-schema.generated.ts';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
@@ -35,7 +35,7 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = () => {
-  const { noPerm, necessaryPerm, recommendedPerm } = $api('OrderStatusDisplay');
+  const { noPerm, necessaryPerm, recommendedPerm } = useApi('OrderStatusDisplay');
   const { data: currentUser } = useSuspenseQuery(noPerm().queryOptions('get', '/api/User/me'));
   const currentUserType = currentUser.userType.toLowerCase();
   const isEmployeeUser = currentUserType === 'employee';

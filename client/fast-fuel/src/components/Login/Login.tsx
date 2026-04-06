@@ -2,20 +2,20 @@ import { Anchor, Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper';
-import { $api } from '../../lib/api.ts';
+import { useApi } from '../../lib/api.ts';
 import type { components } from '../../types/api-schema.generated.ts';
 
 type LoginValues = components['schemas']['LoginRequestDto'];
 
 export const Login = () => {
   const navigate = useNavigate();
-  const { noPerm, invalidateCache } = $api(null);
+  const { useNoPerm, invalidateApiCache } = useApi(null);
 
   const form = useForm<LoginValues>({
     initialValues: { userName: '', password: '' },
   });
 
-  const { mutateAsync: login, isPending } = noPerm().useMutation('post', '/api/Auth/login');
+  const { mutateAsync: login, isPending } = useNoPerm().useMutation('post', '/api/Auth/login');
 
   const handleSubmit = async (values: LoginValues) => {
     try {
@@ -23,7 +23,7 @@ export const Login = () => {
         body: values,
         params: { query: { useCookies: true, useSessionCookies: true } },
       });
-      invalidateCache();
+      invalidateApiCache();
       navigate('/', { replace: true });
     } catch {
       form.setFieldError('password', 'Incorrect username or password');

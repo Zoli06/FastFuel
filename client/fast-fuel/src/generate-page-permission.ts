@@ -11,9 +11,9 @@
  *
  * Generated API surface:
  *   const api = useApi("MyPage");
- *   api.noPerm().useQuery("get", "/api/Public")
- *   api.necessaryPerm("Permission:Foo:Read").useQuery("get", "/api/Foo")
- *   api.recommendedPerm("Permission:Foo:Read")?.useQuery("get", "/api/Foo")
+ *   api.useNoPerm().useQuery("get", "/api/Public")
+ *   api.useNecessaryPerm("Permission:Foo:Read").useQuery("get", "/api/Foo")
+ *   api.useRecommendedPerm("Permission:Foo:Read")?.useQuery("get", "/api/Foo")
  */
 
 import * as fs from 'fs';
@@ -256,27 +256,27 @@ function generate(ops: PathOperation[], pages: PagePermissionEntry[]): string {
   lines.push(`>;`);
   lines.push(``);
 
-  // ── ApiWithoutSpecifiedPage ───────────────────────────────────────────────
-  lines.push(`export type ApiWithoutSpecifiedPage = {`);
-  lines.push(`  noPerm(): HooksWithNoPerm;`);
-  lines.push(`  invalidateCache(): void;`);
+  // ── UseApiWithoutSpecifiedPage ────────────────────────────────────────────
+  lines.push(`export type UseApiWithoutSpecifiedPage = {`);
+  lines.push(`  useNoPerm(): HooksWithNoPerm;`);
+  lines.push(`  invalidateApiCache(): void;`);
   lines.push(`};`);
   lines.push(``);
 
-  // ── ApiWithSpecifiedPage ──────────────────────────────────────────────────
-  lines.push(`type ApiWithSpecifiedPage<Page extends PageName> = {`);
-  lines.push(`  necessaryPerm<Perm extends PageNecessaryPermissions[Page]>(`);
+  // ── UseApiWithSpecifiedPage ───────────────────────────────────────────────
+  lines.push(`type UseApiWithSpecifiedPage<Page extends PageName> = {`);
+  lines.push(`  useNecessaryPerm<Perm extends PageNecessaryPermissions[Page]>(`);
   lines.push(`    permission: Perm,`);
   lines.push(`  ): HooksForPerm<Perm>;`);
-  lines.push(`  recommendedPerm<Perm extends PageRecommendedPermissions[Page]>(`);
+  lines.push(`  useRecommendedPerm<Perm extends PageRecommendedPermissions[Page]>(`);
   lines.push(`    permission: Perm,`);
   lines.push(`  ): HooksForPerm<Perm> | null;`);
   lines.push(`};`);
   lines.push(``);
 
-  // ── Api ───────────────────────────────────────────────────────────────────
+  // ── UseApi ────────────────────────────────────────────────────────────────
   lines.push(
-    `export type Api<Page extends PageName | null> = ApiWithoutSpecifiedPage & (Page extends PageName ? ApiWithSpecifiedPage<Page> : never);`,
+    `export type UseApi<Page extends PageName | null> = UseApiWithoutSpecifiedPage & (Page extends PageName ? UseApiWithSpecifiedPage<Page> : never);`,
   );
   lines.push(``);
 

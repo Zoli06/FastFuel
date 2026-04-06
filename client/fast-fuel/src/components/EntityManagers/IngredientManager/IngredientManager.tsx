@@ -1,14 +1,14 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { $api } from '../../../lib/api.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const IngredientManager = () => {
-  const { necessaryPerm, recommendedPerm } = $api('IngredientManager');
-  const allergyReadApi = recommendedPerm('Permission:Allergy:Read');
-  const stationCategoryReadApi = recommendedPerm('Permission:StationCategory:Read');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('IngredientManager');
+  const allergyReadApi = useRecommendedPerm('Permission:Allergy:Read');
+  const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
 
   const [
     { data: allergies = [] },
@@ -17,7 +17,7 @@ export const IngredientManager = () => {
   ] = useConditionalSuspenseQueries([
     allergyReadApi?.queryOptions('get', '/api/Allergy'),
     stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
-    necessaryPerm('Permission:Ingredient:Read').queryOptions('get', '/api/Ingredient'),
+    useNecessaryPerm('Permission:Ingredient:Read').queryOptions('get', '/api/Ingredient'),
   ]);
 
   type Ingredient = (typeof ingredients)[number];
@@ -130,21 +130,21 @@ export const IngredientManager = () => {
     },
   ];
 
-  const createIngredient = recommendedPerm('Permission:Ingredient:Create')?.useMutation(
+  const createIngredient = useRecommendedPerm('Permission:Ingredient:Create')?.useMutation(
     'post',
     '/api/Ingredient',
     {
       onSuccess: () => refetchIngredients(),
     },
   ).mutate;
-  const updateIngredient = recommendedPerm('Permission:Ingredient:Update')?.useMutation(
+  const updateIngredient = useRecommendedPerm('Permission:Ingredient:Update')?.useMutation(
     'put',
     '/api/Ingredient/{id}',
     {
       onSuccess: () => refetchIngredients(),
     },
   ).mutate;
-  const deleteIngredient = recommendedPerm('Permission:Ingredient:Delete')?.useMutation(
+  const deleteIngredient = useRecommendedPerm('Permission:Ingredient:Delete')?.useMutation(
     'delete',
     '/api/Ingredient/{id}',
     {
