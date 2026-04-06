@@ -9,6 +9,7 @@ using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -205,22 +206,50 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     [Fact]
-    public async Task Update_ImmutableRole_ShouldThrowUnauthorizedAppException()
+    public async Task Update_ArePermissionsImmutableRole_WhenChangingPermissions_ShouldThrowUnauthorizedAppException()
     {
         var role = new Role
         {
-            Name = "Admin",
-            IsDefault = true,
-            IsImmutable = true
+            Name = "PermissionLockedRole",
+            ArePermissionsImmutable = true
         };
 
         await _roleManager.CreateAsync(role);
+        await _roleManager.AddClaimAsync(role, new Claim("Permission", "Permission:Existing"));
 
-        var request = BuildRequest("RenamedAdmin", new List<string> { "Permission:Test" });
+        var request = BuildRequest("PermissionLockedRole", new List<string> { "Permission:Test" });
 
         await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
             _service.UpdateAsync(role.Id, request)
         );
+    }
+
+    [Fact]
+    public async Task Update_ArePermissionsImmutableRole_WhenChangingOnlyPages_ShouldSucceed()
+    {
+        var role = new Role
+        {
+            Name = "PageLockedPermissions",
+            ArePermissionsImmutable = true,
+            Pages = new List<Page> { Page.Profile }
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        var request = BuildRequest(
+            "PageLockedPermissions",
+            permissions: new List<string>(),
+            pages: new List<Page> { Page.Profile, Page.OrderHistory }
+        );
+
+        var updated = await _service.UpdateAsync(role.Id, request);
+
+        Assert.True(updated);
+
+        var refreshedRole = await _dbContext.Roles.FirstAsync(r => r.Id == role.Id);
+        Assert.Equal(2, refreshedRole.Pages.Count);
+        Assert.Contains(Page.Profile, refreshedRole.Pages);
+        Assert.Contains(Page.OrderHistory, refreshedRole.Pages);
     }
 
     [Fact]
@@ -230,7 +259,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "DefaultRole",
             IsDefault = true,
-            IsImmutable = false
+            ArePermissionsImmutable = false
         };
 
         await _roleManager.CreateAsync(role);
@@ -255,7 +284,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Customer",
             IsDefault = true,
-            IsImmutable = false
+            ArePermissionsImmutable = false
         };
 
         await _roleManager.CreateAsync(role);
@@ -274,7 +303,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Customer",
             IsDefault = true,
-            IsImmutable = false
+            ArePermissionsImmutable = false
         };
 
         await _roleManager.CreateAsync(role);
@@ -302,7 +331,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Customer",
             IsDefault = true,
-            IsImmutable = false
+            ArePermissionsImmutable = false
         };
 
         await _roleManager.CreateAsync(role);
@@ -322,6 +351,30 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         );
 
         Assert.True(await _userManager.IsInRoleAsync(user, role.Name));
+    }
+
+    [Fact]
+    public async Task Update_AdminRole_WhenRemovingRoleManagerPage_ShouldThrowUnauthorizedAppException()
+    {
+        var role = new Role
+        {
+            Name = nameof(DefaultRole.Admin),
+            IsDefault = true,
+            ArePermissionsImmutable = false,
+            Pages = new List<Page> { Page.RoleManager, Page.Profile }
+        };
+
+        await _roleManager.CreateAsync(role);
+
+        var request = BuildRequest(
+            nameof(DefaultRole.Admin),
+            permissions: new List<string>(),
+            pages: new List<Page> { Page.Profile }
+        );
+
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
+            _service.UpdateAsync(role.Id, request)
+        );
     }
 
     [Fact]
@@ -382,20 +435,23 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     [Fact]
-    public async Task Delete_ImmutableRole_ShouldThrowUnauthorizedAppException()
+    public async Task Delete_ArePermissionsImmutableNonDefaultRole_ShouldRemoveRole()
     {
         var role = new Role
         {
-            Name = "Admin",
-            IsDefault = true,
-            IsImmutable = true
+            Name = "ImmutablePermissionsNonDefault",
+            IsDefault = false,
+            ArePermissionsImmutable = true
         };
 
         await _roleManager.CreateAsync(role);
 
-        await Assert.ThrowsAsync<UnauthorizedAppException>(() =>
-            _service.DeleteAsync(role.Id)
-        );
+        var deleted = await _service.DeleteAsync(role.Id);
+
+        Assert.True(deleted);
+
+        var refreshedRole = await _roleManager.FindByNameAsync(role.Name);
+        Assert.Null(refreshedRole);
     }
 
     [Fact]
@@ -405,7 +461,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Customer",
             IsDefault = true,
-            IsImmutable = false
+            ArePermissionsImmutable = false
         };
 
         await _roleManager.CreateAsync(role);

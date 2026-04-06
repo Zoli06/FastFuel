@@ -9,4 +9,5 @@ public record PagePermissionsResponseDto
     public required List<string> NecessaryPermissions { get; init; }
     public required List<string> RecommendedPermissions { get; init; }
     public required List<DefaultRole> RequiresDefaultRole { get; init; }
+    public required List<DefaultRole> RequiredForDefaultRole { get; init; }
 }

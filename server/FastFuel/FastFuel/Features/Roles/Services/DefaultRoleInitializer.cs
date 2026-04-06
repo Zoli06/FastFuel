@@ -43,7 +43,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             {
                 Name = roleName,
                 IsDefault = true,
-                IsImmutable = defaultRole == DefaultRole.Admin,
+                ArePermissionsImmutable = defaultRole == DefaultRole.Admin,
                 Pages = DefaultRolePages.TryGetValue(defaultRole, out var pages) ? pages.ToList() : []
             };
 
@@ -92,7 +92,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
         var adminRole = await roleManager.FindByNameAsync(adminRoleName);
         if (adminRole == null)
         {
-            adminRole = new Role { Name = adminRoleName, IsDefault = true, IsImmutable = true };
+            adminRole = new Role { Name = adminRoleName, IsDefault = true, ArePermissionsImmutable = true };
             var createResult = await roleManager.CreateAsync(adminRole);
             if (!createResult.Succeeded)
                 throw new ValidationAppException(

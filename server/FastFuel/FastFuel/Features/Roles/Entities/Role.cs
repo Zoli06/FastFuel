@@ -13,6 +13,6 @@ public class Role : IdentityRole<uint>, IIdentifiable
     }
 
     public bool IsDefault { get; set; }
-    public bool IsImmutable { get; set; }
+    public bool ArePermissionsImmutable { get; set; }
     public List<Page> Pages { get; set; } = [];
 }
