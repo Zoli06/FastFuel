@@ -2,8 +2,6 @@ import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTab
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { Button } from '@mantine/core';
-import { Link } from 'react-router-dom';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
@@ -11,7 +9,6 @@ export const StationManager = () => {
 
   const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
   const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
-  const viewTasksApi = useRecommendedPerm('Permission:Station:ViewTasks');
 
   const [
     { data: restaurants = [] },
@@ -48,18 +45,6 @@ export const StationManager = () => {
             header: 'Category',
             render: (s: Station) =>
               categoryNameById.get(s.stationCategoryId) ?? `#${s.stationCategoryId}`,
-          },
-        ]
-      : []),
-    ...(viewTasksApi
-      ? [
-          {
-            header: 'Tasks',
-            render: (s: Station) => (
-              <Link to={`/stations/${s.id}/tasks`}>
-                <Button>View Tasks</Button>
-              </Link>
-            ),
           },
         ]
       : []),

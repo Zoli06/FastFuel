@@ -38,8 +38,8 @@ export const pageDefinitions = {
     displayName: 'Station Tasks',
     color: 'indigo',
     icon: IconClipboardList,
-    routePath: '/stations/:id/tasks',
-    showInHomeMenu: false,
+    routePath: '/station-tasks',
+    showInHomeMenu: true,
     group: 'Display',
   },
   OrderStatusDisplay: {

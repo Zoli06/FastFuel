@@ -12,7 +12,7 @@ public static class PagePermissionCatalog
                 [Page.StationTasks] =
                     new(
                         ["Permission:Station:ViewTasks"],
-                        ["Permission:Station:Read", "Permission:Order:UpdateStatus"],
+                        ["Permission:Station:Read", "Permission:Order:UpdateStatus", "Permission:Restaurant:Read"],
                         [],
                         []
                     ),
@@ -180,7 +180,6 @@ public static class PagePermissionCatalog
                     new(
                         ["Permission:Station:Read"],
                         [
-                            "Permission:Station:ViewTasks",
                             "Permission:Station:Create",
                             "Permission:Station:Update",
                             "Permission:Station:Delete",

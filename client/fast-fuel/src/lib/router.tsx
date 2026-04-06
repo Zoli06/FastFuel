@@ -166,7 +166,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: '/stations/:id/tasks',
+    path: '/station-tasks/:id?',
     element: <StationTasksPage />,
     errorElement: <ErrorPage />,
   },
