@@ -34,6 +34,7 @@ export const RoleManager = () => {
         necessaryPermissions: Permission[];
         recommendedPermissions: Permission[];
         requiresDefaultRole: components['schemas']['DefaultRole'][];
+        requiredForDefaultRole: components['schemas']['DefaultRole'][];
       }
     >
   >;
@@ -44,6 +45,7 @@ export const RoleManager = () => {
       necessaryPermissions: entry?.necessaryPermissions ?? [],
       recommendedPermissions: entry?.recommendedPermissions ?? [],
       requiresDefaultRole: entry?.requiresDefaultRole ?? [],
+      requiredForDefaultRole: entry?.requiredForDefaultRole ?? [],
     };
   };
 
@@ -267,13 +269,20 @@ export const RoleManager = () => {
                 (permission) => selectedPermissionSet.has(permission),
               );
               const requiredDefaultRoles = pagePermissionDefinition.requiresDefaultRole;
+              const requiredForDefaultRole = pagePermissionDefinition.requiredForDefaultRole;
               const hasRequiredDefaultRole =
                 !requiredDefaultRoles ||
                 requiredDefaultRoles.length === 0 ||
                 (isDefaultRole &&
                   requiredDefaultRoles.includes(roleName as components['schemas']['DefaultRole']));
+              const isRequiredForCurrentRole =
+                isDefaultRole &&
+                requiredForDefaultRole.includes(roleName as components['schemas']['DefaultRole']);
               const isChecked = selectedPages.includes(page);
-              const canTogglePage = hasRequiredPermissions && (hasRequiredDefaultRole || isChecked);
+              const canTogglePage =
+                !isRequiredForCurrentRole &&
+                hasRequiredPermissions &&
+                (hasRequiredDefaultRole || isChecked);
 
               const addNecessaryPermissions = () => {
                 const newPermissions = [...selectedPermissions];
@@ -300,16 +309,20 @@ export const RoleManager = () => {
                 setSelectionErrors(selectedPages, newPermissions);
               };
 
-              const statusColor = hasRequiredDefaultRole
-                ? hasRequiredPermissions
-                  ? 'green'
-                  : 'red'
-                : 'orange';
-              const statusLabel = hasRequiredDefaultRole
-                ? hasRequiredPermissions
-                  ? 'Available'
-                  : 'Missing required permissions'
-                : `Requires default role: ${(requiredDefaultRoles ?? []).join(', ')}`;
+              const statusColor = isRequiredForCurrentRole
+                ? 'blue'
+                : hasRequiredDefaultRole
+                  ? hasRequiredPermissions
+                    ? 'green'
+                    : 'red'
+                  : 'orange';
+              const statusLabel = isRequiredForCurrentRole
+                ? 'Required for this role'
+                : hasRequiredDefaultRole
+                  ? hasRequiredPermissions
+                    ? 'Available'
+                    : 'Missing required permissions'
+                  : `Requires default role: ${(requiredDefaultRoles ?? []).join(', ')}`;
 
               return (
                 <Stack
@@ -327,6 +340,7 @@ export const RoleManager = () => {
                         checked={isChecked}
                         disabled={!canTogglePage}
                         onChange={(event) => {
+                          if (isRequiredForCurrentRole) return;
                           if (!hasRequiredPermissions || !hasRequiredDefaultRole) return;
                           if (event.currentTarget.checked) {
                             updatePages([...selectedPages, page]);

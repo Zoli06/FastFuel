@@ -10,13 +10,16 @@ public class PageService : IPageService
         return Enum.GetValues<Page>()
             .Select(page =>
             {
-                var permissions = PagePermissionCatalog.PagePermissions.GetValueOrDefault(page, ([], [], []));
+                var permissions = PagePermissionCatalog.PagePermissions.GetValueOrDefault(
+                    page,
+                    new PagePermissionCatalog.PagePermissionCatalogItem([], [], [], []));
                 return new PagePermissionsResponseDto
                 {
                     Page = page,
                     NecessaryPermissions = permissions.Necessary.ToList(),
                     RecommendedPermissions = permissions.Recommended.ToList(),
-                    RequiresDefaultRole = permissions.RequiresDefaultRole.ToList()
+                    RequiresDefaultRole = permissions.RequiresDefaultRole.ToList(),
+                    RequiredForDefaultRole = permissions.RequiredForDefaultRole.ToList()
                 };
             })
             .ToList();

@@ -124,14 +124,30 @@ public class RoleService(
             throw new UnauthorizedAppException($"Permissions of role '{role.Name}' cannot be modified.");
     }
 
-    private static void EnsureAdminRoleHasRoleManagerPage(Role role, List<Page> requestedPages)
+    private static void EnsureRequiredPagesForDefaultRole(Role role, List<Page> requestedPages)
     {
-        if (!role.IsDefault || !string.Equals(role.Name, nameof(DefaultRole.Admin), StringComparison.Ordinal))
+        if (!role.IsDefault)
             return;
 
-        if (!requestedPages.Contains(Page.RoleManager))
+        if (!Enum.TryParse<Common.DefaultRole>(role.Name, out var defaultRole))
+            return;
+
+        var requiredPages = PagePermissionCatalog.PagePermissions
+            .Where(pagePermission => pagePermission.Value.RequiredForDefaultRole.Contains(defaultRole))
+            .Select(pagePermission => pagePermission.Key)
+            .ToHashSet();
+
+        if (requiredPages.Count == 0)
+            return;
+
+        var requestedPageSet = requestedPages.ToHashSet();
+        var missingRequiredPages = requiredPages
+            .Where(requiredPage => !requestedPageSet.Contains(requiredPage))
+            .ToList();
+
+        if (missingRequiredPages.Count > 0)
             throw new UnauthorizedAppException(
-                $"Page '{Page.RoleManager}' cannot be removed from role '{role.Name}'.");
+                $"Required pages for default role '{role.Name}' cannot be removed: {string.Join(", ", missingRequiredPages)}.");
     }
 
     private class Create(
@@ -177,7 +193,7 @@ public class RoleService(
         {
             await EnsureDefaultRoleUsersUnchangedAsync(userManager, entity, requestDto.UserIds);
             await EnsurePermissionsUnchangedIfImmutableAsync(roleManager, entity, requestDto.Permissions);
-            EnsureAdminRoleHasRoleManagerPage(entity, requestDto.Pages);
+            EnsureRequiredPagesForDefaultRole(entity, requestDto.Pages);
 
             await base.SaveEntityAsync(id, requestDto, entity, userId, cancellationToken);
 
@@ -192,7 +208,6 @@ public class RoleService(
         protected override async Task DeleteEntityAsync(uint id, Role entity, uint? userId = null,
             CancellationToken cancellationToken = default)
         {
-
             if (entity.IsDefault)
                 throw new UnauthorizedAppException(
                     $"The default role '{entity.Name}' cannot be deleted.");
