@@ -171,7 +171,7 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: '/restaurants/:id/status-display',
+    path: '/restaurants/order-status-display',
     element: <OrderStatusDisplayPage />,
     errorElement: <ErrorPage />,
   },

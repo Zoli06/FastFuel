@@ -1,18 +1,16 @@
 import { Box, Button, Group, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import type { components, paths } from '../../types/api-schema.generated.ts';
 import { useApi } from '../../lib/api.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
+import { RestaurantPickerModal } from '../common/SearchablePickerModals/RestaurantPickerModal.tsx';
 
 type Order = components['schemas']['OrderResponseDto'];
 type OrderStatus = Extract<components['schemas']['OrderStatus'], 'InProgress' | 'Ready'>;
 type OrderQuery = NonNullable<paths['/api/Order']['get']['parameters']['query']>;
-
-type OrderStatusDisplayProps = {
-  restaurantId: number;
-};
 
 const statusColor: Record<string, string> = {
   InProgress: '#5f5f5f',
@@ -36,44 +34,110 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
   );
 };
 
-export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('OrderStatusDisplay');
+export const OrderStatusDisplay = () => {
+  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('OrderStatusDisplay');
+  const { data: currentUser } = useSuspenseQuery(useNoPerm().queryOptions('get', '/api/User/me'));
+  const currentUserType = currentUser.userType.toLowerCase();
+  const isEmployeeUser = currentUserType === 'employee';
+  const isMachineUser = currentUserType === 'machine';
+  const isCustomer = currentUserType === 'customer';
+  const isAdmin = currentUserType === 'admin';
+  const needsRestaurantPicker = isCustomer || isAdmin;
+  const noPermApi = useNoPerm();
+
+  const [{ data: employeeProfile }, { data: machineProfile }] = useConditionalSuspenseQueries([
+    isEmployeeUser ? noPermApi.queryOptions('get', '/api/Employee/me') : undefined,
+    isMachineUser ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
+  ]);
+
+  const lockedRestaurantId = isEmployeeUser
+    ? (employeeProfile?.worksAtRestaurantId ?? null)
+    : isMachineUser
+      ? (machineProfile?.locatedAtRestaurantId ?? null)
+      : null;
+
+  const orderReadApi = useNecessaryPerm('Permission:Order:Read');
   const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
+  const [restaurantId, setRestaurantId] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
+  const [restaurantPickerOpen, setRestaurantPickerOpen] = useState(false);
+  const [restaurantSearch, setRestaurantSearch] = useState('');
   const hideExitButtonTimeoutRef = useRef<number | null>(null);
 
-  const buildOrderQuery = (status: OrderStatus): OrderQuery => ({
-    restaurantId,
+  const buildOrderQuery = (selectedRestaurantId: number, status: OrderStatus): OrderQuery => ({
+    restaurantId: selectedRestaurantId,
     status,
   });
 
-  const [{ data: restaurant }, { data: inProgressOrders = [] }, { data: readyOrders = [] }] =
-    useConditionalSuspenseQueries([
-      restaurantReadApi?.queryOptions('get', '/api/Restaurant/{id}', {
-        params: { path: { id: restaurantId } },
-      }),
-      useNecessaryPerm('Permission:Order:Read').queryOptions(
-        'get',
-        '/api/Order',
-        {
-          params: { query: buildOrderQuery('InProgress') },
-        },
-        {
-          refetchInterval: 2500,
-        },
-      ),
-      useNecessaryPerm('Permission:Order:Read').queryOptions(
-        'get',
-        '/api/Order',
-        {
-          params: { query: buildOrderQuery('Ready') },
-        },
-        {
-          refetchInterval: 2500,
-        },
-      ),
-    ]);
+  const [
+    { data: restaurant },
+    { data: inProgressOrders = [] },
+    { data: readyOrders = [] },
+    { data: restaurants = [] },
+  ] = useConditionalSuspenseQueries([
+    restaurantReadApi && restaurantId !== null
+      ? restaurantReadApi.queryOptions('get', '/api/Restaurant/{id}', {
+          params: { path: { id: restaurantId } },
+        })
+      : undefined,
+    restaurantId !== null
+      ? orderReadApi.queryOptions(
+          'get',
+          '/api/Order',
+          {
+            params: { query: buildOrderQuery(restaurantId, 'InProgress') },
+          },
+          {
+            refetchInterval: 2500,
+          },
+        )
+      : undefined,
+    restaurantId !== null
+      ? orderReadApi.queryOptions(
+          'get',
+          '/api/Order',
+          {
+            params: { query: buildOrderQuery(restaurantId, 'Ready') },
+          },
+          {
+            refetchInterval: 2500,
+          },
+        )
+      : undefined,
+    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+  ]);
+
+  const filteredRestaurants = restaurants.filter((r) =>
+    r.name.toLowerCase().includes(restaurantSearch.toLowerCase()),
+  );
+
+  const canChangeRestaurant = Boolean(
+    restaurantReadApi && restaurants.length > 0 && lockedRestaurantId === null,
+  );
+
+  const openRestaurantPicker = () => {
+    setRestaurantSearch('');
+    setRestaurantPickerOpen(true);
+  };
+
+  const handleSelectRestaurant = (newRestaurantId: number) => {
+    setRestaurantId(newRestaurantId);
+    setRestaurantPickerOpen(false);
+    setRestaurantSearch('');
+  };
+
+  useEffect(() => {
+    if (needsRestaurantPicker && restaurantId === null) {
+      setRestaurantPickerOpen(true);
+    }
+  }, [needsRestaurantPicker, restaurantId]);
+
+  useEffect(() => {
+    if (lockedRestaurantId !== null) {
+      setRestaurantId((prev) => (prev === lockedRestaurantId ? prev : lockedRestaurantId));
+    }
+  }, [lockedRestaurantId]);
 
   const toggleFullscreen = async () => {
     if (document.fullscreenElement) {
@@ -154,6 +218,11 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
             mb="md"
             style={isFullscreen ? { position: 'fixed', top: 16, right: 16, zIndex: 20 } : undefined}
           >
+            {canChangeRestaurant && (
+              <Button variant="light" onClick={openRestaurantPicker}>
+                Change Restaurant
+              </Button>
+            )}
             <Button variant="light" onClick={() => void toggleFullscreen()}>
               {isFullscreen ? 'Exit Full Screen' : 'Full Screen'}
             </Button>
@@ -180,6 +249,21 @@ export const OrderStatusDisplay = ({ restaurantId }: OrderStatusDisplayProps) =>
           )}
         </Stack>
       </Box>
+      <RestaurantPickerModal
+        opened={restaurantPickerOpen}
+        restaurantId={restaurantId}
+        searchValue={restaurantSearch}
+        restaurants={filteredRestaurants}
+        onSearchChange={setRestaurantSearch}
+        onClose={() => {
+          if (restaurantId !== null || !needsRestaurantPicker) {
+            setRestaurantPickerOpen(false);
+          }
+        }}
+        onSelectRestaurant={handleSelectRestaurant}
+        title="Switch restaurant"
+        emptyMessage="No restaurants found"
+      />
       {!isFullscreen && <Footer />}
     </>
   );

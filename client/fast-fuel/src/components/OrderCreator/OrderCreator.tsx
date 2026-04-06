@@ -7,7 +7,7 @@ import { CategoryNav } from './sections/CategoryNav.tsx';
 import { CartPanel } from './sections/CartPanel.tsx';
 import { ItemGrid } from './sections/ItemGrid.tsx';
 import { OrderCatalogHeader } from './sections/OrderCatalogHeader.tsx';
-import { RestaurantPickerModal } from './modals/RestaurantPickerModal.tsx';
+import { RestaurantPickerModal } from '../common/SearchablePickerModals/RestaurantPickerModal.tsx';
 import { CheckoutModal } from './modals/CheckoutModal.tsx';
 import { EditCartEntryModal } from './modals/EditCartEntryModal.tsx';
 import type { CategoryValue } from './constants.ts';
