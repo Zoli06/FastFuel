@@ -1,0 +1,8 @@
+/* Enforce parity between PasswordInput and other Mantine inputs app-wide. */
+.mantine-PasswordInput-innerInput {
+  font-size: var(--input-fz, var(--mantine-font-size-sm));
+}
+
+.mantine-PasswordInput-innerInput::placeholder {
+  font-size: var(--input-fz, var(--mantine-font-size-sm));
+}
