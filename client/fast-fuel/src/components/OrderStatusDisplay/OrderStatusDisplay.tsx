@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { components, paths } from '../../types/api-schema.generated.ts';
 import { useApi } from '../../lib/api.ts';
-import { Header } from '../Header/Header.tsx';
-import { Footer } from '../Footer/Footer.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import { RestaurantPickerModal } from '../common/SearchablePickerModals/RestaurantPickerModal.tsx';
 
@@ -70,43 +68,34 @@ export const OrderStatusDisplay = () => {
     status,
   });
 
-  const [
-    { data: restaurant },
-    { data: inProgressOrders = [] },
-    { data: readyOrders = [] },
-    { data: restaurants = [] },
-  ] = useConditionalSuspenseQueries([
-    restaurantReadApi && restaurantId !== null
-      ? restaurantReadApi.queryOptions('get', '/api/Restaurant/{id}', {
-          params: { path: { id: restaurantId } },
-        })
-      : undefined,
-    restaurantId !== null
-      ? orderReadApi.queryOptions(
-          'get',
-          '/api/Order',
-          {
-            params: { query: buildOrderQuery(restaurantId, 'InProgress') },
-          },
-          {
-            refetchInterval: 2500,
-          },
-        )
-      : undefined,
-    restaurantId !== null
-      ? orderReadApi.queryOptions(
-          'get',
-          '/api/Order',
-          {
-            params: { query: buildOrderQuery(restaurantId, 'Ready') },
-          },
-          {
-            refetchInterval: 2500,
-          },
-        )
-      : undefined,
-    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
-  ]);
+  const [{ data: inProgressOrders = [] }, { data: readyOrders = [] }, { data: restaurants = [] }] =
+    useConditionalSuspenseQueries([
+      restaurantId !== null
+        ? orderReadApi.queryOptions(
+            'get',
+            '/api/Order',
+            {
+              params: { query: buildOrderQuery(restaurantId, 'InProgress') },
+            },
+            {
+              refetchInterval: 2500,
+            },
+          )
+        : undefined,
+      restaurantId !== null
+        ? orderReadApi.queryOptions(
+            'get',
+            '/api/Order',
+            {
+              params: { query: buildOrderQuery(restaurantId, 'Ready') },
+            },
+            {
+              refetchInterval: 2500,
+            },
+          )
+        : undefined,
+      restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    ]);
 
   const filteredRestaurants = restaurants.filter((r) =>
     r.name.toLowerCase().includes(restaurantSearch.toLowerCase()),
@@ -201,17 +190,9 @@ export const OrderStatusDisplay = () => {
     };
   }, [isFullscreen, showExitButton]);
 
-  const headerTitle = restaurantReadApi && restaurant ? `Orders - ${restaurant.name}` : 'Orders';
-
   return (
     <>
-      {!isFullscreen && <Header title={headerTitle} />}
-
-      <Box
-        p="xl"
-        pb={isFullscreen ? 'xl' : 80}
-        style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}
-      >
+      <Box p="xl" pb="xl" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
         {(!isFullscreen || showExitButton) && (
           <Group
             justify="flex-end"
@@ -264,7 +245,6 @@ export const OrderStatusDisplay = () => {
         title="Switch restaurant"
         emptyMessage="No restaurants found"
       />
-      {!isFullscreen && <Footer />}
     </>
   );
 };

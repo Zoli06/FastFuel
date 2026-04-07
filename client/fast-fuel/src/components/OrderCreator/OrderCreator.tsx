@@ -74,6 +74,49 @@ export const OrderCreator = () => {
     }
   }, [lockedRestaurantId]);
 
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      await document.documentElement.requestFullscreen();
+    } catch {
+      // Ignore fullscreen API failures (browser policy/user gesture constraints).
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      if (event.key.toLowerCase() !== 'f') {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName.toLowerCase();
+      const isTypingTarget =
+        target?.isContentEditable ||
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        tagName === 'select';
+
+      if (isTypingTarget) {
+        return;
+      }
+
+      event.preventDefault();
+      void toggleFullscreen();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const { mutateAsync: createOrder, isPending } = useNecessaryPerm(
     'Permission:Order:Create',
   ).useMutation('post', '/api/Order');
