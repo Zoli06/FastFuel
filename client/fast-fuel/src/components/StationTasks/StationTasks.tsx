@@ -27,10 +27,6 @@ type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
 type OrderStatus = components['schemas']['OrderStatus'];
 
-export type StationTasksProps = {
-  stationId: number;
-};
-
 type StatusButton = {
   next: OrderStatus;
   label: string;
