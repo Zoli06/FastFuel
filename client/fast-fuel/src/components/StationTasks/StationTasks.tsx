@@ -12,21 +12,20 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { useState } from 'react';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { components } from '../../types/api-schema.generated.ts';
 import { useApi } from '../../lib/api.ts';
 import { Header } from '../Header/Header.tsx';
 import { Footer } from '../Footer/Footer.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
+import { StationPickerModal } from '../common/SearchablePickerModals/StationPickerModal.tsx';
 
 type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
 type OrderStatus = components['schemas']['OrderStatus'];
-
-export type StationTasksProps = {
-  stationId: number;
-};
 
 const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
   Pending: 'InProgress',
@@ -187,30 +186,83 @@ const OrderCard = ({
 
 type Category = 'Pending' | 'InProgress' | 'Ready';
 
-export const StationTasks = ({ stationId }: StationTasksProps) => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('StationTasks');
+export const StationTasks = () => {
+  const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
+  const parsedRouteStationId = Number(id);
+  const activeStationId =
+    Number.isInteger(parsedRouteStationId) && parsedRouteStationId > 0
+      ? parsedRouteStationId
+      : null;
+  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('StationTasks');
+  const noPermApi = useNoPerm();
+  const { data: currentUser } = useSuspenseQuery(noPermApi.queryOptions('get', '/api/User/me'));
+  const currentUserType = currentUser.userType.toLowerCase();
+  const isEmployeeUser = currentUserType === 'employee';
+  const isMachineUser = currentUserType === 'machine';
+  const stationTasksApi = useNecessaryPerm('Permission:Station:ViewTasks');
   const stationReadApi = useRecommendedPerm('Permission:Station:Read');
+  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
   const updateStatusApi = useRecommendedPerm('Permission:Order:UpdateStatus');
   const isWideScreen = useMediaQuery('(min-width: 1400px)');
+  const [stationPickerOpen, setStationPickerOpen] = useState(activeStationId === null);
+  const [stationSearch, setStationSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('Pending');
 
-  const [{ data: tasks, refetch: refetchTasks }, { data: station }] = useConditionalSuspenseQueries(
-    [
-      useNecessaryPerm('Permission:Station:ViewTasks').queryOptions(
-        'get',
-        '/api/Station/{id}/tasks',
-        {
-          params: { path: { id: stationId } },
-        },
-        {
-          refetchInterval: 2500,
-        },
-      ),
-      stationReadApi?.queryOptions('get', '/api/Station/{id}', {
-        params: { path: { id: stationId } },
-      }),
-    ],
-  );
+  const [{ data: employeeProfile }, { data: machineProfile }] = useConditionalSuspenseQueries([
+    isEmployeeUser ? noPermApi.queryOptions('get', '/api/Employee/me') : undefined,
+    isMachineUser ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
+  ]);
+
+  const lockedRestaurantId = isEmployeeUser
+    ? (employeeProfile?.worksAtRestaurantId ?? null)
+    : isMachineUser
+      ? (machineProfile?.locatedAtRestaurantId ?? null)
+      : null;
+
+  const [
+    { data: tasks, refetch: refetchTasks },
+    { data: station },
+    { data: stations = [] },
+    { data: lockedRestaurant },
+  ] = useConditionalSuspenseQueries([
+    activeStationId !== null
+      ? stationTasksApi.queryOptions(
+          'get',
+          '/api/Station/{id}/tasks',
+          {
+            params: { path: { id: activeStationId } },
+          },
+          {
+            refetchInterval: 2500,
+          },
+        )
+      : undefined,
+    stationReadApi && activeStationId !== null
+      ? stationReadApi.queryOptions('get', '/api/Station/{id}', {
+          params: { path: { id: activeStationId } },
+        })
+      : undefined,
+    stationReadApi
+      ? stationReadApi.queryOptions('get', '/api/Station', {
+          params: {
+            query: lockedRestaurantId !== null ? { restaurantId: lockedRestaurantId } : undefined,
+          },
+        })
+      : undefined,
+    restaurantReadApi && lockedRestaurantId !== null
+      ? restaurantReadApi.queryOptions('get', '/api/Restaurant/{id}', {
+          params: { path: { id: lockedRestaurantId } },
+        })
+      : undefined,
+  ]);
+
+  useEffect(() => {
+    if (activeStationId === null) {
+      setStationSearch('');
+      setStationPickerOpen(true);
+    }
+  }, [activeStationId]);
 
   const updateStatus = updateStatusApi
     ? updateStatusApi.useMutation('put', '/api/Order/{id}/status', {
@@ -227,16 +279,60 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
   const pendingOrders = allOrders.filter((o) => o.status === 'Pending');
   const inProgressOrders = allOrders.filter((o) => o.status === 'InProgress');
   const readyOrders = allOrders.filter((o) => o.status === 'Ready');
+  const filteredStations = stations.filter((s) =>
+    s.name.toLowerCase().includes(stationSearch.toLowerCase()),
+  );
+  const canChangeStation = Boolean(
+    stationReadApi && stations.length > 1 && lockedRestaurantId === null,
+  );
+  const stationPickerTitle =
+    (isEmployeeUser || isMachineUser) && restaurantReadApi && lockedRestaurant?.name
+      ? `Switch station (${lockedRestaurant.name} resturant)`
+      : 'Switch station';
+
+  const openStationPicker = () => {
+    setStationSearch('');
+    setStationPickerOpen(true);
+  };
+
+  const handleSelectStation = (newStationId: number) => {
+    setStationPickerOpen(false);
+    setStationSearch('');
+    void navigate(`/station-tasks/${newStationId}`);
+  };
+
+  const handleCloseStationPicker = () => {
+    if (activeStationId !== null) {
+      setStationPickerOpen(false);
+    }
+  };
 
   if (allOrders.length === 0) {
     return (
       <>
         <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
         <Box p="xl" pb={80}>
+          {canChangeStation && (
+            <Group justify="flex-end" mb="md">
+              <Button variant="light" onClick={openStationPicker}>
+                Change Station
+              </Button>
+            </Group>
+          )}
           <Text ta="center" c="dimmed" fz="xl">
             No pending tasks
           </Text>
         </Box>
+        <StationPickerModal
+          opened={stationPickerOpen}
+          stationId={activeStationId}
+          searchValue={stationSearch}
+          stations={filteredStations}
+          onSearchChange={setStationSearch}
+          onClose={handleCloseStationPicker}
+          onSelectStation={handleSelectStation}
+          title={stationPickerTitle}
+        />
         <Footer />
       </>
     );
@@ -246,6 +342,14 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
     <>
       <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
       <Box p="md" pb={80}>
+        {canChangeStation && (
+          <Group justify="flex-end" mb="md">
+            <Button variant="light" onClick={openStationPicker}>
+              Change Station
+            </Button>
+          </Group>
+        )}
+
         {!isWideScreen && (
           <Box mb="md">
             <SegmentedControl
@@ -435,6 +539,16 @@ export const StationTasks = ({ stationId }: StationTasksProps) => {
           </Box>
         )}
       </Box>
+      <StationPickerModal
+        opened={stationPickerOpen}
+        stationId={activeStationId}
+        searchValue={stationSearch}
+        stations={filteredStations}
+        onSearchChange={setStationSearch}
+        onClose={handleCloseStationPicker}
+        onSelectStation={handleSelectStation}
+        title={stationPickerTitle}
+      />
       <Footer />
     </>
   );

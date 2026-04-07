@@ -22,6 +22,18 @@ public class StationService(
 {
     protected override DbSet<Station> DbSet { get; } = dbContext.Stations;
 
+    public async Task<List<StationResponseDto>> GetAllStationsWithFiltersAsync(uint? restaurantId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = DbSet.AsQueryable();
+
+        if (restaurantId.HasValue)
+            query = query.Where(station => station.RestaurantId == restaurantId.Value);
+
+        var stations = await query.ToListAsync(cancellationToken);
+        return stations.ConvertAll(Mapper.ToDto);
+    }
+
     public async Task<StationTasksResponseDto?> GetTasksForStationAsync(uint stationId,
         CancellationToken cancellationToken = default)
     {
