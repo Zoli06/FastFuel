@@ -27,28 +27,42 @@ type StationTask = components['schemas']['StationTasksResponseDto'];
 type StationTaskOrder = components['schemas']['StationTaskOrder'];
 type OrderStatus = components['schemas']['OrderStatus'];
 
-const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
-  Pending: 'InProgress',
-  InProgress: 'Ready',
-  Ready: 'Completed',
+type StatusButton = {
+  next: OrderStatus;
+  label: string;
+  color?: string;
+  variant?: 'filled' | 'light' | 'outline';
 };
 
-const statusColor: Record<string, string> = {
-  Pending: 'yellow',
-  InProgress: 'blue',
-  Ready: 'cyan',
+type StationStatus = {
+  status: OrderStatus;
+  color: string;
+  label: string;
+  buttons: StatusButton[];
 };
 
-const statusLabel: Record<string, string> = {
-  Pending: 'Pending',
-  InProgress: 'In Progress',
-  Ready: 'Ready',
-};
-
-const nextStatusLabel: Record<string, string> = {
-  Pending: 'Start',
-  InProgress: 'Ready',
-  Ready: 'Complete',
+const statuses: Partial<Record<OrderStatus, StationStatus>> = {
+  Pending: {
+    status: 'Pending',
+    color: 'yellow',
+    label: 'Pending',
+    buttons: [
+      { next: 'InProgress', label: 'Start', color: 'blue', variant: 'light' },
+      { next: 'Cancelled', label: 'Cancel', color: 'red', variant: 'light' },
+    ],
+  },
+  InProgress: {
+    status: 'InProgress',
+    color: 'blue',
+    label: 'In Progress',
+    buttons: [{ next: 'Ready', label: 'Ready', color: 'blue', variant: 'light' }],
+  },
+  Ready: {
+    status: 'Ready',
+    color: 'cyan',
+    label: 'Ready',
+    buttons: [{ next: 'Completed', label: 'Complete', color: 'green', variant: 'filled' }],
+  },
 };
 
 const OrderCard = ({
@@ -60,7 +74,8 @@ const OrderCard = ({
   onAdvance: (id: number, status: OrderStatus) => void;
   canAdvanceStatus: boolean;
 }) => {
-  const next = nextStatus[order.status];
+  const status = statuses[order.status];
+  const buttons = canAdvanceStatus ? (status?.buttons ?? []) : [];
 
   return (
     <Card
@@ -73,8 +88,8 @@ const OrderCard = ({
       <Group justify="space-between" mb="xs">
         <Group gap="xs">
           <Title order={4}>#{order.orderNumber}</Title>
-          <Badge color={statusColor[order.status]} variant="filled">
-            {statusLabel[order.status]}
+          <Badge color={status?.color ?? 'gray'} variant="filled">
+            {status?.label ?? order.status}
           </Badge>
         </Group>
         <Text size="xs" c="dimmed">
@@ -166,18 +181,23 @@ const OrderCard = ({
         )}
       </Stack>
 
-      {next && canAdvanceStatus && (
+      {buttons.length > 0 && (
         <>
           <Divider mt="sm" mb="xs" />
-          <Button
-            fullWidth
-            size="sm"
-            color={next === 'Completed' ? 'green' : 'blue'}
-            variant={next === 'Completed' ? 'filled' : 'light'}
-            onClick={() => onAdvance(order.id, next)}
-          >
-            {nextStatusLabel[order.status]}
-          </Button>
+          <Group grow gap="xs">
+            {buttons.map((button) => (
+              <Button
+                key={button.next}
+                fullWidth
+                size="sm"
+                color={button.color}
+                variant={button.variant}
+                onClick={() => onAdvance(order.id, button.next)}
+              >
+                {button.label}
+              </Button>
+            ))}
+          </Group>
         </>
       )}
     </Card>
@@ -311,7 +331,7 @@ export const StationTasks = () => {
     return (
       <>
         <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
-        <Box p="xl" pb={80}>
+        <Box pt="xl" px="xl" pb={80}>
           {canChangeStation && (
             <Group justify="flex-end" mb="md">
               <Button variant="light" onClick={openStationPicker}>
@@ -341,7 +361,7 @@ export const StationTasks = () => {
   return (
     <>
       <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
-      <Box p="md" pb={80}>
+      <Box pt="md" px="md" pb={80}>
         {canChangeStation && (
           <Group justify="flex-end" mb="md">
             <Button variant="light" onClick={openStationPicker}>
