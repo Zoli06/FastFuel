@@ -18,6 +18,16 @@ import { NumericSelect } from '../../common/NumericCombobox/NumericSelect.tsx';
 import { NumericMultiSelect } from '../../common/NumericCombobox/NumericMultiSelect.tsx';
 import type { EditorMode, Field, FormValues, ListField } from './types.ts';
 import { IconTrash } from '@tabler/icons-react';
+import {
+  validatePasswordComplexity,
+  validatePasswordComplexityIfProvided,
+} from '../../../lib/password-validation.ts';
+
+type ValidationRule<Values extends FormValues> = (
+  value: unknown,
+  values: Values,
+  path: string,
+) => ReactNode;
 
 function buildInitialValues(fields: Field[]): FormValues {
   const values: FormValues = {};
@@ -72,6 +82,67 @@ function isRequired(
   if (field.nullable === 'edit') return mode === 'create'; // required: 'create'
   // nullable: 'never'
   return field.required === 'always';
+}
+
+function collectPasswordValidationRules<Values extends FormValues>(
+  fields: Field[],
+  mode: EditorMode,
+): Record<string, ValidationRule<Values>> {
+  const rules: Record<string, ValidationRule<Values>> = {};
+
+  for (const field of fields) {
+    if (field.type === 'custom' || field.type === 'list') continue;
+    if (field.type === 'fieldset') {
+      Object.assign(rules, collectPasswordValidationRules<Values>(field.fields, mode));
+      continue;
+    }
+    if (field.type !== 'password') continue;
+
+    const canBeBlank = !isRequired(field, mode);
+    rules[field.key] = (value) => {
+      const password = value as string | null | undefined;
+      return canBeBlank
+        ? validatePasswordComplexityIfProvided(password)
+        : validatePasswordComplexity(password);
+    };
+  }
+
+  return rules;
+}
+
+function mergeValidationRules<Values extends FormValues>(
+  validate: UseFormInput<Values>['validate'],
+  passwordRules: Record<string, ValidationRule<Values>>,
+): UseFormInput<Values>['validate'] {
+  if (Object.keys(passwordRules).length === 0) return validate;
+  if (!validate) return passwordRules as UseFormInput<Values>['validate'];
+
+  if (typeof validate === 'function') {
+    return (values: Values) => {
+      const baseErrors = validate(values) ?? {};
+      const passwordErrors = Object.fromEntries(
+        Object.entries(passwordRules)
+          .map(([key, rule]) => [key, rule((values as FormValues)[key], values, key)])
+          .filter(([, error]) => error != null),
+      );
+
+      return { ...baseErrors, ...passwordErrors };
+    };
+  }
+
+  const merged = { ...(validate as Record<string, unknown>) };
+
+  for (const [key, passwordRule] of Object.entries(passwordRules)) {
+    const existingRule = merged[key];
+    if (typeof existingRule === 'function') {
+      merged[key] = (value: unknown, values: Values, path: string) =>
+        existingRule(value, values, path) ?? passwordRule(value, values, path);
+      continue;
+    }
+    merged[key] = passwordRule;
+  }
+
+  return merged as UseFormInput<Values>['validate'];
 }
 
 function renderField(
@@ -287,11 +358,19 @@ export const EntityEditor = <Values extends FormValues>(props: EntityEditorProps
 
   const initialValues = useMemo(() => buildInitialValues(fields) as Values, [fields]);
   const nullableKeys = useMemo(() => collectNullableKeys(fields), [fields]);
+  const passwordValidationRules = useMemo(
+    () => collectPasswordValidationRules<Values>(fields, mode),
+    [fields, mode],
+  );
+  const mergedValidate = useMemo(
+    () => mergeValidationRules(validate, passwordValidationRules),
+    [validate, passwordValidationRules],
+  );
 
   const form = useForm<Values>({
     mode: 'uncontrolled',
     initialValues,
-    validate,
+    validate: mergedValidate,
   });
 
   useEffect(() => {
@@ -326,19 +405,11 @@ export const EntityEditor = <Values extends FormValues>(props: EntityEditorProps
           ))}
         </Stack>
 
-        {form.errors && Object.keys(form.errors).length > 0 && (
-          <div style={{ color: 'red', marginTop: '10px' }}>
-            {Object.values(form.errors).flat().join(', ')}
-          </div>
-        )}
-
         <Group mt="md" justify="flex-end">
           <Button variant="outline" onClick={onClose} color="red">
             Cancel
           </Button>
-          <Button type="submit" disabled={!form.isValid()}>
-            {mode === 'create' ? 'Create' : 'Save'}
-          </Button>
+          <Button type="submit">{mode === 'create' ? 'Create' : 'Save'}</Button>
         </Group>
       </Form>
     </Modal>

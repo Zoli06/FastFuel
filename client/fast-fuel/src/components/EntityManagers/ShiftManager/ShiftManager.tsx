@@ -117,14 +117,14 @@ export const ShiftManager = () => {
     {
       onSuccess: () => refetchShifts(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateShift = useRecommendedPerm('Permission:Shift:Update')?.useMutation(
     'put',
     '/api/Shift/{id}',
     {
       onSuccess: () => refetchShifts(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteShift = useRecommendedPerm('Permission:Shift:Delete')?.useMutation(
     'delete',
     '/api/Shift/{id}',
@@ -156,11 +156,11 @@ export const ShiftManager = () => {
     };
   };
 
-  const handleSubmit = (values: ShiftFormValues, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: ShiftFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createShift) {
-      createShift({ body: toRequestDto(values) });
+      await createShift({ body: toRequestDto(values) });
     } else if (mode === 'edit' && updateShift) {
-      updateShift({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      await updateShift({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 

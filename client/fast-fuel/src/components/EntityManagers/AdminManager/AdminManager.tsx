@@ -62,14 +62,14 @@ export const AdminManager = () => {
     {
       onSuccess: () => refetchAdmins(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateAdmin = useRecommendedPerm('Permission:Admin:Update')?.useMutation(
     'put',
     '/api/Admin/{id}',
     {
       onSuccess: () => refetchAdmins(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteAdmin = useRecommendedPerm('Permission:Admin:Delete')?.useMutation(
     'delete',
     '/api/Admin/{id}',
@@ -86,11 +86,11 @@ export const AdminManager = () => {
       password: values.password ?? null,
     }) as components['schemas']['AdminRequestDto'];
 
-  const handleSubmit = (values: AdminFormValues, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: AdminFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createAdmin) {
-      createAdmin({ body: toRequestDto(values) });
+      await createAdmin({ body: toRequestDto(values) });
     } else if (mode === 'edit' && updateAdmin) {
-      updateAdmin({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      await updateAdmin({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 

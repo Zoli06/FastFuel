@@ -59,14 +59,14 @@ export const CustomerManager = () => {
 
   const createCustomer = useNoPerm().useMutation('post', '/api/Customer', {
     onSuccess: () => refetchCustomers(),
-  }).mutate;
+  }).mutateAsync;
   const updateCustomer = useRecommendedPerm('Permission:Customer:Update')?.useMutation(
     'put',
     '/api/Customer/{id}',
     {
       onSuccess: () => refetchCustomers(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteCustomer = useRecommendedPerm('Permission:Customer:Delete')?.useMutation(
     'delete',
     '/api/Customer/{id}',
@@ -84,11 +84,11 @@ export const CustomerManager = () => {
       // https://github.com/openapi-ts/openapi-typescript/issues/1520
     }) as components['schemas']['CustomerRequestDto'];
 
-  const handleSubmit = (values: CustomerFormValues, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: CustomerFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create') {
-      createCustomer({ body: toRequestDto(values) });
+      await createCustomer({ body: toRequestDto(values) });
     } else if (updateCustomer) {
-      updateCustomer({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      await updateCustomer({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 

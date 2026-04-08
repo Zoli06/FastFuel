@@ -159,14 +159,14 @@ export const RestaurantManager = () => {
     {
       onSuccess: () => refetchRestaurants(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateRestaurant = useRecommendedPerm('Permission:Restaurant:Update')?.useMutation(
     'put',
     '/api/Restaurant/{id}',
     {
       onSuccess: () => refetchRestaurants(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteRestaurant = useRecommendedPerm('Permission:Restaurant:Delete')?.useMutation(
     'delete',
     '/api/Restaurant/{id}',
@@ -175,11 +175,11 @@ export const RestaurantManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Restaurant, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Restaurant, mode: 'create' | 'edit') => {
     if (mode === 'create' && createRestaurant) {
-      createRestaurant({ body: values });
+      await createRestaurant({ body: values });
     } else if (mode === 'edit' && updateRestaurant) {
-      updateRestaurant({ params: { path: { id: values.id } }, body: values });
+      await updateRestaurant({ params: { path: { id: values.id } }, body: values });
     }
   };
 

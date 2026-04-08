@@ -141,14 +141,14 @@ export const MenuManager = () => {
     {
       onSuccess: () => refetchMenus(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateMenu = useRecommendedPerm('Permission:Menu:Update')?.useMutation(
     'put',
     '/api/Menu/{id}',
     {
       onSuccess: () => refetchMenus(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteMenu = useRecommendedPerm('Permission:Menu:Delete')?.useMutation(
     'delete',
     '/api/Menu/{id}',
@@ -157,11 +157,11 @@ export const MenuManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Menu, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Menu, mode: 'create' | 'edit') => {
     if (mode === 'create' && createMenu) {
-      createMenu({ body: values });
+      await createMenu({ body: values });
     } else if (mode === 'edit' && updateMenu) {
-      updateMenu({ params: { path: { id: values.id } }, body: values });
+      await updateMenu({ params: { path: { id: values.id } }, body: values });
     }
   };
 

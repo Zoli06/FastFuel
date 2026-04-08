@@ -135,14 +135,14 @@ export const EmployeeManager = () => {
     {
       onSuccess: () => refetchEmployees(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateEmployee = useRecommendedPerm('Permission:Employee:Update')?.useMutation(
     'put',
     '/api/Employee/{id}',
     {
       onSuccess: () => refetchEmployees(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteEmployee = useRecommendedPerm('Permission:Employee:Delete')?.useMutation(
     'delete',
     '/api/Employee/{id}',
@@ -161,11 +161,11 @@ export const EmployeeManager = () => {
     worksAtRestaurantId: values.worksAtRestaurantId,
   });
 
-  const handleSubmit = (values: EmployeeFormValues, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: EmployeeFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createEmployee) {
-      createEmployee({ body: toRequestDto(values) });
+      await createEmployee({ body: toRequestDto(values) });
     } else if (mode === 'edit' && updateEmployee) {
-      updateEmployee({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      await updateEmployee({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 

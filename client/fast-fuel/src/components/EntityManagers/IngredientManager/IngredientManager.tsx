@@ -136,14 +136,14 @@ export const IngredientManager = () => {
     {
       onSuccess: () => refetchIngredients(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateIngredient = useRecommendedPerm('Permission:Ingredient:Update')?.useMutation(
     'put',
     '/api/Ingredient/{id}',
     {
       onSuccess: () => refetchIngredients(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteIngredient = useRecommendedPerm('Permission:Ingredient:Delete')?.useMutation(
     'delete',
     '/api/Ingredient/{id}',
@@ -152,11 +152,11 @@ export const IngredientManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Ingredient, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Ingredient, mode: 'create' | 'edit') => {
     if (mode === 'create' && createIngredient) {
-      createIngredient({ body: values });
+      await createIngredient({ body: values });
     } else if (mode === 'edit' && updateIngredient) {
-      updateIngredient({ params: { path: { id: values.id } }, body: values });
+      await updateIngredient({ params: { path: { id: values.id } }, body: values });
     }
   };
 

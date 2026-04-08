@@ -401,14 +401,14 @@ export const RoleManager = () => {
     {
       onSuccess: () => refetchRoles(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateRole = useRecommendedPerm('Permission:Role:Update')?.useMutation(
     'put',
     '/api/Role/{id}',
     {
       onSuccess: () => refetchRoles(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteRole = useRecommendedPerm('Permission:Role:Delete')?.useMutation(
     'delete',
     '/api/Role/{id}',
@@ -440,12 +440,12 @@ export const RoleManager = () => {
 
   const canDeleteRole = (role: Role) => !role.isDefault;
 
-  const handleSubmit = (values: RoleFormValues, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: RoleFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createRole) {
-      createRole({ body: values });
+      await createRole({ body: values });
     } else if (mode === 'edit') {
       if (!updateRole) return;
-      updateRole({ params: { path: { id: values.id } }, body: values });
+      await updateRole({ params: { path: { id: values.id } }, body: values });
     }
   };
 

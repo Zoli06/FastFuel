@@ -109,14 +109,14 @@ export const StationManager = () => {
     {
       onSuccess: () => refetchStations(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateStation = useRecommendedPerm('Permission:Station:Update')?.useMutation(
     'put',
     '/api/Station/{id}',
     {
       onSuccess: () => refetchStations(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteStation = useRecommendedPerm('Permission:Station:Delete')?.useMutation(
     'delete',
     '/api/Station/{id}',
@@ -125,11 +125,11 @@ export const StationManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Station, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Station, mode: 'create' | 'edit') => {
     if (mode === 'create' && createStation) {
-      createStation({ body: values });
+      await createStation({ body: values });
     } else if (mode === 'edit' && updateStation) {
-      updateStation({ params: { path: { id: values.id } }, body: values });
+      await updateStation({ params: { path: { id: values.id } }, body: values });
     }
   };
 
