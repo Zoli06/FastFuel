@@ -32,13 +32,21 @@ type RouteHandle = {
     title?: string;
     authButton?: HeaderAuthButton;
   };
+  layout?: {
+    hideChromeInFullscreen?: boolean;
+  };
 };
 
-const withHeader = (title: string, authButton?: HeaderAuthButton): RouteHandle => ({
+const withHeader = (
+  title: string,
+  authButton?: HeaderAuthButton,
+  layout?: RouteHandle['layout'],
+): RouteHandle => ({
   header: {
     title,
     authButton,
   },
+  layout,
 });
 
 export const router = createBrowserRouter([
@@ -65,7 +73,7 @@ export const router = createBrowserRouter([
       {
         path: 'order',
         element: <OrderCreator />,
-        handle: withHeader('Place Order'),
+        handle: withHeader('Place Order', undefined, { hideChromeInFullscreen: true }),
       },
       {
         path: 'employee/my-shifts',
@@ -86,6 +94,16 @@ export const router = createBrowserRouter([
         path: 'about',
         element: <AboutPage />,
         handle: withHeader('About'),
+      },
+      {
+        path: 'station-tasks/:id?',
+        element: <StationTasksPage />,
+        handle: withHeader('Station Tasks', undefined, { hideChromeInFullscreen: true }),
+      },
+      {
+        path: 'restaurants/order-status-display',
+        element: <OrderStatusDisplayPage />,
+        handle: withHeader('Order Status Display', undefined, { hideChromeInFullscreen: true }),
       },
       {
         path: 'manage',
@@ -164,15 +182,5 @@ export const router = createBrowserRouter([
         ],
       },
     ],
-  },
-  {
-    path: '/station-tasks/:id?',
-    element: <StationTasksPage />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: '/restaurants/order-status-display',
-    element: <OrderStatusDisplayPage />,
-    errorElement: <ErrorPage />,
   },
 ]);

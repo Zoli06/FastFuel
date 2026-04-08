@@ -18,8 +18,6 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { components } from '../../types/api-schema.generated.ts';
 import { useApi } from '../../lib/api.ts';
-import { Header } from '../Header/Header.tsx';
-import { Footer } from '../Footer/Footer.tsx';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import { StationPickerModal } from '../common/SearchablePickerModals/StationPickerModal.tsx';
 
@@ -242,7 +240,6 @@ export const StationTasks = () => {
 
   const [
     { data: tasks, refetch: refetchTasks },
-    { data: station },
     { data: stations = [] },
     { data: lockedRestaurant },
   ] = useConditionalSuspenseQueries([
@@ -257,11 +254,6 @@ export const StationTasks = () => {
             refetchInterval: 2500,
           },
         )
-      : undefined,
-    stationReadApi && activeStationId !== null
-      ? stationReadApi.queryOptions('get', '/api/Station/{id}', {
-          params: { path: { id: activeStationId } },
-        })
       : undefined,
     stationReadApi
       ? stationReadApi.queryOptions('get', '/api/Station', {
@@ -330,8 +322,7 @@ export const StationTasks = () => {
   if (allOrders.length === 0) {
     return (
       <>
-        <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
-        <Box pt="xl" px="xl" pb={80}>
+        <Box pt="xl" px="xl" pb="xl">
           {canChangeStation && (
             <Group justify="flex-end" mb="md">
               <Button variant="light" onClick={openStationPicker}>
@@ -353,15 +344,13 @@ export const StationTasks = () => {
           onSelectStation={handleSelectStation}
           title={stationPickerTitle}
         />
-        <Footer />
       </>
     );
   }
 
   return (
     <>
-      <Header title={`Tasks: ${station?.name ?? 'Station'}`} />
-      <Box pt="md" px="md" pb={80}>
+      <Box pt="md" px="md" pb="xl">
         {canChangeStation && (
           <Group justify="flex-end" mb="md">
             <Button variant="light" onClick={openStationPicker}>
@@ -569,7 +558,6 @@ export const StationTasks = () => {
         onSelectStation={handleSelectStation}
         title={stationPickerTitle}
       />
-      <Footer />
     </>
   );
 };
