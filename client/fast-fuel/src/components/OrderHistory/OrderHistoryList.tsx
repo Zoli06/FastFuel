@@ -14,7 +14,7 @@ export const OrderHistoryList = ({ orders, search, statusFilter }: OrderHistoryL
     <Stack gap="sm">
       {orders.length === 0 ? (
         <Stack align="center" py={60} gap="xs">
-          <IconReceipt2 size={48} color="var(--mantine-color-orange-9)" />
+          <IconReceipt2 size={48} color="#c92a2a" />
           <Text c="dimmed" size="sm">
             {search || statusFilter
               ? 'No orders match your filters'

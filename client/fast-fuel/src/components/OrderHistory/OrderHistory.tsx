@@ -63,7 +63,7 @@ export const OrderHistory = () => {
             width: 42,
             height: 42,
             borderRadius: 10,
-            background: 'var(--mantine-color-orange-6)',
+            background: '#c92a2a',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -76,7 +76,7 @@ export const OrderHistory = () => {
             fw={800}
             size="xl"
             style={{
-              color: 'var(--mantine-color-orange-5)',
+              color: '#c92a2a',
               textTransform: 'uppercase',
               letterSpacing: 1,
               lineHeight: 1,

@@ -1,8 +1,8 @@
 import type { OrderStatus, OrderSummary, OrderSummaryItem, SortKey } from './types.ts';
 
 export const STATUS_META: Record<OrderStatus, { label: string; color: string }> = {
-  Pending: { label: 'Pending', color: 'orange' },
-  InProgress: { label: 'In Progress', color: 'orange' },
+  Pending: { label: 'Pending', color: '#c92a2a' },
+  InProgress: { label: 'In Progress', color: '#BFB48F' },
   Ready: { label: 'Ready', color: 'teal' },
   Completed: { label: 'Completed', color: 'green' },
   Cancelled: { label: 'Cancelled', color: 'red' },

@@ -68,7 +68,7 @@ export const OrderDetailModal = ({
               <Divider label="Includes" labelPosition="left" />
               <Group gap={6} wrap="wrap">
                 {foods.map((food, index) => (
-                  <Badge key={index} variant="light" color="orange">
+                  <Badge key={index} variant="light" color="darkred">
                     {allFoods.find((f) => f.id === food.foodId)?.name ?? `#${food.foodId}`} x
                     {food.quantity}
                   </Badge>

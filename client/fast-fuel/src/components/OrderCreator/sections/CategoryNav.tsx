@@ -17,7 +17,7 @@ export const CategoryNav = ({ activeCategory, onCategoryChange }: CategoryNavPro
           width: 100,
           minHeight: '100vh',
           background: 'var(--mantine-color-dark-8, #1a1a1a)',
-          borderRight: '2px solid var(--mantine-color-orange-6)',
+          borderRight: '2px solid beige',
           position: 'sticky',
           top: 0,
           flexShrink: 0,
@@ -36,7 +36,7 @@ export const CategoryNav = ({ activeCategory, onCategoryChange }: CategoryNavPro
                 gap: 4,
                 padding: '10px 6px',
                 borderRadius: 8,
-                background: isActive ? 'var(--mantine-color-orange-6)' : 'transparent',
+                background: isActive ? 'darkred' : 'transparent',
                 color: isActive ? '#fff' : 'var(--mantine-color-gray-4)',
                 fontWeight: isActive ? 700 : 400,
                 fontSize: 11,
@@ -77,9 +77,7 @@ export const CategoryNav = ({ activeCategory, onCategoryChange }: CategoryNavPro
                   gap: 6,
                   padding: '6px 14px',
                   borderRadius: 20,
-                  background: isActive
-                    ? 'var(--mantine-color-orange-6)'
-                    : 'var(--mantine-color-dark-6)',
+                  background: isActive ? 'beige' : 'var(--mantine-color-dark-6)',
                   color: isActive ? '#fff' : 'var(--mantine-color-gray-4)',
                   fontWeight: isActive ? 700 : 400,
                   fontSize: 13,

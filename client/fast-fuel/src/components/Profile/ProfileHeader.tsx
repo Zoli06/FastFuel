@@ -17,7 +17,7 @@ export const ProfileHeader = ({ name, userName, userType }: ProfileHeaderProps) 
   return (
     <Card withBorder radius="md" p="lg">
       <Group>
-        <Avatar size={64} radius="xl" color="orange">
+        <Avatar size={64} radius="xl" color="#c92a2a">
           {initials}
         </Avatar>
         <Stack gap={4}>
@@ -27,7 +27,7 @@ export const ProfileHeader = ({ name, userName, userType }: ProfileHeaderProps) 
           <Text c="dimmed" size="sm">
             @{userName}
           </Text>
-          <Badge color="orange" variant="light">
+          <Badge color="#BFB48F" variant="light">
             {userType}
           </Badge>
         </Stack>

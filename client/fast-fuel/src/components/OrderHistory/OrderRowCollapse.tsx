@@ -27,7 +27,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
       withBorder
       radius="md"
       style={{
-        borderColor: open ? 'var(--mantine-color-orange-5)' : 'var(--mantine-color-orange-9)',
+        borderColor: '#c92a2a',
         overflow: 'hidden',
         transition: 'border-color 0.15s',
       }}
@@ -48,7 +48,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
                 width: 36,
                 height: 36,
                 borderRadius: 8,
-                background: 'var(--mantine-color-orange-6)',
+                background: '#c92a2a',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -58,7 +58,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
               <IconReceipt2 size={18} color="white" />
             </Box>
             <Stack gap={2} style={{ minWidth: 0 }}>
-              <Text fw={700} size="sm" c="orange.4" style={{ lineHeight: 1 }}>
+              <Text fw={700} size="sm" c="#c92a2a" style={{ lineHeight: 1 }}>
                 #{order.orderNumber}
               </Text>
               <Text size="xs" c="dimmed" lineClamp={1}>
@@ -68,8 +68,8 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
           </Group>
 
           <Group gap={4} visibleFrom="sm">
-            <IconClock size={13} color="var(--mantine-color-orange-4)" />
-            <Text size="xs" c="orange.4">
+            <IconClock size={13} color="#c92a2a" />
+            <Text size="xs" c="#c92a2a">
               {formatDate(order.placedAt)}
             </Text>
           </Group>
@@ -78,24 +78,24 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
             <Badge color={meta.color} variant="light" size="sm">
               {meta.label}
             </Badge>
-            <Text fw={800} size="sm" c="orange.5" style={{ minWidth: 60, textAlign: 'right' }}>
+            <Text fw={800} size="sm" c="#c92a2a" style={{ minWidth: 60, textAlign: 'right' }}>
               ${order.totalPrice.toFixed(2)}
             </Text>
             {open ? (
-              <IconChevronUp size={16} color="var(--mantine-color-orange-4)" />
+              <IconChevronUp size={16} color="#c92a2a" />
             ) : (
-              <IconChevronDown size={16} color="var(--mantine-color-orange-4)" />
+              <IconChevronDown size={16} color="#c92a2a" />
             )}
           </Group>
         </Group>
       </UnstyledButton>
 
       <Collapse in={open}>
-        <Divider color="orange.8" />
+        <Divider color="#c92a2a" />
         <Stack gap={0} px="md" py="sm">
           <Group gap={4} hiddenFrom="sm" mb="xs">
-            <IconClock size={13} color="var(--mantine-color-orange-4)" />
-            <Text size="xs" c="orange.4">
+            <IconClock size={13} color="#c92a2a" />
+            <Text size="xs" c="#c92a2a">
               {formatDate(order.placedAt)}
             </Text>
           </Group>
@@ -107,7 +107,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
           ) : (
             order.items.map((item, i) => (
               <Box key={i}>
-                {i > 0 && <Divider color="orange.9" my={6} />}
+                {i > 0 && <Divider color="#c92a2a" my={6} />}
                 <Group justify="space-between" wrap="nowrap" py={4}>
                   <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
                     <Group gap="xs">
@@ -116,14 +116,14 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
                           width: 6,
                           height: 6,
                           borderRadius: '50%',
-                          background: 'var(--mantine-color-orange-5)',
+                          background: '#c92a2a',
                           flexShrink: 0,
                         }}
                       />
                       <Text size="sm" lineClamp={1}>
                         {item.name}
                       </Text>
-                      <Badge size="xs" color="orange" variant="outline">
+                      <Badge size="xs" color="#c92a2a" variant="outline">
                         ×{item.quantity}
                       </Badge>
                     </Group>
@@ -133,7 +133,7 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
                       </Text>
                     )}
                   </Stack>
-                  <Text size="sm" fw={600} c="orange.4" style={{ flexShrink: 0, marginLeft: 12 }}>
+                  <Text size="sm" fw={600} c="#c92a2a" style={{ flexShrink: 0, marginLeft: 12 }}>
                     ${(item.price * item.quantity).toFixed(2)}
                   </Text>
                 </Group>
@@ -141,12 +141,12 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
             ))
           )}
 
-          <Divider color="orange.8" my="sm" />
+          <Divider color="#c92a2a" my="sm" />
           <Group justify="space-between">
-            <Text size="sm" fw={700} c="orange.3">
+            <Text size="sm" fw={700} c="#c92a2a">
               Total
             </Text>
-            <Text size="md" fw={800} c="orange.5">
+            <Text size="md" fw={800} c="#c92a2a">
               ${order.totalPrice.toFixed(2)}
             </Text>
           </Group>

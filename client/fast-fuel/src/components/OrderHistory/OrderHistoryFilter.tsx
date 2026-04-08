@@ -30,12 +30,12 @@ export const OrderHistoryFilters = ({
     <Group gap="sm" wrap="wrap">
       <TextInput
         placeholder="Search by order # or restaurant..."
-        leftSection={<IconSearch size={16} color="var(--mantine-color-orange-5)" />}
+        leftSection={<IconSearch size={16} color="#c92a2a" />}
         value={search}
         onChange={(e) => onSearchChange(e.currentTarget.value)}
         size="md"
         style={{ flex: 1, minWidth: 200 }}
-        styles={{ input: { borderColor: 'var(--mantine-color-orange-8)' } }}
+        styles={{ input: { borderColor: '#c92a2a' } }}
       />
       <Select
         data={SORT_OPTIONS}
@@ -43,18 +43,18 @@ export const OrderHistoryFilters = ({
         onChange={(v) => v && onSortChange(v as SortKey)}
         size="md"
         style={{ width: 190 }}
-        styles={{ input: { borderColor: 'var(--mantine-color-orange-8)' } }}
+        styles={{ input: { borderColor: '#c92a2a' } }}
         leftSection={
           sortKey.includes('asc') ? (
             sortKey.startsWith('name') ? (
-              <IconSortAscendingLetters size={16} color="var(--mantine-color-orange-5)" />
+              <IconSortAscendingLetters size={16} color="#c92a2a" />
             ) : (
-              <IconArrowUp size={16} color="var(--mantine-color-orange-5)" />
+              <IconArrowUp size={16} color="#c92a2a" />
             )
           ) : sortKey.startsWith('name') ? (
-            <IconSortDescendingLetters size={16} color="var(--mantine-color-orange-5)" />
+            <IconSortDescendingLetters size={16} color="#c92a2a" />
           ) : (
-            <IconArrowDown size={16} color="var(--mantine-color-orange-5)" />
+            <IconArrowDown size={16} color="#c92a2a" />
           )
         }
       />
@@ -64,7 +64,7 @@ export const OrderHistoryFilters = ({
       <Button
         size="compact-sm"
         variant={statusFilter === undefined ? 'filled' : 'light'}
-        color="orange"
+        color="#c92a2a"
         onClick={() => onStatusChange(undefined)}
       >
         All
