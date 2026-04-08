@@ -6,7 +6,6 @@ public record UserResponseDto : IIdentifiable
 {
     public required string Name { get; init; }
     public required string UserName { get; init; }
-    public required uint? ThemeId { get; init; }
     public required List<uint> RoleIds { get; init; }
     public required string UserType { get; init; }
     public required List<uint> OrderIds { get; init; }

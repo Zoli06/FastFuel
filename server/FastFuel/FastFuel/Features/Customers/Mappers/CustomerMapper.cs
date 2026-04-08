@@ -11,7 +11,6 @@ namespace FastFuel.Features.Customers.Mappers;
 public class CustomerMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
     : UserMapper(roleManager, userManager), IMapper<Customer, CustomerRequestDto, CustomerResponseDto>
 {
-
     public CustomerResponseDto ToDto(Customer entity)
     {
         var userDto = base.ToDto(entity);
@@ -21,7 +20,6 @@ public class CustomerMapper(RoleManager<Role> roleManager, UserManager<User> use
             Name = userDto.Name,
             Email = entity.Email,
             UserName = userDto.UserName,
-            ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
             UserType = userDto.UserType,
             OrderIds = entity.Orders.ConvertAll(order => order.Id)
@@ -36,8 +34,7 @@ public class CustomerMapper(RoleManager<Role> roleManager, UserManager<User> use
             Id = userEntity.Id,
             Name = userEntity.Name,
             Email = dto.Email,
-            UserName = userEntity.UserName,
-            ThemeId = userEntity.ThemeId
+            UserName = userEntity.UserName
         };
     }
 
