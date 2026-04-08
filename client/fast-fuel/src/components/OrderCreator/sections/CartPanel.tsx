@@ -42,7 +42,7 @@ export const CartPanel = ({
         width: '100%',
         zIndex: 100,
         background: 'var(--mantine-color-body)',
-        borderTop: '2px solid var(--mantine-color-orange-6)',
+        borderTop: '2px solid beige',
         borderLeft: 'none',
         borderRight: 'none',
         borderBottom: 'none',

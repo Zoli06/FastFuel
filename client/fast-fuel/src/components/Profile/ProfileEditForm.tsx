@@ -80,7 +80,7 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
             {...form.getInputProps('password')}
           />
           <Group justify="flex-end">
-            <Button type="submit" color="orange">
+            <Button type="submit" color="#c92a2a">
               Save changes
             </Button>
           </Group>

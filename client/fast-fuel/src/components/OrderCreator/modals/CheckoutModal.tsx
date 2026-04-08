@@ -88,7 +88,7 @@ export const CheckoutModal = ({
         <Stack gap="sm">
           <Text size="sm" c="dimmed">
             Ordering from:{' '}
-            <Text span fw={700} c="orange">
+            <Text span fw={700} c="darkred">
               {selectedRestaurantName}
             </Text>
           </Text>
@@ -226,7 +226,7 @@ export const CheckoutModal = ({
         closeOnEscape={false}
       >
         <Stack gap="sm" align="center">
-          <Text fw={700} size="xl" c="orange">
+          <Text fw={700} size="xl" c="#252627">
             Order #{placedOrderNumber}
           </Text>
           <Text size="xs" c="dimmed" ta="center">

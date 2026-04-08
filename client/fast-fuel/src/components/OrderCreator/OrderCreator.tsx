@@ -187,11 +187,11 @@ export const OrderCreator = () => {
 
   const handlePlaceOrder = () => {
     if (!restaurantId) {
-      notifications.show({ title: 'Select a restaurant', message: '', color: 'orange' });
+      notifications.show({ title: 'Select a restaurant', message: '', color: '#252627' });
       return;
     }
     if (cart.length === 0) {
-      notifications.show({ title: 'Your cart is empty', message: '', color: 'orange' });
+      notifications.show({ title: 'Your cart is empty', message: '', color: '#252627' });
       return;
     }
     setCheckoutStep('confirm');

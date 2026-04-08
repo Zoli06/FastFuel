@@ -42,22 +42,22 @@ type StationStatus = {
 const statuses: Partial<Record<OrderStatus, StationStatus>> = {
   Pending: {
     status: 'Pending',
-    color: 'yellow',
+    color: 'blue',
     label: 'Pending',
     buttons: [
-      { next: 'InProgress', label: 'Start', color: 'blue', variant: 'light' },
-      { next: 'Cancelled', label: 'Cancel', color: 'red', variant: 'light' },
+      { next: 'InProgress', label: 'Start', color: 'green', variant: 'filled' },
+      { next: 'Cancelled', label: 'Cancel', color: '#c92a2a', variant: 'filled' },
     ],
   },
   InProgress: {
     status: 'InProgress',
-    color: 'blue',
+    color: 'cyan',
     label: 'In Progress',
-    buttons: [{ next: 'Ready', label: 'Ready', color: 'blue', variant: 'light' }],
+    buttons: [{ next: 'Ready', label: 'Ready', color: 'cyan', variant: 'filled' }],
   },
   Ready: {
     status: 'Ready',
-    color: 'cyan',
+    color: 'green',
     label: 'Ready',
     buttons: [{ next: 'Completed', label: 'Complete', color: 'green', variant: 'filled' }],
   },
@@ -379,7 +379,7 @@ export const StationTasks = () => {
             <Box>
               <Group mb="sm" gap="xs">
                 <Title order={3}>Pending</Title>
-                <Badge color="yellow" variant="filled" size="lg">
+                <Badge color="blue" variant="filled" size="lg">
                   {pendingOrders.length}
                 </Badge>
               </Group>
@@ -406,7 +406,7 @@ export const StationTasks = () => {
             <Box>
               <Group mb="sm" gap="xs">
                 <Title order={3}>In Progress</Title>
-                <Badge color="blue" variant="filled" size="lg">
+                <Badge color="cyan" variant="filled" size="lg">
                   {inProgressOrders.length}
                 </Badge>
               </Group>
@@ -433,7 +433,7 @@ export const StationTasks = () => {
             <Box>
               <Group mb="sm" gap="xs">
                 <Title order={3}>Ready</Title>
-                <Badge color="cyan" variant="filled" size="lg">
+                <Badge color="green" variant="filled" size="lg">
                   {readyOrders.length}
                 </Badge>
               </Group>

@@ -41,14 +41,14 @@ export const OrderCatalogHeader = ({
             <Text size="sm" c="dimmed">
               Ordering from:
             </Text>
-            <Text fw={700} size="sm" c="orange">
+            <Text fw={700} size="sm" c="darkred">
               {selectedRestaurant.name}
             </Text>
             {needsRestaurantPicker && (
               <Button
                 size="compact-xs"
                 variant="subtle"
-                color="orange"
+                color="darkred"
                 onClick={onOpenRestaurantPicker}
               >
                 Change
@@ -57,7 +57,7 @@ export const OrderCatalogHeader = ({
           </>
         ) : (
           needsRestaurantPicker && (
-            <Button size="xs" variant="light" color="orange" onClick={onOpenRestaurantPicker}>
+            <Button size="xs" variant="light" color="darkred" onClick={onOpenRestaurantPicker}>
               Select a restaurant
             </Button>
           )
@@ -99,7 +99,7 @@ export const OrderCatalogHeader = ({
               key={s.label}
               size="sm"
               variant={isActive ? 'filled' : 'light'}
-              color="orange"
+              color="darkred"
               leftSection={<Icon size={15} />}
               onClick={() => onSortKeyChange(isAsc ? s.keyDesc : s.keyAsc)}
             >

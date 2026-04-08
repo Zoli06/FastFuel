@@ -24,7 +24,7 @@ export const ItemGrid = ({
         fw={700}
         size="xl"
         style={{
-          color: 'var(--mantine-color-orange-6)',
+          color: 'darkred',
           textTransform: 'uppercase',
           letterSpacing: 1,
         }}
