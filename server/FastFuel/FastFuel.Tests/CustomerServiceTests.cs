@@ -102,8 +102,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             Name = name,
             Email = email,
             UserName = username,
-            Password = password,
-            ThemeId = null
+            Password = password
         };
     }
 

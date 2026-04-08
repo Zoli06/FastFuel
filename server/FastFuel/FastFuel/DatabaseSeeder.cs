@@ -31,13 +31,13 @@ namespace FastFuel;
 // TODO: Rewrite this to use the services instead of directly accessing the DbContext.
 public class DatabaseSeeder(IServiceProvider serviceProvider)
 {
+    private readonly ICrudService<AdminRequestDto, AdminResponseDto> _adminService =
+        serviceProvider.GetRequiredService<ICrudService<AdminRequestDto, AdminResponseDto>>();
+
     private readonly FastFuelDbContext _context = serviceProvider.GetRequiredService<FastFuelDbContext>();
 
     private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
         serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();
-
-    private readonly ICrudService<AdminRequestDto, AdminResponseDto> _adminService =
-        serviceProvider.GetRequiredService<ICrudService<AdminRequestDto, AdminResponseDto>>();
 
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
@@ -232,7 +232,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             Email = "employee@example.com",
             Name = "Employee User",
             Password = "Employee123!",
-            ThemeId = null,
             ShiftIds = [],
             StationCategoryIds = [],
             WorksAtRestaurantId = workplace.Id
@@ -252,8 +251,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             UserName = userName,
             Email = "customer@example.com",
             Name = "Customer User",
-            Password = "Customer123!",
-            ThemeId = null
+            Password = "Customer123!"
         };
 
         await _customerService.CreateAsync(customerDto);
@@ -272,8 +270,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             UserName = userName,
             Email = "admin@example.com",
             Name = "Admin User",
-            Password = "Admin123!",
-            ThemeId = null
+            Password = "Admin123!"
         };
 
         await _adminService.CreateAsync(adminRequestDto);
@@ -292,7 +289,6 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             UserName = userName,
             LocatedAtRestaurantId = locatedAt.Id,
             Name = "Machine User",
-            ThemeId = null,
             Password = "Machine123!"
         };
 

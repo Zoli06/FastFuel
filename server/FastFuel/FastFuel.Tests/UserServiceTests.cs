@@ -96,8 +96,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = name,
             UserName = username,
-            Password = password,
-            ThemeId = null
+            Password = password
         };
     }
 
@@ -145,8 +144,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Test",
             UserName = "test",
-            Password = null,
-            ThemeId = null
+            Password = null
         };
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
@@ -163,8 +161,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Updated",
             UserName = "updated",
-            Password = null,
-            ThemeId = null
+            Password = null
         };
 
         await _service.UpdateAsync(created.Id, update);
@@ -224,8 +221,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             return new User
             {
                 Name = dto.Name,
-                UserName = dto.UserName,
-                ThemeId = dto.ThemeId
+                UserName = dto.UserName
             };
         }
 
@@ -233,7 +229,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             entity.Name = dto.Name;
             entity.UserName = dto.UserName;
-            entity.ThemeId = dto.ThemeId;
         }
 
         public UserResponseDto ToDto(User entity)
@@ -243,7 +238,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
                 Id = entity.Id,
                 Name = entity.Name,
                 UserName = entity.UserName,
-                ThemeId = entity.ThemeId,
                 OrderIds = entity.Orders.ConvertAll(order => order.Id),
 
                 RoleIds = new List<uint>(),

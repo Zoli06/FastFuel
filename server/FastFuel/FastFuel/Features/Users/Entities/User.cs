@@ -21,7 +21,5 @@ public class User : IdentityUser<uint>, IIdentifiable
         set => base.PasswordHash = value;
     }
 
-    public uint? ThemeId { get; set; }
-
     public virtual List<Order> Orders { get; init; } = [];
 }

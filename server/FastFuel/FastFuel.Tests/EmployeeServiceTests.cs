@@ -105,11 +105,10 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             UserName = "employee",
             Email = "employee@test.com",
             Password = "Password123!",
-            ThemeId = null,
             ShiftIds = new List<uint>(),
             StationCategoryIds = new List<uint>(),
             // TODO: fix this
-            WorksAtRestaurantId = 1,
+            WorksAtRestaurantId = 1
         };
 
         var result = await _service.CreateAsync(request);

@@ -11,7 +11,6 @@ namespace FastFuel.Features.Machines.Mappers;
 public class MachineMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
     : UserMapper(roleManager, userManager), IMapper<Machine, MachineRequestDto, MachineResponseDto>
 {
-
     public MachineResponseDto ToDto(Machine entity)
     {
         var userDto = base.ToDto(entity);
@@ -20,7 +19,6 @@ public class MachineMapper(RoleManager<Role> roleManager, UserManager<User> user
             Id = userDto.Id,
             Name = userDto.Name,
             UserName = userDto.UserName,
-            ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
             UserType = userDto.UserType,
             LocatedAtRestaurantId = entity.LocatedAtRestaurantId,
@@ -36,7 +34,6 @@ public class MachineMapper(RoleManager<Role> roleManager, UserManager<User> user
             Id = userEntity.Id,
             Name = userEntity.Name,
             UserName = userEntity.UserName,
-            ThemeId = userEntity.ThemeId,
             LocatedAtRestaurantId = dto.LocatedAtRestaurantId
         };
     }
