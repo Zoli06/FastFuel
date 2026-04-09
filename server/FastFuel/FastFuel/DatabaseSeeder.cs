@@ -214,7 +214,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _context.SaveChangesAsync();
     }
 
-    public async Task SeedAsync()
+    public async Task SeedProdAsync()
     {
         if (await _context.Users.AnyAsync()) return;
 

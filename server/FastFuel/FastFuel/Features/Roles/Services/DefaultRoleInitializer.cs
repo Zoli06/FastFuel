@@ -35,6 +35,9 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
     {
         foreach (var defaultRole in Enum.GetValues<DefaultRole>())
         {
+            if (defaultRole == DefaultRole.Admin)
+                continue;
+
             var roleName = defaultRole.ToString();
             if (await roleManager.RoleExistsAsync(roleName))
                 continue;
@@ -43,7 +46,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             {
                 Name = roleName,
                 IsDefault = true,
-                ArePermissionsImmutable = defaultRole == DefaultRole.Admin,
+                ArePermissionsImmutable = false,
                 Pages = DefaultRolePages.TryGetValue(defaultRole, out var pages) ? pages.ToList() : []
             };
 
@@ -61,6 +64,7 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
             }
         }
 
+        // Admin permissions must be reconciled against the current catalog on every startup.
         await InitializeAdminRoleAsync();
     }
 
@@ -92,7 +96,14 @@ public class DefaultRoleInitializer(RoleManager<Role> roleManager, IPermissionSe
         var adminRole = await roleManager.FindByNameAsync(adminRoleName);
         if (adminRole == null)
         {
-            adminRole = new Role { Name = adminRoleName, IsDefault = true, ArePermissionsImmutable = true };
+            adminRole = new Role
+            {
+                Name = adminRoleName,
+                IsDefault = true,
+                ArePermissionsImmutable = true,
+                Pages = DefaultRolePages.TryGetValue(DefaultRole.Admin, out var adminPages) ? adminPages.ToList() : []
+            };
+
             var createResult = await roleManager.CreateAsync(adminRole);
             if (!createResult.Succeeded)
                 throw new ValidationAppException(
