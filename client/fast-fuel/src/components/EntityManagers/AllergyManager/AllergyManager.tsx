@@ -82,14 +82,14 @@ export const AllergyManager = () => {
     {
       onSuccess: () => refetchAllergies(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateAllergy = useRecommendedPerm('Permission:Allergy:Update')?.useMutation(
     'put',
     '/api/Allergy/{id}',
     {
       onSuccess: () => refetchAllergies(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteAllergy = useRecommendedPerm('Permission:Allergy:Delete')?.useMutation(
     'delete',
     '/api/Allergy/{id}',
@@ -98,11 +98,11 @@ export const AllergyManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Allergy, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Allergy, mode: 'create' | 'edit') => {
     if (mode === 'create' && createAllergy) {
-      createAllergy({ body: values });
+      await createAllergy({ body: values });
     } else if (mode === 'edit' && updateAllergy) {
-      updateAllergy({ params: { path: { id: values.id } }, body: values });
+      await updateAllergy({ params: { path: { id: values.id } }, body: values });
     }
   };
 

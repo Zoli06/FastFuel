@@ -4,6 +4,7 @@ import { Paper } from '../common/Paper/Paper';
 import { useApi } from '../../lib/api.ts';
 import type { components } from '../../types/api-schema.generated.ts';
 import { useNavigate } from 'react-router-dom';
+import { validatePasswordComplexity } from '../../lib/password-validation.ts';
 
 type RegisterFormValues = components['schemas']['CustomerRequestDto'] & {
   password: string;
@@ -24,8 +25,10 @@ export const Register = () => {
       confirmPassword: '',
     } as RegisterFormValues,
     validate: {
+      password: (value) => validatePasswordComplexity(value),
       confirmPassword: (value, values) =>
-        value !== values.password ? 'Passwords do not match' : null,
+        validatePasswordComplexity(value) ??
+        (value !== values.password ? 'Passwords do not match' : null),
     },
   });
 

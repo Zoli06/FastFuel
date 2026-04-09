@@ -230,14 +230,14 @@ export const OrderManager = () => {
     {
       onSuccess: () => refetchOrders(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateOrder = useRecommendedPerm('Permission:Order:Update')?.useMutation(
     'put',
     '/api/Order/{id}',
     {
       onSuccess: () => refetchOrders(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteOrder = useRecommendedPerm('Permission:Order:Delete')?.useMutation(
     'delete',
     '/api/Order/{id}',
@@ -246,11 +246,11 @@ export const OrderManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Order, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Order, mode: 'create' | 'edit') => {
     if (mode === 'create' && createOrder) {
-      createOrder({ body: values });
+      await createOrder({ body: values });
     } else if (mode === 'edit' && updateOrder) {
-      updateOrder({ params: { path: { id: values.id } }, body: values });
+      await updateOrder({ params: { path: { id: values.id } }, body: values });
     }
   };
 

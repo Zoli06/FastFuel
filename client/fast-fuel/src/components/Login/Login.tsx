@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper';
 import { useApi } from '../../lib/api.ts';
 import type { components } from '../../types/api-schema.generated.ts';
+import { validatePasswordComplexity } from '../../lib/password-validation.ts';
 
 type LoginValues = components['schemas']['LoginRequestDto'];
 
@@ -13,6 +14,9 @@ export const Login = () => {
 
   const form = useForm<LoginValues>({
     initialValues: { userName: '', password: '' },
+    validate: {
+      password: (value) => validatePasswordComplexity(value),
+    },
   });
 
   const { mutateAsync: login, isPending } = useNoPerm().useMutation('post', '/api/Auth/login');

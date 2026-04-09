@@ -73,23 +73,23 @@ export const StationCategoryManager = () => {
     'Permission:StationCategory:Create',
   )?.useMutation('post', '/api/StationCategory', {
     onSuccess: () => refetchStationCategories(),
-  }).mutate;
+  }).mutateAsync;
   const updateStationCategory = useRecommendedPerm(
     'Permission:StationCategory:Update',
   )?.useMutation('put', '/api/StationCategory/{id}', {
     onSuccess: () => refetchStationCategories(),
-  }).mutate;
+  }).mutateAsync;
   const deleteStationCategory = useRecommendedPerm(
     'Permission:StationCategory:Delete',
   )?.useMutation('delete', '/api/StationCategory/{id}', {
     onSuccess: () => refetchStationCategories(),
   }).mutate;
 
-  const handleSubmit = (values: StationCategory, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: StationCategory, mode: 'create' | 'edit') => {
     if (mode === 'create' && createStationCategory) {
-      createStationCategory({ body: values });
+      await createStationCategory({ body: values });
     } else if (mode === 'edit' && updateStationCategory) {
-      updateStationCategory({ params: { path: { id: values.id } }, body: values });
+      await updateStationCategory({ params: { path: { id: values.id } }, body: values });
     }
   };
 

@@ -85,14 +85,14 @@ export const MachineManager = () => {
     {
       onSuccess: () => refetchMachines(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateMachine = useRecommendedPerm('Permission:Machine:Update')?.useMutation(
     'put',
     '/api/Machine/{id}',
     {
       onSuccess: () => refetchMachines(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteMachine = useRecommendedPerm('Permission:Machine:Delete')?.useMutation(
     'delete',
     '/api/Machine/{id}',
@@ -108,11 +108,11 @@ export const MachineManager = () => {
     locatedAtRestaurantId: values.locatedAtRestaurantId,
   });
 
-  const handleSubmit = (values: MachineFormValues, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: MachineFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createMachine) {
-      createMachine({ body: toRequestDto(values) });
+      await createMachine({ body: toRequestDto(values) });
     } else if (mode === 'edit' && updateMachine) {
-      updateMachine({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      await updateMachine({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 

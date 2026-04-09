@@ -12,6 +12,7 @@ import {
 import { Form, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useApi } from '../../lib/api.ts';
+import { validatePasswordComplexityIfProvided } from '../../lib/password-validation.ts';
 
 interface ProfileEditFormProps {
   name: string;
@@ -23,6 +24,9 @@ interface ProfileEditFormProps {
 export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditFormProps) => {
   const form = useForm({
     initialValues: { name, userName, email, password: '' },
+    validate: {
+      password: (value) => validatePasswordComplexityIfProvided(value),
+    },
   });
 
   const { setFieldValue } = form;

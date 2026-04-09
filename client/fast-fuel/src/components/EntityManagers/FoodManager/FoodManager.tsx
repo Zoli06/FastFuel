@@ -142,14 +142,14 @@ export const FoodManager = () => {
     {
       onSuccess: () => refetchFoods(),
     },
-  ).mutate;
+  ).mutateAsync;
   const updateFood = useRecommendedPerm('Permission:Food:Update')?.useMutation(
     'put',
     '/api/Food/{id}',
     {
       onSuccess: () => refetchFoods(),
     },
-  ).mutate;
+  ).mutateAsync;
   const deleteFood = useRecommendedPerm('Permission:Food:Delete')?.useMutation(
     'delete',
     '/api/Food/{id}',
@@ -158,11 +158,11 @@ export const FoodManager = () => {
     },
   ).mutate;
 
-  const handleSubmit = (values: Food, mode: 'create' | 'edit') => {
+  const handleSubmit = async (values: Food, mode: 'create' | 'edit') => {
     if (mode === 'create' && createFood) {
-      createFood({ body: values });
+      await createFood({ body: values });
     } else if (mode === 'edit' && updateFood) {
-      updateFood({ params: { path: { id: values.id } }, body: values });
+      await updateFood({ params: { path: { id: values.id } }, body: values });
     }
   };
 
