@@ -114,11 +114,7 @@ export const RoleManager = () => {
 
   const tableColumns: ColumnDefinition<Role>[] = [
     { header: 'Name', accessor: 'name' },
-    { header: 'Is Default', render: (r) => (r.isDefault ? 'Yes' : 'No') },
-    {
-      header: 'Permissions Immutable',
-      render: (r) => (r.arePermissionsImmutable ? 'Yes' : 'No'),
-    },
+    { header: 'Built-in?', render: (r) => (r.isDefault ? 'Yes' : 'No') },
   ];
 
   const isEditingDefaultRole = (roleId: number | undefined, mode: 'create' | 'edit') => {
@@ -440,12 +436,21 @@ export const RoleManager = () => {
 
   const canDeleteRole = (role: Role) => !role.isDefault;
 
+  const normalizeRolePayload = (values: RoleFormValues): RoleFormValues => ({
+    ...values,
+    permissions: (values.permissions as Permission[] | undefined) ?? [],
+    pages: (values.pages as Page[] | undefined) ?? [],
+    userIds: values.userIds ?? [],
+  });
+
   const handleSubmit = async (values: RoleFormValues, mode: 'create' | 'edit') => {
+    const payload = normalizeRolePayload(values);
+
     if (mode === 'create' && createRole) {
-      await createRole({ body: values });
+      await createRole({ body: payload });
     } else if (mode === 'edit') {
       if (!updateRole) return;
-      await updateRole({ params: { path: { id: values.id } }, body: values });
+      await updateRole({ params: { path: { id: values.id } }, body: payload });
     }
   };
 
