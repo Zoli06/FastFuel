@@ -181,11 +181,16 @@ public static class Program
     private static async Task SeedDatabaseAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<FastFuelDbContext>();
 
         if (app.Environment.IsDevelopment())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<FastFuelDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureCreatedAsync();
+        }
+        else
+        {
+            // In production, create schema if it does not exist.
             await dbContext.Database.EnsureCreatedAsync();
         }
 
