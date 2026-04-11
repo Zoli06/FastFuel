@@ -219,14 +219,12 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await _stationService.CreateAsync(new StationRequestDto
         {
             Name = "Burger Station 1",
-            InOperation = true,
             RestaurantId = restaurant.Id,
             StationCategoryId = burgerStation.Id
         });
         await _stationService.CreateAsync(new StationRequestDto
         {
             Name = "Fries Station 1",
-            InOperation = true,
             RestaurantId = restaurant.Id,
             StationCategoryId = friesStation.Id
         });

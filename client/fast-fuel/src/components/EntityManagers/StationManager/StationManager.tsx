@@ -30,7 +30,6 @@ export const StationManager = () => {
 
   const tableColumns: ColumnDefinition<Station>[] = [
     { header: 'Name', accessor: 'name' },
-    { header: 'In Operation', render: (s) => (s.inOperation ? 'Yes' : 'No') },
     ...(restaurantReadApi
       ? [
           {
@@ -56,14 +55,6 @@ export const StationManager = () => {
       key: 'name',
       label: 'Name',
       initialValue: '',
-      nullable: 'never',
-      required: 'always',
-    },
-    {
-      type: 'bool',
-      key: 'inOperation',
-      label: 'In Operation',
-      initialValue: true,
       nullable: 'never',
       required: 'always',
     },
