@@ -26,6 +26,7 @@ import { OrderHistoryPage } from '../pages/OrderHistoryPage.tsx';
 import { ProfilePage } from '../pages/ProfilePage.tsx';
 import { MyShiftsPage } from '../pages/MyShiftsPage.tsx';
 import { AboutPage } from '../pages/AboutPage.tsx';
+import { WelcomePage } from '../pages/WelcomePage.tsx';
 
 type RouteHandle = {
   header?: {
@@ -57,6 +58,11 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <WelcomePage />,
+        handle: withHeader('Welcome', 'Login'),
+      },
+      {
+        path: 'home',
         element: <HomePage />,
         handle: withHeader('Home'),
       },

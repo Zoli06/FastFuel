@@ -28,7 +28,7 @@ export const Login = () => {
         params: { query: { useCookies: true, useSessionCookies: true } },
       });
       invalidateApiCache();
-      navigate('/', { replace: true });
+      navigate('/home', { replace: true });
     } catch {
       form.setFieldError('password', 'Incorrect username or password');
     }

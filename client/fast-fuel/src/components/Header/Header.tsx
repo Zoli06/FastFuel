@@ -1,7 +1,6 @@
 import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
 import { useApi } from '../../lib/api.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
@@ -37,14 +36,10 @@ export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   const handleHomeClick = async () => {
     const { data: user } = currentUser ? { data: currentUser } : await refetchCurrentUser();
     if (!user) {
-      notifications.show({
-        title: 'Not logged in',
-        message: 'Please login to access the home page',
-        color: 'red',
-      });
+      navigate('/');
       return;
     }
-    navigate('/');
+    navigate('/home');
   };
 
   const config = authButtonConfig[authButton];
