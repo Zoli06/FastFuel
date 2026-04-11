@@ -1,5 +1,6 @@
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Employees.Entities;
+using FastFuel.Features.Restaurants.Entities;
 using FastFuel.Features.Shifts.DTOs;
 using FastFuel.Features.Shifts.Mappers;
 using FastFuel.Features.Shifts.Services;
@@ -12,6 +13,7 @@ public class ShiftServiceTests(MariaDbFixture fixture)
 {
     private FastFuelDbContext _dbContext = null!;
     private Employee _defaultEmployee = null!;
+    private Restaurant _defaultRestaurant = null!;
     private ShiftService _service = null!;
 
     // ─── Lifecycle ───────────────────────────────────────────────
@@ -21,6 +23,16 @@ public class ShiftServiceTests(MariaDbFixture fixture)
         _dbContext = fixture.CreateDbContext();
         _service = new ShiftService(_dbContext, new ShiftMapper());
 
+        _defaultRestaurant = new Restaurant
+        {
+            Name = "Shift Test Restaurant",
+            Address = "Shift Test Address",
+            Latitude = 0,
+            Longitude = 0
+        };
+        _dbContext.Restaurants.Add(_defaultRestaurant);
+        await _dbContext.SaveChangesAsync();
+
         // Seed a fully valid employee for tests
         _defaultEmployee = new Employee
         {
@@ -29,7 +41,8 @@ public class ShiftServiceTests(MariaDbFixture fixture)
             NormalizedUserName = "TESTEMPLOYEE",
             Email = "test@example.com",
             NormalizedEmail = "TEST@EXAMPLE.COM",
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            WorksAtRestaurantId = _defaultRestaurant.Id
         };
 
         // Set a password hash to satisfy non-null constraint
@@ -45,6 +58,7 @@ public class ShiftServiceTests(MariaDbFixture fixture)
         // Clean up all shifts and employees after tests
         _dbContext.Shifts.RemoveRange(_dbContext.Shifts);
         _dbContext.Employees.RemoveRange(_dbContext.Employees);
+        _dbContext.Restaurants.RemoveRange(_dbContext.Restaurants);
         await _dbContext.SaveChangesAsync();
         await _dbContext.DisposeAsync();
     }

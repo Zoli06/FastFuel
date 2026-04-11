@@ -135,7 +135,6 @@ public static class Program
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter
                 .InNamespaces("FastFuel.Features")
-                // TODO: switch to an opt-in approach
                 .Where(t => !typeof(IFilterMetadata).IsAssignableFrom(t)
                             && !typeof(IFilterFactory).IsAssignableFrom(t)
                             && !typeof(IExceptionHandler).IsAssignableFrom(t)

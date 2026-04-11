@@ -111,6 +111,22 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         };
     }
 
+    private async Task<User> CreateUserAsync(string userName)
+    {
+        var user = new User
+        {
+            Name = userName,
+            UserName = userName,
+            Email = userName
+        };
+
+        var createResult = await _userManager.CreateAsync(user, "Password123!");
+        if (!createResult.Succeeded)
+            throw new Exception(string.Join("; ", createResult.Errors.Select(e => e.Description)));
+
+        return user;
+    }
+
     // -------------------------
     // Tests
     // -------------------------
@@ -308,12 +324,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         await _roleManager.CreateAsync(role);
 
-        var user = new User
-        {
-            UserName = "default-role-add-user@test.local",
-            Email = "default-role-add-user@test.local"
-        };
-        await _userManager.CreateAsync(user);
+        var user = await CreateUserAsync("default-role-add-user@test.local");
 
         var request = BuildRequest("Customer", new List<string>(), userIds: new List<uint> { user.Id });
 
@@ -336,12 +347,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         await _roleManager.CreateAsync(role);
 
-        var user = new User
-        {
-            UserName = "default-role-remove-user@test.local",
-            Email = "default-role-remove-user@test.local"
-        };
-        await _userManager.CreateAsync(user);
+        var user = await CreateUserAsync("default-role-remove-user@test.local");
         await _userManager.AddToRoleAsync(user, role.Name);
 
         var request = BuildRequest("Customer");
@@ -380,12 +386,7 @@ public class RoleServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     [Fact]
     public async Task GetRolesForCurrentUser_ShouldReturnOnlyCurrentUserRoles()
     {
-        var user = new User
-        {
-            UserName = "my-roles-user@test.local",
-            Email = "my-roles-user@test.local"
-        };
-        await _userManager.CreateAsync(user);
+        var user = await CreateUserAsync("my-roles-user@test.local");
 
         var cashierRole = new Role { Name = "Cashier" };
         var kitchenRole = new Role { Name = "Kitchen" };

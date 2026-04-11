@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.DTOs;
@@ -122,8 +123,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         var role = await _roleManager.FindByNameAsync("User");
 
-        Assert.NotNull(role);
-        Assert.True(role.IsDefault);
+        Assert.Null(role);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         var user = await _userManager.FindByNameAsync(result.UserName);
         var roles = await _userManager.GetRolesAsync(user!);
 
-        Assert.Contains("User", roles);
+        Assert.Empty(roles);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             Password = null
         };
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<MissingRequiredFieldAppException>(() =>
             _service.CreateAsync(request)
         );
     }

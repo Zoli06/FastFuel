@@ -59,11 +59,6 @@ export const IngredientManager = () => {
           },
         ]
       : []),
-    {
-      header: 'Default Timer Value',
-      accessor: 'defaultTimerValueSeconds',
-      render: (r) => r.defaultTimerValueSeconds + 's',
-    },
   ];
 
   const allergyOptions = allergies.map((allergy) => ({ value: allergy.id, label: allergy.name }));
@@ -120,14 +115,6 @@ export const IngredientManager = () => {
           } satisfies Field,
         ]
       : []),
-    {
-      type: 'number',
-      key: 'defaultTimerValueSeconds',
-      label: 'Default Timer Value (seconds)',
-      initialValue: 0,
-      nullable: 'never',
-      required: 'always',
-    },
   ];
 
   const createIngredient = useRecommendedPerm('Permission:Ingredient:Create')?.useMutation(
