@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   Button,
   Card,
@@ -28,17 +27,6 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
       password: (value) => validatePasswordComplexityIfProvided(value),
     },
   });
-
-  const { setFieldValue } = form;
-
-  useEffect(() => {
-    setFieldValue('name', name);
-    setFieldValue('userName', userName);
-  }, [name, userName, setFieldValue]);
-
-  useEffect(() => {
-    if (email) setFieldValue('email', email);
-  }, [email, setFieldValue]);
 
   const updateCustomer = useApi('Profile')
     .useRecommendedPerm('Permission:Customer:UpdateSelf')
