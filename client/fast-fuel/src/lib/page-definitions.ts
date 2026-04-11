@@ -13,6 +13,10 @@ import {
   IconToolsKitchen2,
   IconUser,
   IconUsers,
+  IconAddressBook,
+  IconUsersGroup,
+  IconChefHat,
+  IconListCheckFilled,
 } from '@tabler/icons-react';
 import type { components, operations } from '../types/api-schema.generated.ts';
 
@@ -20,7 +24,7 @@ export type Page = components['schemas']['Page'];
 export type Permission =
   operations['Permission_GetAll']['responses'][200]['content']['application/json'][number];
 
-export type Group = 'Edibles' | 'Restaurant' | 'Management' | 'Orders' | 'Display';
+export type Group = 'Edibles' | 'Restaurant' | 'User Management' | 'Orders' | 'Me' | 'Display';
 
 type IconComponent = typeof IconShield;
 
@@ -37,15 +41,15 @@ export const pageDefinitions = {
   StationTasks: {
     displayName: 'Station Tasks',
     color: 'indigo',
-    icon: IconClipboardList,
+    icon: IconChefHat,
     routePath: '/station-tasks',
     showInHomeMenu: true,
     group: 'Display',
   },
   OrderStatusDisplay: {
     displayName: 'Order Status Display',
-    color: 'cyan',
-    icon: IconClipboardList,
+    color: 'blue',
+    icon: IconListCheckFilled,
     routePath: '/restaurants/order-status-display',
     showInHomeMenu: true,
     group: 'Display',
@@ -72,7 +76,7 @@ export const pageDefinitions = {
     icon: IconShield,
     routePath: '/manage/admin',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'User Management',
   },
   AllergyManager: {
     displayName: 'Allergies',
@@ -84,11 +88,11 @@ export const pageDefinitions = {
   },
   CustomerManager: {
     displayName: 'Customers',
-    color: 'blue',
-    icon: IconUsers,
+    color: 'green',
+    icon: IconUsersGroup,
     routePath: '/manage/customer',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'User Management',
   },
   IngredientManager: {
     displayName: 'Ingredients',
@@ -104,7 +108,7 @@ export const pageDefinitions = {
     icon: IconUsers,
     routePath: '/manage/employee',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'User Management',
   },
   Profile: {
     displayName: 'Profile',
@@ -112,7 +116,7 @@ export const pageDefinitions = {
     icon: IconUser,
     routePath: '/profile',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'Me',
   },
   MachineManager: {
     displayName: 'Machines',
@@ -120,7 +124,7 @@ export const pageDefinitions = {
     icon: IconDeviceDesktop,
     routePath: '/manage/machine',
     showInHomeMenu: true,
-    group: 'Restaurant',
+    group: 'User Management',
   },
   FoodManager: {
     displayName: 'Foods',
@@ -148,11 +152,11 @@ export const pageDefinitions = {
   },
   RoleManager: {
     displayName: 'Roles',
-    color: 'red',
-    icon: IconShield,
+    color: 'cyan',
+    icon: IconAddressBook,
     routePath: '/manage/role',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'User Management',
   },
   ShiftManager: {
     displayName: 'Shifts',
@@ -160,7 +164,7 @@ export const pageDefinitions = {
     icon: IconClock,
     routePath: '/manage/shift',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'Restaurant',
   },
   StationCategoryManager: {
     displayName: 'Station Categories',
@@ -192,7 +196,7 @@ export const pageDefinitions = {
     icon: IconClock,
     routePath: '/employee/my-shifts',
     showInHomeMenu: true,
-    group: 'Management',
+    group: 'Me',
   },
 } as const satisfies Record<Page, PageDefinition>;
 
