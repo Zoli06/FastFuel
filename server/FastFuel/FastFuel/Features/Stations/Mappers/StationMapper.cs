@@ -12,7 +12,6 @@ public class StationMapper : IMapper<Station, StationRequestDto, StationResponse
         {
             Id = entity.Id,
             Name = entity.Name,
-            InOperation = entity.InOperation,
             RestaurantId = entity.RestaurantId,
             StationCategoryId = entity.StationCategoryId
         };
@@ -23,7 +22,6 @@ public class StationMapper : IMapper<Station, StationRequestDto, StationResponse
         return new Station
         {
             Name = dto.Name,
-            InOperation = dto.InOperation,
             RestaurantId = dto.RestaurantId,
             StationCategoryId = dto.StationCategoryId
         };
@@ -32,7 +30,6 @@ public class StationMapper : IMapper<Station, StationRequestDto, StationResponse
     public void UpdateEntity(StationRequestDto dto, Station entity)
     {
         entity.Name = dto.Name;
-        entity.InOperation = dto.InOperation;
         entity.RestaurantId = dto.RestaurantId;
         entity.StationCategoryId = dto.StationCategoryId;
     }
