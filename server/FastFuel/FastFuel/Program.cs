@@ -196,6 +196,6 @@ public static class Program
         if (app.Environment.IsDevelopment())
             await databaseSeeder.SeedTestAsync();
         else
-            await databaseSeeder.SeedAsync();
+            await databaseSeeder.SeedProdAsync();
     }
 }
