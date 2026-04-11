@@ -1,6 +1,6 @@
 import { Box, Button, Container, Image, Paper, Stack, Text, Title } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import welcomeBg from '../../WelcomeBg_transitioned.webp';
+import welcomeBg from './WelcomeBg_transitioned.webp';
 
 export const Welcome = () => {
   return (
