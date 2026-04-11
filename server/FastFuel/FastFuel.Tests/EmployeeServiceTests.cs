@@ -1,8 +1,12 @@
+using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Employees.DTOs;
 using FastFuel.Features.Employees.Mappers;
 using FastFuel.Features.Employees.Services;
+using FastFuel.Features.Permissions.Services;
+using FastFuel.Features.Restaurants.Entities;
 using FastFuel.Features.Roles.Entities;
+using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -17,6 +21,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
     private FastFuelDbContext _dbContext = null!;
     private EmployeeService _service = null!;
+    private uint _restaurantId;
 
     public EmployeeServiceTests(MariaDbFixture fixture)
     {
@@ -27,16 +32,24 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     {
         _dbContext = _fixture.CreateDbContext();
 
+        await ResetDatabaseAsync();
+
         var userManager = CreateUserManager();
         var roleManager = CreateRoleManager();
 
-        // Seed required role if your service uses it
-        if (!await roleManager.RoleExistsAsync("Employee"))
-            await roleManager.CreateAsync(new Role
-            {
-                Name = "Employee",
-                NormalizedName = "EMPLOYEE"
-            });
+        var roleInitializer = new DefaultRoleInitializer(roleManager, new TestPermissionService());
+        await roleInitializer.InitializeAsync();
+
+        var restaurant = new Restaurant
+        {
+            Name = "Test Restaurant",
+            Address = "Test Address",
+            Latitude = 0,
+            Longitude = 0
+        };
+        _dbContext.Restaurants.Add(restaurant);
+        await _dbContext.SaveChangesAsync();
+        _restaurantId = restaurant.Id;
 
         var mapper = new EmployeeMapper(_dbContext, roleManager, userManager);
 
@@ -50,6 +63,12 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     public async Task DisposeAsync()
     {
         await _dbContext.DisposeAsync();
+    }
+
+    private async Task ResetDatabaseAsync()
+    {
+        await _dbContext.Database.EnsureDeletedAsync();
+        await _dbContext.Database.EnsureCreatedAsync();
     }
 
     // -------------------------
@@ -92,6 +111,19 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         );
     }
 
+    private class TestPermissionService : IPermissionService
+    {
+        public Task<List<string>> GetAllPermissionsAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new List<string>());
+        }
+
+        public Task<List<string>> GetPermissionsForCurrentUserAsync(ClaimsPrincipal user)
+        {
+            return Task.FromResult(new List<string>());
+        }
+    }
+
     // -------------------------
     // Test
     // -------------------------
@@ -107,8 +139,7 @@ public class EmployeeServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             Password = "Password123!",
             ShiftIds = new List<uint>(),
             StationCategoryIds = new List<uint>(),
-            // TODO: fix this
-            WorksAtRestaurantId = 1
+            WorksAtRestaurantId = _restaurantId
         };
 
         var result = await _service.CreateAsync(request);

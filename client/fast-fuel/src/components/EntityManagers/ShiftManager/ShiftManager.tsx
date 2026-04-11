@@ -96,7 +96,7 @@ export const ShiftManager = () => {
           initialValue: 0,
           nullable: 'never',
           required: 'always',
-          fieldProps: { min: 0, max: 23 },
+          fieldProps: { min: 0, max: 23, step: 1 },
         },
         {
           type: 'number',
@@ -105,7 +105,7 @@ export const ShiftManager = () => {
           initialValue: 0,
           nullable: 'never',
           required: 'always',
-          fieldProps: { min: 0, max: 59 },
+          fieldProps: { min: 0, max: 59, step: 1 },
         },
       ],
     },

@@ -8,6 +8,8 @@ using FastFuel.Features.Orders.Mappers;
 using FastFuel.Features.Orders.Services;
 using FastFuel.Features.Orders.Services.OrderFilter;
 using FastFuel.Features.Restaurants.Entities;
+using FastFuel.Features.Users.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace FastFuel.Tests;
 
@@ -19,6 +21,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     private Menu _menu = null!;
 
     private Restaurant _restaurant = null!;
+    private User _customer = null!;
     private IOrderService _service = null!;
 
     // ─── Lifecycle ─────────────────────────────────────────────
@@ -32,10 +35,20 @@ public class OrderServiceTests(MariaDbFixture fixture)
         _restaurant = new Restaurant { Name = "Test Restaurant" };
         _food = new Food { Name = "Test Food", Price = 1000 };
         _menu = new Menu { Name = "Test Menu" };
+        _customer = new User
+        {
+            Name = "Test Customer",
+            UserName = "order-customer",
+            NormalizedUserName = "ORDER-CUSTOMER"
+        };
+
+        var hasher = new PasswordHasher<User>();
+        _customer.PasswordHash = hasher.HashPassword(_customer, "Password123!");
 
         _dbContext.Restaurants.Add(_restaurant);
         _dbContext.Foods.Add(_food);
         _dbContext.Menus.Add(_menu);
+        _dbContext.Users.Add(_customer);
 
         await _dbContext.SaveChangesAsync();
     }
@@ -44,6 +57,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     {
         // Clean up all data to avoid unique constraint violations
         _dbContext.Orders.RemoveRange(_dbContext.Orders);
+        _dbContext.Users.RemoveRange(_dbContext.Users);
         _dbContext.Restaurants.RemoveRange(_dbContext.Restaurants);
         _dbContext.Foods.RemoveRange(_dbContext.Foods);
         _dbContext.Menus.RemoveRange(_dbContext.Menus);
@@ -100,7 +114,8 @@ public class OrderServiceTests(MariaDbFixture fixture)
 
     private async Task CreateOrdersAsync(int count)
     {
-        for (var i = 0; i < count; i++) await _service.CreateAsync(BuildRequest());
+        for (var i = 0; i < count; i++)
+            await _service.CreateAsync(BuildRequest(), _customer.Id);
     }
 
     // ─── Tests ────────────────────────────────────────────────
@@ -123,7 +138,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task GetByIdAsync_WithValidId_ReturnsOrder()
     {
-        var created = await _service.CreateAsync(BuildRequest());
+        var created = await _service.CreateAsync(BuildRequest(), _customer.Id);
         var result = await _service.GetByIdAsync(created.Id);
         Assert.NotNull(result);
         Assert.Equal(created.Id, result.Id);
@@ -140,7 +155,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     public async Task CreateAsync_PersistsOrder()
     {
         var request = BuildRequest();
-        var result = await _service.CreateAsync(request);
+        var result = await _service.CreateAsync(request, _customer.Id);
 
         Assert.NotEqual(0u, result.Id);
         Assert.Equal(_restaurant.Id, result.RestaurantId);
@@ -159,7 +174,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task UpdateAsync_WithValidId_UpdatesOrder()
     {
-        var created = await _service.CreateAsync(BuildRequest());
+        var created = await _service.CreateAsync(BuildRequest(), _customer.Id);
         var success = await _service.UpdateAsync(created.Id, BuildRequest());
         Assert.True(success);
 
@@ -177,7 +192,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task DeleteAsync_WithValidId_RemovesOrder()
     {
-        var created = await _service.CreateAsync(BuildRequest());
+        var created = await _service.CreateAsync(BuildRequest(), _customer.Id);
         var success = await _service.DeleteAsync(created.Id);
         Assert.True(success);
 
@@ -195,7 +210,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task UpdateOrderStatusAsync_WithValidId_UpdatesStatus()
     {
-        var created = await _service.CreateAsync(BuildRequest());
+        var created = await _service.CreateAsync(BuildRequest(), _customer.Id);
         var success = await _service.UpdateOrderStatusAsync(created.Id, OrderStatus.Completed);
         Assert.True(success);
 
@@ -213,10 +228,9 @@ public class OrderServiceTests(MariaDbFixture fixture)
     [Fact]
     public async Task GetOrdersForCurrentUserAsync_ReturnsUserOrders()
     {
-        var userId = 10u;
         await CreateOrdersAsync(2);
 
-        var user = BuildUser(userId);
+        var user = BuildUser(_customer.Id);
         var result = await _service.GetOrdersForCurrentUserAsync(user);
 
         Assert.NotNull(result);
@@ -229,9 +243,9 @@ public class OrderServiceTests(MariaDbFixture fixture)
         _dbContext.Restaurants.Add(secondRestaurant);
         await _dbContext.SaveChangesAsync();
 
-        var firstOrder = await _service.CreateAsync(BuildRequest(_restaurant.Id));
+        var firstOrder = await _service.CreateAsync(BuildRequest(_restaurant.Id), _customer.Id);
         await _service.UpdateOrderStatusAsync(firstOrder.Id, OrderStatus.Completed);
-        await _service.CreateAsync(BuildRequest(secondRestaurant.Id));
+        await _service.CreateAsync(BuildRequest(secondRestaurant.Id), _customer.Id);
 
         var filter = new OrderFilterParams { RestaurantId = _restaurant.Id, Status = OrderStatus.Completed };
         var result = await _service.GetAllOrdersWithFiltersAsync(filter);

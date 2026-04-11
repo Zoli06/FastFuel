@@ -1,17 +1,11 @@
 import { useApi } from '../../../lib/api.ts';
+import { getDisplayedDescription } from '../../../lib/description.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.ts';
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
-
-// TODO: Remove this or at least extract to a helper
-const maxLength = 100;
-const getDisplayedDescription = (description: string | null | undefined) => {
-  if (!description) return 'No description provided';
-  return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
-};
 
 const dayOfWeekOptions = [
   'Monday',

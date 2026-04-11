@@ -153,6 +153,10 @@ export const OrderManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                   {
                     type: 'text',
@@ -207,6 +211,10 @@ export const OrderManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                   {
                     type: 'text',

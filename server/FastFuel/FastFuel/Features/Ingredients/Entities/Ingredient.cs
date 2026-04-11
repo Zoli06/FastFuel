@@ -12,6 +12,5 @@ public class Ingredient : IIdentifiable
     public virtual List<FoodIngredient> FoodIngredients { get; init; } = [];
     public virtual List<Allergy> Allergies { get; init; } = [];
     public virtual List<StationCategory> StationCategories { get; init; } = [];
-    public TimeSpan DefaultTimerValue { get; set; }
     public uint Id { get; init; }
 }

@@ -1,4 +1,5 @@
 import { useApi } from '../../../lib/api.ts';
+import { getDisplayedDescription } from '../../../lib/description.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
@@ -28,7 +29,7 @@ export const FoodManager = () => {
   const tableColumns: ColumnDefinition<Food>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Price', accessor: 'price' },
-    { header: 'Description', accessor: 'description' },
+    { header: 'Description', render: (food) => getDisplayedDescription(food.description) },
     ...(ingredientReadApi
       ? [
           {
@@ -63,6 +64,10 @@ export const FoodManager = () => {
       initialValue: 0,
       nullable: 'never',
       required: 'always',
+      fieldProps: {
+        min: 0,
+        step: 0.01,
+      },
     },
     {
       type: 'text',
@@ -119,6 +124,10 @@ export const FoodManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                   {
                     type: 'text',

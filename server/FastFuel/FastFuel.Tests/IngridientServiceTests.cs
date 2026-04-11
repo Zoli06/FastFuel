@@ -33,7 +33,6 @@ public class IngredientServiceTests(MariaDbFixture fixture)
     private static IngredientRequestDto BuildRequest(
         string name = "TestIngredient",
         Uri? imageUrl = null,
-        uint? defaultTimer = null,
         List<uint>? allergyIds = null,
         List<uint>? stationCategoryIds = null)
     {
@@ -41,7 +40,6 @@ public class IngredientServiceTests(MariaDbFixture fixture)
         {
             Name = name,
             ImageUrl = imageUrl,
-            DefaultTimerValueSeconds = defaultTimer ?? 300,
             AllergyIds = allergyIds ?? [],
             StationCategoryIds = stationCategoryIds ?? []
         };
@@ -101,8 +99,7 @@ public class IngredientServiceTests(MariaDbFixture fixture)
     {
         var request = BuildRequest(
             "Tomato",
-            new Uri("https://test.com/tomato.png"),
-            30
+            new Uri("https://test.com/tomato.png")
         );
 
         var result = await _service.CreateAsync(request);
@@ -110,7 +107,6 @@ public class IngredientServiceTests(MariaDbFixture fixture)
         Assert.NotEqual(0u, result.Id);
         Assert.Equal("Tomato", result.Name);
         Assert.Equal(new Uri("https://test.com/tomato.png"), result.ImageUrl);
-        Assert.Equal(30u, result.DefaultTimerValueSeconds);
     }
 
     [Fact]
@@ -141,8 +137,7 @@ public class IngredientServiceTests(MariaDbFixture fixture)
 
         var updateRequest = BuildRequest(
             "NewName",
-            new Uri("https://test.com/new.png"),
-            60
+            new Uri("https://test.com/new.png")
         );
 
         var success = await _service.UpdateAsync(created.Id, updateRequest);
@@ -153,7 +148,6 @@ public class IngredientServiceTests(MariaDbFixture fixture)
 
         Assert.Equal("NewName", updated!.Name);
         Assert.Equal(new Uri("https://test.com/new.png"), updated.ImageUrl);
-        Assert.Equal(60u, updated.DefaultTimerValueSeconds);
     }
 
     [Fact]

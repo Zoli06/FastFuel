@@ -318,7 +318,7 @@ export const RoleManager = () => {
                   ? hasRequiredPermissions
                     ? 'Available'
                     : 'Missing required permissions'
-                  : `Requires default role: ${(requiredDefaultRoles ?? []).join(', ')}`;
+                  : `Only available to: ${(requiredDefaultRoles ?? []).join(', ')}`;
 
               return (
                 <Stack
