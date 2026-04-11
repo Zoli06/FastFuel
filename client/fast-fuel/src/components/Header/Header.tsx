@@ -8,6 +8,8 @@ export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
 interface HeaderProps {
   title: string;
   authButton?: HeaderAuthButton;
+  showHomeButton?: boolean;
+  showAuthButton?: boolean;
 }
 
 const authButtonConfig = {
@@ -16,7 +18,12 @@ const authButtonConfig = {
   Register: { text: 'Register', color: 'blue', path: '/register' },
 };
 
-export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
+export const Header = ({
+  title,
+  authButton = 'Logout',
+  showHomeButton = true,
+  showAuthButton = true,
+}: HeaderProps) => {
   const navigate = useNavigate();
   const shouldLoadCurrentUser = authButton === 'Logout';
   const { useNoPerm, invalidateApiCache } = useApi(null);
@@ -47,9 +54,11 @@ export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
   return (
     <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
       <Flex flex={1} justify="flex-start">
-        <Button variant="filled" onClick={handleHomeClick} color="gray">
-          Home
-        </Button>
+        {showHomeButton && (
+          <Button variant="filled" onClick={handleHomeClick} color="gray">
+            Home
+          </Button>
+        )}
       </Flex>
       <Center>
         <Stack align="center" gap={0}>
@@ -62,13 +71,15 @@ export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
         </Stack>
       </Center>
       <Flex flex={1} justify="flex-end">
-        <Button
-          variant="filled"
-          color={config.color}
-          onClick={() => (config.path ? navigate(config.path) : logout({}))}
-        >
-          {config.text}
-        </Button>
+        {showAuthButton && (
+          <Button
+            variant="filled"
+            color={config.color}
+            onClick={() => (config.path ? navigate(config.path) : logout({}))}
+          >
+            {config.text}
+          </Button>
+        )}
       </Flex>
     </Flex>
   );

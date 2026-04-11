@@ -8,6 +8,8 @@ type LayoutHandle = {
   header?: {
     title?: string;
     authButton?: HeaderAuthButton;
+    showHomeButton?: boolean;
+    showAuthButton?: boolean;
   };
   layout?: {
     hideChromeInFullscreen?: boolean;
@@ -38,8 +40,14 @@ export const Layout = () => {
 
   return (
     <>
-      {showChrome && <Header title={title} authButton={headerConfig?.authButton} />}
-
+      {showChrome && (
+        <Header
+          title={title}
+          authButton={headerConfig?.authButton}
+          showHomeButton={headerConfig?.showHomeButton}
+          showAuthButton={headerConfig?.showAuthButton}
+        />
+      )}
       <Outlet />
 
       {showChrome && <Footer />}

@@ -32,6 +32,8 @@ type RouteHandle = {
   header?: {
     title?: string;
     authButton?: HeaderAuthButton;
+    showHomeButton?: boolean;
+    showAuthButton?: boolean;
   };
   layout?: {
     hideChromeInFullscreen?: boolean;
@@ -42,10 +44,12 @@ const withHeader = (
   title: string,
   authButton?: HeaderAuthButton,
   layout?: RouteHandle['layout'],
+  buttonVisibility?: Pick<NonNullable<RouteHandle['header']>, 'showHomeButton' | 'showAuthButton'>,
 ): RouteHandle => ({
   header: {
     title,
     authButton,
+    ...buttonVisibility,
   },
   layout,
 });
@@ -59,7 +63,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <WelcomePage />,
-        handle: withHeader('Welcome', 'Login'),
+        handle: withHeader('Welcome', 'Login', undefined, {
+          showHomeButton: false,
+          showAuthButton: false,
+        }),
       },
       {
         path: 'home',
