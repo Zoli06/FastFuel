@@ -1,5 +1,7 @@
+import { Image } from '@mantine/core';
 import { useApi } from '../../../lib/api.ts';
 import { getDisplayedDescription } from '../../../lib/description.ts';
+import { validateOptionalImageUrl } from '../../../lib/url-validation.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
@@ -30,6 +32,15 @@ export const FoodManager = () => {
     { header: 'Name', accessor: 'name' },
     { header: 'Price', accessor: 'price' },
     { header: 'Description', render: (food) => getDisplayedDescription(food.description) },
+    {
+      header: 'Image',
+      render: (food) =>
+        food.imageUrl ? (
+          <Image src={food.imageUrl} alt={food.name} width={50} height={50} />
+        ) : (
+          'No image'
+        ),
+    },
     ...(ingredientReadApi
       ? [
           {
@@ -182,6 +193,9 @@ export const FoodManager = () => {
       data={foods}
       tableColumns={tableColumns}
       editorFields={editorFields}
+      validate={{
+        imageUrl: validateOptionalImageUrl,
+      }}
       onSubmit={handleSubmit}
       onDelete={deleteFood ? (r) => deleteFood({ params: { path: { id: r.id } } }) : undefined}
       canCreate={!!createFood}

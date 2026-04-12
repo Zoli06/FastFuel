@@ -91,56 +91,48 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var beefPatty = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Beef Patty",
-            ImageUrl = null,
             AllergyIds = [],
             StationCategoryIds = [burgerStation.Id]
         });
         var bun = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Bun",
-            ImageUrl = null,
             AllergyIds = [glutenAllergy.Id],
             StationCategoryIds = [burgerStation.Id]
         });
         var lettuce = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Lettuce",
-            ImageUrl = null,
             AllergyIds = [],
             StationCategoryIds = [burgerStation.Id]
         });
         var tomato = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Tomato",
-            ImageUrl = null,
             AllergyIds = [],
             StationCategoryIds = [burgerStation.Id]
         });
         var cheese = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Cheese",
-            ImageUrl = null,
             AllergyIds = [dairyAllergy.Id],
             StationCategoryIds = [burgerStation.Id]
         });
         var potato = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Potato",
-            ImageUrl = null,
             AllergyIds = [],
             StationCategoryIds = [friesStation.Id]
         });
         var salt = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Salt",
-            ImageUrl = null,
             AllergyIds = [],
             StationCategoryIds = [friesStation.Id]
         });
         var oil = await _ingredientService.CreateAsync(new IngredientRequestDto
         {
             Name = "Oil",
-            ImageUrl = null,
             AllergyIds = [],
             StationCategoryIds = [friesStation.Id]
         });

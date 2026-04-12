@@ -1,5 +1,4 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
-import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
@@ -24,15 +23,6 @@ export const IngredientManager = () => {
 
   const tableColumns: ColumnDefinition<Ingredient>[] = [
     { header: 'Name', accessor: 'name' },
-    {
-      header: 'Image',
-      render: (ingredient) =>
-        ingredient.imageUrl ? (
-          <Image src={ingredient.imageUrl} alt={ingredient.name} width={50} height={50} />
-        ) : (
-          'No image'
-        ),
-    },
     ...(allergyReadApi
       ? [
           {
@@ -72,14 +62,6 @@ export const IngredientManager = () => {
       initialValue: '',
       nullable: 'never',
       required: 'always',
-    },
-    {
-      type: 'text',
-      key: 'imageUrl',
-      label: 'Image URL',
-      nullable: 'always',
-      required: 'never',
-      initialValue: '',
     },
     ...(allergyReadApi
       ? [
