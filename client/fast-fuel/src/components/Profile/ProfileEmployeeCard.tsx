@@ -45,6 +45,12 @@ export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
             </Text>
           </Group>
         )}
+        <Group>
+          <Text size="sm" c="dimmed" w={160}>
+            Email
+          </Text>
+          <Text size="sm">{data.email}</Text>
+        </Group>
       </Stack>
     </Card>
   );
