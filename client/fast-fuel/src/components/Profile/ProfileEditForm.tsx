@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Button,
   Card,
@@ -27,6 +28,18 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
       password: (value) => validatePasswordComplexityIfProvided(value),
     },
   });
+
+  useEffect(() => {
+    const currentValues = form.getValues();
+    if (
+      currentValues.name !== name ||
+      currentValues.userName !== userName ||
+      currentValues.email !== email
+    ) {
+      form.setValues((prev) => ({ ...prev, name, userName, email }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, userName, email]);
 
   const updateCustomer = useApi('Profile')
     .useRecommendedPerm('Permission:Customer:UpdateSelf')
