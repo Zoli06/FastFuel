@@ -32,14 +32,12 @@ public class IngredientServiceTests(MariaDbFixture fixture)
 
     private static IngredientRequestDto BuildRequest(
         string name = "TestIngredient",
-        Uri? imageUrl = null,
         List<uint>? allergyIds = null,
         List<uint>? stationCategoryIds = null)
     {
         return new IngredientRequestDto
         {
             Name = name,
-            ImageUrl = imageUrl,
             AllergyIds = allergyIds ?? [],
             StationCategoryIds = stationCategoryIds ?? []
         };
@@ -98,23 +96,13 @@ public class IngredientServiceTests(MariaDbFixture fixture)
     public async Task CreateAsync_PersistsIngredient()
     {
         var request = BuildRequest(
-            "Tomato",
-            new Uri("https://test.com/tomato.png")
+            "Tomato"
         );
 
         var result = await _service.CreateAsync(request);
 
         Assert.NotEqual(0u, result.Id);
         Assert.Equal("Tomato", result.Name);
-        Assert.Equal(new Uri("https://test.com/tomato.png"), result.ImageUrl);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithNullImageUrl_PersistsNull()
-    {
-        var result = await _service.CreateAsync(BuildRequest(imageUrl: null));
-
-        Assert.Null(result.ImageUrl);
     }
 
     [Fact]
@@ -136,8 +124,7 @@ public class IngredientServiceTests(MariaDbFixture fixture)
         var created = await _service.CreateAsync(BuildRequest("OldName"));
 
         var updateRequest = BuildRequest(
-            "NewName",
-            new Uri("https://test.com/new.png")
+            "NewName"
         );
 
         var success = await _service.UpdateAsync(created.Id, updateRequest);
@@ -147,7 +134,6 @@ public class IngredientServiceTests(MariaDbFixture fixture)
         var updated = await _service.GetByIdAsync(created.Id);
 
         Assert.Equal("NewName", updated!.Name);
-        Assert.Equal(new Uri("https://test.com/new.png"), updated.ImageUrl);
     }
 
     [Fact]

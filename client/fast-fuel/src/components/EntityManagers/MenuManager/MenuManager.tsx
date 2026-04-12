@@ -3,6 +3,7 @@ import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { useApi } from '../../../lib/api.ts';
 import { getDisplayedDescription } from '../../../lib/description.ts';
+import { validateOptionalImageUrl } from '../../../lib/url-validation.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
@@ -181,6 +182,9 @@ export const MenuManager = () => {
       data={menus}
       tableColumns={tableColumns}
       editorFields={editorFields}
+      validate={{
+        imageUrl: validateOptionalImageUrl,
+      }}
       onSubmit={handleSubmit}
       onDelete={deleteMenu ? (r) => deleteMenu({ params: { path: { id: r.id } } }) : undefined}
       canCreate={!!createMenu}

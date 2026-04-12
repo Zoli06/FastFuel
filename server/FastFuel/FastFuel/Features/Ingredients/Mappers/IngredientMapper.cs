@@ -14,10 +14,9 @@ public class IngredientMapper(FastFuelDbContext dbContext)
         {
             Id = entity.Id,
             Name = entity.Name,
-            ImageUrl = entity.ImageUrl,
             AllergyIds = entity.Allergies.ConvertAll(allergy => allergy.Id),
             StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id),
-            FoodIds = entity.FoodIngredients.ConvertAll(fi => fi.FoodId),
+            FoodIds = entity.FoodIngredients.ConvertAll(fi => fi.FoodId)
         };
     }
 
@@ -26,20 +25,18 @@ public class IngredientMapper(FastFuelDbContext dbContext)
         return new Ingredient
         {
             Name = dto.Name,
-            ImageUrl = dto.ImageUrl,
             Allergies = dbContext.Allergies
                 .Where(a => dto.AllergyIds.Contains(a.Id))
                 .ToList(),
             StationCategories = dbContext.StationCategories
                 .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
-                .ToList(),
+                .ToList()
         };
     }
 
     public void UpdateEntity(IngredientRequestDto dto, Ingredient entity)
     {
         entity.Name = dto.Name;
-        entity.ImageUrl = dto.ImageUrl;
 
         entity.Allergies.Clear();
         entity.Allergies.AddRange(dbContext.Allergies
