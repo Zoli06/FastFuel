@@ -36,7 +36,6 @@ export const AllergyManager = () => {
           },
         ]
       : []),
-    { header: 'Message', render: (r) => r.message ?? 'No message provided' },
   ];
 
   const editorFields: Field[] = [
@@ -47,14 +46,6 @@ export const AllergyManager = () => {
       initialValue: '',
       nullable: 'never',
       required: 'always',
-    },
-    {
-      type: 'text',
-      key: 'message',
-      label: 'Message',
-      nullable: 'always',
-      required: 'never',
-      initialValue: '',
     },
     ...(ingredientReadApi
       ? [

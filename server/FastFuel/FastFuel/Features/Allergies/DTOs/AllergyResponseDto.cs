@@ -9,10 +9,6 @@ public record AllergyResponseDto : IIdentifiable
     /// </summary>
     public required string Name { get; init; } = string.Empty;
     /// <summary>
-    /// The message.
-    /// </summary>
-    public required string? Message { get; init; }
-    /// <summary>
     /// The list of ingredient identifiers.
     /// </summary>
     public required List<uint> IngredientIds { get; init; } = [];

@@ -14,7 +14,6 @@ public class AllergyMapper(FastFuelDbContext dbContext)
         {
             Id = entity.Id,
             Name = entity.Name,
-            Message = entity.Message,
             IngredientIds = entity.Ingredients.ConvertAll(i => i.Id)
         };
     }
@@ -24,7 +23,6 @@ public class AllergyMapper(FastFuelDbContext dbContext)
         return new Allergy
         {
             Name = dto.Name,
-            Message = dto.Message,
             Ingredients = dbContext.Ingredients
                 .Where(i => dto.IngredientIds.Contains(i.Id))
                 .ToList()
@@ -35,7 +33,6 @@ public class AllergyMapper(FastFuelDbContext dbContext)
     public void UpdateEntity(AllergyRequestDto dto, Allergy entity)
     {
         entity.Name = dto.Name;
-        entity.Message = dto.Message;
 
         entity.Ingredients.Clear();
         entity.Ingredients.AddRange(dbContext.Ingredients
