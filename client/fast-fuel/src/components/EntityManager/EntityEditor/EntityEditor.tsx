@@ -102,9 +102,10 @@ function collectPasswordValidationRules<Values extends FormValues>(
     const canBeBlank = !isRequired(field, mode);
     rules[field.key] = (value) => {
       const password = value as string | null | undefined;
-      return canBeBlank
+      const passwordError = canBeBlank
         ? validatePasswordComplexityIfProvided(password)
         : validatePasswordComplexity(password);
+      return passwordError || null;
     };
   }
 
