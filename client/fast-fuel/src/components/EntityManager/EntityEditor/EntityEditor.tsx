@@ -10,6 +10,7 @@ import {
   PasswordInput,
   Select,
   Stack,
+  Text,
   TextInput,
 } from '@mantine/core';
 import { Form, useForm, type UseFormInput, type UseFormReturnType } from '@mantine/form';
@@ -308,6 +309,7 @@ function renderListField(
   mode: EditorMode,
 ): ReactNode {
   const listValue = (form.getValues()[field.key] ?? []) as FormValues[];
+  const listError = form.errors[field.key];
 
   const newItem = (): FormValues => {
     const item: FormValues = {};
@@ -339,6 +341,11 @@ function renderListField(
         </Group>
       ))}
       <Button onClick={() => form.insertListItem(field.key, newItem())}>Add</Button>
+      {listError ? (
+        <Text c="red" size="sm">
+          {listError}
+        </Text>
+      ) : null}
     </Stack>
   );
 }
