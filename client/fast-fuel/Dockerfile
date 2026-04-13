@@ -19,6 +19,10 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 # Copy the rest of the application source code into the container
 COPY . .
 
+# Build-time API URL for Vite (injected into the static bundle)
+ARG VITE_API_BASE_URL=http://localhost:5249
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
 # Build the React.js application (outputs to /app/dist)
 RUN npm run build
 
