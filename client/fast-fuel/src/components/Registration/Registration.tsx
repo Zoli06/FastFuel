@@ -25,10 +25,12 @@ export const Register = () => {
       confirmPassword: '',
     } as RegisterFormValues,
     validate: {
-      password: (value) => validatePasswordComplexity(value),
-      confirmPassword: (value, values) =>
-        validatePasswordComplexity(value) ??
-        (value !== values.password ? 'Passwords do not match' : null),
+      password: (value) => validatePasswordComplexity(value) || null,
+      confirmPassword: (value, values) => {
+        const passwordError = validatePasswordComplexity(value);
+        if (passwordError) return passwordError;
+        return value !== values.password ? 'Passwords do not match' : null;
+      },
     },
   });
 

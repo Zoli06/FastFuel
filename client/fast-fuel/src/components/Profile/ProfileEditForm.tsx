@@ -25,7 +25,7 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
   const form = useForm({
     initialValues: { name, userName, email, password: '' },
     validate: {
-      password: (value) => validatePasswordComplexityIfProvided(value),
+      password: (value) => validatePasswordComplexityIfProvided(value) || null,
     },
   });
 

@@ -15,7 +15,7 @@ export const Login = () => {
   const form = useForm<LoginValues>({
     initialValues: { userName: '', password: '' },
     validate: {
-      password: (value) => validatePasswordComplexity(value),
+      password: (value) => validatePasswordComplexity(value) || null,
     },
   });
 
