@@ -1,5 +1,6 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
+import type { UseFormInput } from '@mantine/form';
 import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
@@ -156,6 +157,13 @@ export const ShiftManager = () => {
     };
   };
 
+  const validateShift: UseFormInput<ShiftFormValues>['validate'] = {
+    durationMinutes: (_, values) => {
+      const totalMinutes = (values.durationHours ?? 0) * 60 + (values.durationMinutes ?? 0);
+      return totalMinutes > 0 ? null : 'Duration must be greater than 0 minutes';
+    },
+  };
+
   const handleSubmit = async (values: ShiftFormValues, mode: 'create' | 'edit') => {
     if (mode === 'create' && createShift) {
       await createShift({ body: toRequestDto(values) });
@@ -173,6 +181,7 @@ export const ShiftManager = () => {
       )}
       tableColumns={tableColumns}
       editorFields={editorFields}
+      validate={validateShift}
       sectionKey={(s) => parseAsUtcDate(s.startTime).toLocaleDateString()}
       transformEditValues={transformEditValues}
       onSubmit={handleSubmit}

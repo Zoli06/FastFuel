@@ -281,7 +281,7 @@ function renderField(
       return (
         <Fieldset key={field.key} legend={field.legend}>
           {field.layout === 'row' ? (
-            <Group grow align="flex-end">
+            <Group grow align="flex-start">
               {children}
             </Group>
           ) : (
@@ -322,7 +322,7 @@ function renderListField(
     <Stack key={field.key} gap="xs">
       {listValue.map((_, index) => (
         <Group key={index} align="flex-end" wrap="nowrap">
-          <Group grow align="flex-end" style={{ flex: 1 }}>
+          <Group grow align="flex-start" style={{ flex: 1 }}>
             {field.items.map((itemField) =>
               itemField.type === 'custom'
                 ? itemField.render(form, mode)
