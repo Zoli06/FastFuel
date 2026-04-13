@@ -10,6 +10,5 @@ public class AllergyConfig : IEntityTypeConfiguration<Allergy>
     {
         builder.HasIndex(a => a.Name).IsUnique();
         builder.Property(a => a.Name).HasMaxLength(100);
-        builder.Property(a => a.Message).HasMaxLength(600);
     }
 }

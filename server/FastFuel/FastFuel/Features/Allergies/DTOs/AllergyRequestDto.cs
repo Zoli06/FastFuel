@@ -7,10 +7,6 @@ public record AllergyRequestDto
     /// </summary>
     public required string Name { get; init; }
     /// <summary>
-    /// The message.
-    /// </summary>
-    public required string? Message { get; init; }
-    /// <summary>
     /// The list of ingredient identifiers.
     /// </summary>
     public required List<uint> IngredientIds { get; init; } = [];

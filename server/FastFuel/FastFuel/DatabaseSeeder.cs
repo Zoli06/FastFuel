@@ -72,19 +72,16 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var glutenAllergy = await _allergyService.CreateAsync(new AllergyRequestDto
         {
             Name = "Gluten",
-            Message = "Contains gluten.",
             IngredientIds = []
         });
         var dairyAllergy = await _allergyService.CreateAsync(new AllergyRequestDto
         {
             Name = "Dairy",
-            Message = "Contains dairy.",
             IngredientIds = []
         });
         await _allergyService.CreateAsync(new AllergyRequestDto
         {
             Name = "Peanuts",
-            Message = "Contains peanuts.",
             IngredientIds = []
         });
 
