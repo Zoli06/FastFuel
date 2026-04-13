@@ -6,12 +6,11 @@ import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspens
 type EmployeeData = components['schemas']['EmployeeResponseDto'];
 
 export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
-  const { useRecommendedPerm } = useApi('Profile');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
+  const { useRecommendedPerm, useNoPerm } = useApi('Profile');
   const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
 
   const [{ data: restaurants }, { data: stationCategories }] = useConditionalSuspenseQueries([
-    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
     stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
   ]);
 
@@ -21,17 +20,15 @@ export const ProfileEmployeeCard = ({ data }: { data: EmployeeData }) => {
         Employment details
       </Text>
       <Stack gap="xs">
-        {restaurantReadApi && (
-          <Group>
-            <Text size="sm" c="dimmed" w={160}>
-              Working at
-            </Text>
-            <Text size="sm">
-              {restaurants?.find((r) => r.id === data.worksAtRestaurantId)?.name ??
-                `#${data.worksAtRestaurantId}`}
-            </Text>
-          </Group>
-        )}
+        <Group>
+          <Text size="sm" c="dimmed" w={160}>
+            Working at
+          </Text>
+          <Text size="sm">
+            {restaurants?.find((r) => r.id === data.worksAtRestaurantId)?.name ??
+              `#${data.worksAtRestaurantId}`}
+          </Text>
+        </Group>
         {stationCategoryReadApi && (
           <Group>
             <Text size="sm" c="dimmed" w={160}>

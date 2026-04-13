@@ -5,9 +5,8 @@ import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const EmployeeManager = () => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('EmployeeManager');
+  const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('EmployeeManager');
   const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
 
   const [
     { data: stationCategories = [] },
@@ -15,7 +14,7 @@ export const EmployeeManager = () => {
     { data: employees = [], refetch: refetchEmployees },
   ] = useConditionalSuspenseQueries([
     stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
-    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
     useNecessaryPerm('Permission:Employee:Read').queryOptions('get', '/api/Employee'),
   ]);
 
@@ -38,15 +37,8 @@ export const EmployeeManager = () => {
     { header: 'User Type', accessor: 'userType' },
     {
       header: 'Works At',
-      render: (e: Employee) => {
-        if (restaurantReadApi) {
-          return (
-            restaurantOptions.find((o) => o.value === e.worksAtRestaurantId)?.label ??
-            `#${e.worksAtRestaurantId}`
-          );
-        }
-        return `#${e.worksAtRestaurantId}`;
-      },
+      render: (e: Employee) =>
+        restaurantOptions.find((o) => o.value === e.worksAtRestaurantId)?.label,
     },
     ...(stationCategoryReadApi
       ? [

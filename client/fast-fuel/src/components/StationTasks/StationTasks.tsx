@@ -220,7 +220,6 @@ export const StationTasks = () => {
   const isMachineUser = currentUserType === 'machine';
   const stationTasksApi = useNecessaryPerm('Permission:Station:ViewTasks');
   const stationReadApi = useRecommendedPerm('Permission:Station:Read');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
   const updateStatusApi = useRecommendedPerm('Permission:Order:UpdateStatus');
   const isWideScreen = useMediaQuery('(min-width: 1400px)');
   const [stationPickerOpen, setStationPickerOpen] = useState(activeStationId === null);
@@ -262,8 +261,8 @@ export const StationTasks = () => {
           },
         })
       : undefined,
-    restaurantReadApi && lockedRestaurantId !== null
-      ? restaurantReadApi.queryOptions('get', '/api/Restaurant/{id}', {
+    lockedRestaurantId !== null
+      ? noPermApi.queryOptions('get', '/api/Restaurant/{id}', {
           params: { path: { id: lockedRestaurantId } },
         })
       : undefined,
@@ -298,7 +297,7 @@ export const StationTasks = () => {
     stationReadApi && stations.length > 1 && lockedRestaurantId === null,
   );
   const stationPickerTitle =
-    (isEmployeeUser || isMachineUser) && restaurantReadApi && lockedRestaurant?.name
+    (isEmployeeUser || isMachineUser) && lockedRestaurant?.name
       ? `Switch station (${lockedRestaurant.name} resturant)`
       : 'Switch station';
 

@@ -12,14 +12,14 @@ public static class PagePermissionCatalog
                 [Page.StationTasks] =
                     new(
                         ["Permission:Station:ViewTasks"],
-                        ["Permission:Station:Read", "Permission:Order:UpdateStatus", "Permission:Restaurant:Read"],
+                        ["Permission:Station:Read", "Permission:Order:UpdateStatus"],
                         [],
                         []
                     ),
                 [Page.OrderStatusDisplay] =
                     new(
                         ["Permission:Order:Read"],
-                        ["Permission:Restaurant:Read"],
+                        [],
                         [],
                         []
                     ),
@@ -27,7 +27,6 @@ public static class PagePermissionCatalog
                     new(
                         [
                             "Permission:Order:Create",
-                            "Permission:Restaurant:Read",
                             "Permission:Food:Read",
                             "Permission:Menu:Read"
                         ],
@@ -81,8 +80,7 @@ public static class PagePermissionCatalog
                             "Permission:Employee:Create",
                             "Permission:Employee:Update",
                             "Permission:Employee:Delete",
-                            "Permission:StationCategory:Read",
-                            "Permission:Restaurant:Read"
+                            "Permission:StationCategory:Read"
                         ],
                         [],
                         []
@@ -93,8 +91,7 @@ public static class PagePermissionCatalog
                         [
                             "Permission:Machine:Create",
                             "Permission:Machine:Update",
-                            "Permission:Machine:Delete",
-                            "Permission:Restaurant:Read"
+                            "Permission:Machine:Delete"
                         ],
                         [],
                         []
@@ -133,8 +130,7 @@ public static class PagePermissionCatalog
                             "Permission:Order:UpdateStatus",
                             "Permission:Menu:Read",
                             "Permission:Food:Read",
-                            "Permission:User:Read",
-                            "Permission:Restaurant:Read"
+                            "Permission:User:Read"
                         ],
                         [],
                         []
@@ -183,7 +179,6 @@ public static class PagePermissionCatalog
                             "Permission:Station:Create",
                             "Permission:Station:Update",
                             "Permission:Station:Delete",
-                            "Permission:Restaurant:Read",
                             "Permission:StationCategory:Read"
                         ],
                         [],
@@ -191,7 +186,7 @@ public static class PagePermissionCatalog
                     ),
                 [Page.RestaurantManager] =
                     new(
-                        ["Permission:Restaurant:Read"],
+                        [],
                         [
                             "Permission:Restaurant:Create", "Permission:Restaurant:Update",
                             "Permission:Restaurant:Delete"
@@ -205,7 +200,6 @@ public static class PagePermissionCatalog
                         [],
                         [
                             "Permission:Customer:UpdateSelf",
-                            "Permission:Restaurant:Read",
                             "Permission:StationCategory:Read"
                         ],
                         [],
@@ -214,7 +208,7 @@ public static class PagePermissionCatalog
                 [Page.OrderHistory] =
                     new(
                         [
-                            "Permission:Food:Read", "Permission:Menu:Read", "Permission:Restaurant:Read"
+                            "Permission:Food:Read", "Permission:Menu:Read"
                         ],
                         [],
                         [],

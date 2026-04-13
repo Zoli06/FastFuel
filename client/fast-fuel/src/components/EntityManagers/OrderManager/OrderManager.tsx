@@ -5,12 +5,11 @@ import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const OrderManager = () => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('OrderManager');
+  const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('OrderManager');
 
   const menuReadApi = useRecommendedPerm('Permission:Menu:Read');
   const foodReadApi = useRecommendedPerm('Permission:Food:Read');
   const userReadApi = useRecommendedPerm('Permission:User:Read');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
 
   const [
     { data: menus = [] },
@@ -22,7 +21,7 @@ export const OrderManager = () => {
     menuReadApi?.queryOptions('get', '/api/Menu'),
     foodReadApi?.queryOptions('get', '/api/Food'),
     userReadApi?.queryOptions('get', '/api/User'),
-    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
     useNecessaryPerm('Permission:Order:Read').queryOptions('get', '/api/Order'),
   ]);
 
@@ -39,20 +38,15 @@ export const OrderManager = () => {
 
   const tableColumns: ColumnDefinition<Order>[] = [
     { header: 'Order #', accessor: 'orderNumber' },
+    {
+      header: 'Restaurant',
+      render: (order: Order) => restaurantNameById.get(order.restaurantId),
+    },
     ...(userReadApi
       ? [
           {
             header: 'Ordered By',
             render: (order: Order) => userNameById.get(order.userId) ?? `#${order.userId}`,
-          },
-        ]
-      : []),
-    ...(restaurantReadApi
-      ? [
-          {
-            header: 'Restaurant',
-            render: (order: Order) =>
-              restaurantNameById.get(order.restaurantId) ?? `#${order.restaurantId}`,
           },
         ]
       : []),
@@ -97,23 +91,19 @@ export const OrderManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(restaurantReadApi
-      ? [
-          {
-            type: 'numericSelect',
-            key: 'restaurantId',
-            label: 'Restaurant',
-            initialValue: 0,
-            nullable: 'never',
-            required: 'always',
-            fieldProps: {
-              data: restaurantOptions,
-              placeholder: 'Select restaurant',
-              searchable: true,
-            },
-          } satisfies Field,
-        ]
-      : []),
+    {
+      type: 'numericSelect',
+      key: 'restaurantId',
+      label: 'Restaurant',
+      initialValue: 0,
+      nullable: 'never',
+      required: 'always',
+      fieldProps: {
+        data: restaurantOptions,
+        placeholder: 'Select restaurant',
+        searchable: true,
+      },
+    },
     ...(menuReadApi
       ? [
           {

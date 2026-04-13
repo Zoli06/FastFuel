@@ -5,12 +5,11 @@ import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MachineManager = () => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('MachineManager');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
+  const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('MachineManager');
 
   const [{ data: restaurants = [] }, { data: machines = [], refetch: refetchMachines }] =
     useConditionalSuspenseQueries([
-      restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+      useNoPerm().queryOptions('get', '/api/Restaurant'),
       useNecessaryPerm('Permission:Machine:Read').queryOptions('get', '/api/Machine'),
     ]);
 
@@ -27,15 +26,8 @@ export const MachineManager = () => {
     { header: 'Username', accessor: 'userName' },
     {
       header: 'Located At',
-      render: (m: Machine) => {
-        if (restaurantReadApi) {
-          return (
-            restaurantOptions.find((o) => o.value === m.locatedAtRestaurantId)?.label ??
-            `#${m.locatedAtRestaurantId}`
-          );
-        }
-        return `#${m.locatedAtRestaurantId}`;
-      },
+      render: (m: Machine) =>
+        restaurantOptions.find((o) => o.value === m.locatedAtRestaurantId)?.label,
     },
   ];
 

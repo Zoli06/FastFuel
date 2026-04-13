@@ -14,7 +14,6 @@ export const OrderHistory = () => {
 
   const foodReadApi = useNecessaryPerm('Permission:Food:Read');
   const menuReadApi = useNecessaryPerm('Permission:Menu:Read');
-  const restaurantReadApi = useNecessaryPerm('Permission:Restaurant:Read');
 
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [search, setSearch] = useState('');
@@ -27,7 +26,7 @@ export const OrderHistory = () => {
     useConditionalSuspenseQueries([
       foodReadApi?.queryOptions('get', '/api/Food'),
       menuReadApi?.queryOptions('get', '/api/Menu'),
-      restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+      useNoPerm().queryOptions('get', '/api/Restaurant'),
     ]);
 
   const foodMap = new Map(foods.map((f) => [f.id, f]));

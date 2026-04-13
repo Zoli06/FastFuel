@@ -39,7 +39,7 @@ export const OrderCreator = () => {
     isMachineUser ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
     useNecessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
     useNecessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
-    useNecessaryPerm('Permission:Restaurant:Read').queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
   ]);
 
   const lockedRestaurantId = isEmployeeUser

@@ -62,7 +62,7 @@ export const Register = () => {
       params: { query: { useCookies: true, useSessionCookies: true } },
     });
     invalidateApiCache();
-    navigate('/', { replace: true });
+    navigate('/home', { replace: true });
     form.reset();
   };
 
