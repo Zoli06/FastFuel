@@ -332,7 +332,7 @@ export const Welcome = () => {
                             fw={isToday ? 600 : 400}
                             c={isToday ? 'orange.7' : undefined}
                           >
-                            {hour.openTime} – {hour.closeTime}
+                            {hour.openTime.slice(0, 5)} – {hour.closeTime.slice(0, 5)}
                           </Text>
                         </Group>
                       );
