@@ -1,6 +1,6 @@
 import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useApi } from '../../lib/api.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
@@ -28,7 +28,7 @@ export const Header = ({
   const shouldLoadCurrentUser = authButton === 'Logout';
   const { useNoPerm, invalidateApiCache } = useApi(null);
 
-  const { data: currentUser, refetch: refetchCurrentUser } = useQuery({
+  const { data: currentUser } = useQuery({
     ...useNoPerm().queryOptions('get', '/api/User/me'),
     enabled: shouldLoadCurrentUser,
   });
@@ -40,24 +40,17 @@ export const Header = ({
     },
   });
 
-  const handleHomeClick = async () => {
-    const { data: user } = currentUser ? { data: currentUser } : await refetchCurrentUser();
-    if (!user) {
-      navigate('/');
-      return;
-    }
-    navigate('/home');
-  };
-
   const config = authButtonConfig[authButton];
 
   return (
     <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
       <Flex flex={1} justify="flex-start">
         {showHomeButton && (
-          <Button variant="filled" onClick={handleHomeClick} color="gray">
-            Home
-          </Button>
+          <Link to={currentUser ? '/home' : '/'}>
+            <Button variant="filled" color="gray">
+              {currentUser ? 'Home' : 'Welcome'}
+            </Button>
+          </Link>
         )}
       </Flex>
       <Center>
