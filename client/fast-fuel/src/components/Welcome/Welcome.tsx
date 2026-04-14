@@ -312,13 +312,13 @@ export const Welcome = () => {
                           style={{
                             padding: '3px 6px',
                             borderRadius: 6,
-                            background: isToday ? 'var(--mantine-color-orange-0)' : undefined,
+                            background: isToday ? 'var(--mantine-color-red-0)' : undefined,
                           }}
                         >
                           <Text
                             size="sm"
                             fw={isToday ? 600 : 400}
-                            c={isToday ? 'orange.7' : undefined}
+                            c={isToday ? 'red.9' : undefined}
                           >
                             {hour.dayOfWeek}
                             {isToday && (
@@ -330,7 +330,7 @@ export const Welcome = () => {
                           <Text
                             size="sm"
                             fw={isToday ? 600 : 400}
-                            c={isToday ? 'orange.7' : undefined}
+                            c={isToday ? 'red.9' : undefined}
                           >
                             {hour.openTime.slice(0, 5)} – {hour.closeTime.slice(0, 5)}
                           </Text>
