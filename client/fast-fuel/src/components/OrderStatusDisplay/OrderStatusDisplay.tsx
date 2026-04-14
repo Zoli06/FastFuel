@@ -33,7 +33,7 @@ const OrderNumbers = ({ orders, status }: { orders: Order[]; status: 'InProgress
 };
 
 export const OrderStatusDisplay = () => {
-  const { useNoPerm, useNecessaryPerm, useRecommendedPerm } = useApi('OrderStatusDisplay');
+  const { useNoPerm, useNecessaryPerm } = useApi('OrderStatusDisplay');
   const { data: currentUser } = useSuspenseQuery(useNoPerm().queryOptions('get', '/api/User/me'));
   const currentUserType = currentUser.userType.toLowerCase();
   const isEmployeeUser = currentUserType === 'employee';
@@ -55,7 +55,6 @@ export const OrderStatusDisplay = () => {
       : null;
 
   const orderReadApi = useNecessaryPerm('Permission:Order:Read');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
   const [restaurantId, setRestaurantId] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [showExitButton, setShowExitButton] = useState(false);
@@ -94,16 +93,14 @@ export const OrderStatusDisplay = () => {
             },
           )
         : undefined,
-      restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+      useNoPerm().queryOptions('get', '/api/Restaurant'),
     ]);
 
   const filteredRestaurants = restaurants.filter((r) =>
     r.name.toLowerCase().includes(restaurantSearch.toLowerCase()),
   );
 
-  const canChangeRestaurant = Boolean(
-    restaurantReadApi && restaurants.length > 0 && lockedRestaurantId === null,
-  );
+  const canChangeRestaurant = Boolean(restaurants.length > 0 && lockedRestaurantId === null);
 
   const openRestaurantPicker = () => {
     setRestaurantSearch('');

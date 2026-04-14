@@ -6,14 +6,11 @@ import { useApi } from '../../lib/api.ts';
 type MachineData = components['schemas']['MachineResponseDto'];
 
 export const ProfileMachineCard = ({ data }: { data: MachineData }) => {
-  const { useRecommendedPerm } = useApi('Profile');
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
+  const { useNoPerm } = useApi('Profile');
 
   const [{ data: restaurants }] = useConditionalSuspenseQueries([
-    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
   ]);
-
-  if (!restaurantReadApi) return null;
 
   return (
     <Card withBorder radius="md" p="lg">

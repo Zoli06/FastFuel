@@ -23,10 +23,10 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('RestaurantManager');
+  const { useRecommendedPerm, useNoPerm } = useApi('RestaurantManager');
 
   const [{ data: restaurants = [], refetch: refetchRestaurants }] = useConditionalSuspenseQueries([
-    useNecessaryPerm('Permission:Restaurant:Read').queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
   ]);
 
   type Restaurant = (typeof restaurants)[number];

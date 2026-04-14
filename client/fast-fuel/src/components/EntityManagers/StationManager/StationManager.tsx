@@ -5,9 +5,8 @@ import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const StationManager = () => {
-  const { useNecessaryPerm, useRecommendedPerm } = useApi('StationManager');
+  const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('StationManager');
 
-  const restaurantReadApi = useRecommendedPerm('Permission:Restaurant:Read');
   const stationCategoryReadApi = useRecommendedPerm('Permission:StationCategory:Read');
 
   const [
@@ -15,7 +14,7 @@ export const StationManager = () => {
     { data: stationCategories = [] },
     { data: stations = [], refetch: refetchStations },
   ] = useConditionalSuspenseQueries([
-    restaurantReadApi?.queryOptions('get', '/api/Restaurant'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
     stationCategoryReadApi?.queryOptions('get', '/api/StationCategory'),
     useNecessaryPerm('Permission:Station:Read').queryOptions('get', '/api/Station'),
   ]);
@@ -30,14 +29,10 @@ export const StationManager = () => {
 
   const tableColumns: ColumnDefinition<Station>[] = [
     { header: 'Name', accessor: 'name' },
-    ...(restaurantReadApi
-      ? [
-          {
-            header: 'Restaurant',
-            render: (s: Station) => restaurantNameById.get(s.restaurantId) ?? `#${s.restaurantId}`,
-          },
-        ]
-      : []),
+    {
+      header: 'Restaurant',
+      render: (s: Station) => restaurantNameById.get(s.restaurantId),
+    },
     ...(stationCategoryReadApi
       ? [
           {
@@ -58,23 +53,19 @@ export const StationManager = () => {
       nullable: 'never',
       required: 'always',
     },
-    ...(restaurantReadApi
-      ? [
-          {
-            type: 'numericSelect',
-            key: 'restaurantId',
-            label: 'Restaurant',
-            initialValue: 0,
-            nullable: 'never',
-            required: 'always',
-            fieldProps: {
-              data: restaurantOptions,
-              placeholder: 'Select restaurant',
-              searchable: true,
-            },
-          } satisfies Field,
-        ]
-      : []),
+    {
+      type: 'numericSelect',
+      key: 'restaurantId',
+      label: 'Restaurant',
+      initialValue: 0,
+      nullable: 'never',
+      required: 'always',
+      fieldProps: {
+        data: restaurantOptions,
+        placeholder: 'Select restaurant',
+        searchable: true,
+      },
+    },
     ...(stationCategoryReadApi
       ? [
           {
