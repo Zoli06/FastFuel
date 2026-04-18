@@ -4,6 +4,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { OrderDetailModal } from './modals/OrderDetailModal.tsx';
 import { CategoryNav } from './sections/CategoryNav.tsx';
+import { CategoryPills } from './sections/CategoryPills.tsx';
 import { CartPanel } from './sections/CartPanel.tsx';
 import { ItemGrid } from './sections/ItemGrid.tsx';
 import { OrderCatalogHeader } from './sections/OrderCatalogHeader.tsx';
@@ -46,7 +47,7 @@ export const OrderCreator = () => {
     isMachineUser ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
     useNecessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
     useNecessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
-    useNoPerm().queryOptions('get', '/api/Restaurant'),
+    noPermApi.queryOptions('get', '/api/Restaurant'),
   ]);
 
   const lockedRestaurantId = isEmployeeUser
@@ -88,23 +89,16 @@ export const OrderCreator = () => {
         await document.exitFullscreen();
         return;
       }
-
       await document.documentElement.requestFullscreen();
-    } catch {
-      // Ignore fullscreen API failures (browser policy/user gesture constraints).
+    } catch (e) {
+      void e;
     }
   };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) {
-        return;
-      }
-
-      if (event.key.toLowerCase() !== 'f') {
-        return;
-      }
-
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key.toLowerCase() !== 'f') return;
       const target = event.target as HTMLElement | null;
       const tagName = target?.tagName.toLowerCase();
       const isTypingTarget =
@@ -112,15 +106,10 @@ export const OrderCreator = () => {
         tagName === 'input' ||
         tagName === 'textarea' ||
         tagName === 'select';
-
-      if (isTypingTarget) {
-        return;
-      }
-
+      if (isTypingTarget) return;
       event.preventDefault();
       void toggleFullscreen();
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -244,15 +233,19 @@ export const OrderCreator = () => {
   return (
     <>
       <Group align="flex-start" gap={0} style={{ minHeight: '100vh' }}>
+        {/* Sidebar — md and above only */}
         <CategoryNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
 
-        {/* Main content */}
+        {/* Main content — takes full width on mobile */}
         <Stack
           gap="md"
           p="md"
-          style={{ flex: 1 }}
+          style={{ flex: 1, minWidth: 0 }}
           pb={cart.length > 0 ? cartPanelHeight + 24 : 'md'}
         >
+          {/* Pills live here — inside the Stack, below md only */}
+          <CategoryPills activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+
           <OrderCatalogHeader
             selectedRestaurant={selectedRestaurant}
             needsRestaurantPicker={needsRestaurantPicker}
@@ -292,7 +285,6 @@ export const OrderCreator = () => {
         onRemoveEntry={removeEntireEntry}
       />
 
-      {/* Item detail modal */}
       {selectedItem && (
         <OrderDetailModal
           item={selectedItem}
@@ -337,7 +329,6 @@ export const OrderCreator = () => {
         onPayCash={handleCashPayment}
       />
 
-      {/* Edit entry modal — opened from cart panel */}
       {editingEntry && (
         <EditCartEntryModal
           entry={editingEntry}

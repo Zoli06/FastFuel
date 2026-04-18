@@ -55,7 +55,7 @@ export const Header = ({
       </Flex>
       <Center>
         <Stack align="center" gap={0}>
-          <Text fz="2rem">{title}</Text>
+          <Text fz={{ base: '1.2rem', xs: '2rem' }}>{title}</Text>
           {currentUser && (
             <Text size="sm" c="dimmed">
               {currentUser.name} ({currentUser.userType.toLowerCase()})

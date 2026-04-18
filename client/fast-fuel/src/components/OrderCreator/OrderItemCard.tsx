@@ -18,7 +18,15 @@ export const OrderItemCard = ({ item, allFoods, onOpen }: OrderItemCardProps) =>
       padding={0}
       withBorder
       onClick={onOpen}
-      style={{ cursor: 'pointer', overflow: 'hidden', width: '100%', borderRadius: 0 }}
+      style={{
+        cursor: 'pointer',
+        overflow: 'hidden',
+        width: '100%',
+        height: '100%',
+        borderRadius: 0,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       <Card.Section>
         <Image
@@ -30,16 +38,11 @@ export const OrderItemCard = ({ item, allFoods, onOpen }: OrderItemCardProps) =>
         />
       </Card.Section>
 
-      <Stack gap={2} px={6} pt={4} pb={6}>
+      <Stack gap={2} px={6} pt={4} pb={6} style={{ flex: 1 }}>
         <Group justify="space-between" wrap="nowrap">
           <Text fw={700} size="sm" lineClamp={1} style={{ flex: 1 }}>
             {name}
           </Text>
-          {/*{q > 1 && (*/}
-          {/*  <Badge color="darkred" size="sm" circle style={{ flexShrink: 0 }}>*/}
-          {/*    {quantity}*/}
-          {/*  </Badge>*/}
-          {/*)}*/}
         </Group>
 
         {description && (
@@ -68,14 +71,14 @@ export const OrderItemCard = ({ item, allFoods, onOpen }: OrderItemCardProps) =>
           )}
         </Box>
 
-        <Group justify="space-between" wrap="nowrap">
+        <Group justify="space-between" wrap="nowrap" mt="auto">
           <Text fw={700} c="darkred" size="sm">
             ${price.toFixed(2)}
           </Text>
           <Badge
             size="xs"
             variant="light"
-            color={type === 'menu' ? 'beige' : 'blue'}
+            color={type === 'menu' ? 'teal' : 'blue'}
             style={{ flexShrink: 0 }}
           >
             {type}
