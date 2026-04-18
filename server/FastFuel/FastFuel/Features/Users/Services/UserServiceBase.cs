@@ -67,6 +67,19 @@ public abstract class UserServiceBase<TUser, TUserRequestDto, TUserResponseDto>(
         UserManager<User> userManager
     ) : Update<TUser, TUserRequestDto, TUserResponseDto>(dbContext, dbSet, mapper)
     {
+        protected override Task UpdateEntityAsync(uint id, TUserRequestDto requestDto, TUser entity, uint? userId = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.Equals(entity.UserName, requestDto.UserName, StringComparison.OrdinalIgnoreCase))
+                return base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
+
+            var existingUser = userManager.Users.FirstOrDefault(u => u.UserName.ToLower() == requestDto.UserName.ToLower());
+            if (existingUser != null && existingUser.Id != id)
+                throw new ValidationAppException($"The username '{requestDto.UserName}' is already taken.");
+
+            return base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
+        }
+
         protected override async Task SaveEntityAsync(
             uint id,
             TUserRequestDto requestDto,
