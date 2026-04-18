@@ -15,4 +15,6 @@ export type CartEntry = CartItem & { cartKey: string };
 
 export type CheckoutStep = 'idle' | 'confirm' | 'payment' | 'thankyou';
 
+export type PaymentMethod = 'card' | 'cash';
+
 export type SortKey = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
