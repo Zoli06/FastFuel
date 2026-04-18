@@ -89,7 +89,7 @@ export const router = createBrowserRouter([
         handle: withHeader('Place Order', undefined, { hideChromeInFullscreen: true }),
       },
       {
-        path: 'employee/my-shifts',
+        path: 'my-shifts',
         element: <MyShiftsPage />,
         handle: withHeader('My Shifts'),
       },
@@ -114,7 +114,7 @@ export const router = createBrowserRouter([
         handle: withHeader('Station Tasks', undefined, { hideChromeInFullscreen: true }),
       },
       {
-        path: 'restaurants/order-status-display',
+        path: 'order-status-display',
         element: <OrderStatusDisplayPage />,
         handle: withHeader('Order Status Display', undefined, { hideChromeInFullscreen: true }),
       },
