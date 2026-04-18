@@ -75,7 +75,7 @@ export const OrderItemCard = ({ item, allFoods, onOpen }: OrderItemCardProps) =>
           <Badge
             size="xs"
             variant="light"
-            color={type === 'menu' ? 'beige' : 'blue'}
+            color={type === 'menu' ? 'teal' : 'blue'}
             style={{ flexShrink: 0 }}
           >
             {type}
