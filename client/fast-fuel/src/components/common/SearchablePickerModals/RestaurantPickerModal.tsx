@@ -33,6 +33,7 @@ export const RestaurantPickerModal = ({
     <SearchablePickerModal
       opened={opened}
       title={title}
+      hasSelection={restaurantId !== null}
       searchValue={searchValue}
       searchPlaceholder="Search restaurants..."
       onSearchChange={onSearchChange}
@@ -42,7 +43,7 @@ export const RestaurantPickerModal = ({
       isItemSelected={(r) => restaurantId === r.id}
       onSelectItem={(r) => onSelectRestaurant(r.id)}
       renderItem={(r, selected) => (
-        <Text fw={selected ? 700 : 500} size="sm" c={selected ? 'blue.2' : 'blue.1'}>
+        <Text fw={selected ? 700 : 500} size="sm" c={selected ? '#f8f0e6' : undefined}>
           {r.name}
         </Text>
       )}
