@@ -1,0 +1,15 @@
+.item {
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+  background: transparent;
+}
+
+.item:hover {
+  background: var(--mantine-color-gray-1);
+}
+
+.item[data-selected='true'],
+.item[data-selected='true']:hover {
+  background: darkred;
+}

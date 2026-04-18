@@ -33,6 +33,7 @@ export const StationPickerModal = ({
     <SearchablePickerModal
       opened={opened}
       title={title}
+      hasSelection={stationId !== null}
       searchValue={searchValue}
       searchPlaceholder="Search stations..."
       onSearchChange={onSearchChange}
@@ -42,7 +43,7 @@ export const StationPickerModal = ({
       isItemSelected={(station) => stationId === station.id}
       onSelectItem={(station) => onSelectStation(station.id)}
       renderItem={(station, selected) => (
-        <Text fw={selected ? 700 : 500} size="sm" c={selected ? 'blue.2' : 'blue.1'}>
+        <Text fw={selected ? 700 : 500} size="sm" c={selected ? '#f8f0e6' : undefined}>
           {station.name}
         </Text>
       )}
