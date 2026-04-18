@@ -20,7 +20,7 @@ public class CustomerController(
     /// Gets the profile of the currently authenticated customer.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The current customer profile when it exists.</returns>
+    /// <returns>The current customer profile.</returns>
     [HttpGet("me")]
     public Task<Results<Ok<CustomerResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
