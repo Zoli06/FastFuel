@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Paper } from '../common/Paper/Paper';
 import { useApi } from '../../lib/api.ts';
 import type { components } from '../../types/api-schema.generated.ts';
-import { validatePasswordComplexity } from '../../lib/password-validation.ts';
 
 type LoginValues = components['schemas']['LoginRequestDto'];
 
@@ -14,23 +13,26 @@ export const Login = () => {
 
   const form = useForm<LoginValues>({
     initialValues: { userName: '', password: '' },
-    validate: {
-      password: (value) => validatePasswordComplexity(value) || null,
-    },
   });
 
   const { mutateAsync: login, isPending } = useNoPerm().useMutation('post', '/api/Auth/login');
+  const { mutateAsync: getCurrentUser } = useNoPerm().useMutation('get', '/api/User/me');
 
   const handleSubmit = async (values: LoginValues) => {
-    try {
-      await login({
-        body: values,
-        params: { query: { useCookies: true, useSessionCookies: true } },
-      });
+    await login({
+      body: values,
+      params: { query: { useCookies: true, useSessionCookies: true } },
+    });
+
+    const user = await getCurrentUser({});
+
+    if (user) {
       invalidateApiCache();
       navigate('/home', { replace: true });
-    } catch {
-      form.setFieldError('password', 'Incorrect username or password');
+    } else {
+      form.setErrors({
+        password: 'Invalid username or password',
+      });
     }
   };
 
