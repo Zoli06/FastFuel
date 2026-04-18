@@ -14,7 +14,14 @@ import type { CategoryValue } from './constants.ts';
 import { useApi } from '../../lib/api.ts';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import type { CartEntry, CartItem, CheckoutStep, SortKey, UnifiedItem } from './types.ts';
+import type {
+  CartEntry,
+  CartItem,
+  CheckoutStep,
+  PaymentMethod,
+  SortKey,
+  UnifiedItem,
+} from './types.ts';
 
 export const OrderCreator = () => {
   const { useNoPerm, useNecessaryPerm } = useApi('OrderCreator');
@@ -59,6 +66,7 @@ export const OrderCreator = () => {
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('idle');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [placedOrderNumber, setPlacedOrderNumber] = useState<number | null>(null);
   const [editingEntry, setEditingEntry] = useState<CartEntry | null>(null);
 
@@ -194,12 +202,13 @@ export const OrderCreator = () => {
       notifications.show({ title: 'Your cart is empty', message: '', color: '#252627' });
       return;
     }
+    setPaymentMethod('card');
     setCheckoutStep('confirm');
   };
 
   const handleConfirmOrder = () => setCheckoutStep('payment');
 
-  const handleFakePayment = async () => {
+  const submitOrder = async () => {
     const created = await createOrder({
       body: {
         restaurantId: restaurantId!,
@@ -222,6 +231,14 @@ export const OrderCreator = () => {
     setCart([]);
     setPlacedOrderNumber(created.orderNumber);
     setCheckoutStep('thankyou');
+  };
+
+  const handleCardPayment = async () => {
+    await submitOrder();
+  };
+
+  const handleCashPayment = async () => {
+    await submitOrder();
   };
 
   return (
@@ -306,15 +323,18 @@ export const OrderCreator = () => {
 
       <CheckoutModal
         checkoutStep={checkoutStep}
+        paymentMethod={paymentMethod}
         selectedRestaurantName={selectedRestaurant?.name}
         cart={cart}
         totalPrice={totalPrice}
         placedOrderNumber={placedOrderNumber}
         isPending={isPending}
+        onPaymentMethodChange={setPaymentMethod}
         onCloseCheckout={() => setCheckoutStep('idle')}
         onConfirmOrder={handleConfirmOrder}
         onBackToConfirm={() => setCheckoutStep('confirm')}
-        onPay={handleFakePayment}
+        onPayCard={handleCardPayment}
+        onPayCash={handleCashPayment}
       />
 
       {/* Edit entry modal — opened from cart panel */}
