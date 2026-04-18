@@ -75,10 +75,10 @@ export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditF
       <Form form={form} onSubmit={handleSubmit}>
         <Stack>
           <SimpleGrid cols={2}>
-            <TextInput label="Name" {...form.getInputProps('name')} />
-            <TextInput label="Username" {...form.getInputProps('userName')} />
+            <TextInput label="Name" required {...form.getInputProps('name')} />
+            <TextInput label="Username" required {...form.getInputProps('userName')} />
           </SimpleGrid>
-          <TextInput label="Email" type="email" {...form.getInputProps('email')} />
+          <TextInput label="Email" type="email" required {...form.getInputProps('email')} />
           <PasswordInput
             label="New password"
             placeholder="Leave blank to keep current"
