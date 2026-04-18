@@ -28,8 +28,7 @@ public static class PagePermissionCatalog
                         [
                             "Permission:Order:Create",
                             "Permission:Food:Read",
-                            "Permission:Menu:Read",
-                            "Permission:Restaurant:Read"
+                            "Permission:Menu:Read"
                         ],
                         [],
                         [],
