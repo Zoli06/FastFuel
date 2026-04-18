@@ -37,7 +37,7 @@ const errorResponseMiddleware: Middleware = {
       return response;
     }
     if (response.status === 403 && !response.url.includes('/api/Permission/my')) {
-      invalidateApiCache();
+      await invalidateApiCache();
     }
     if (response.url.includes('/api/User/me') || response.url.includes('/api/Auth/login')) {
       return response;
