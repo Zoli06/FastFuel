@@ -9,7 +9,7 @@ namespace FastFuel.Features.Common.Permissions;
 public class PermissionFilter(
     string operation,
     UserManager<User> userManager,
-    IUserClaimsPrincipalFactory<User> claimsPrincipalFactory) // ✅ Same factory used at login
+    IUserClaimsPrincipalFactory<User> claimsPrincipalFactory)
     : IAsyncAuthorizationFilter
 {
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
