@@ -1,10 +1,12 @@
 import { Modal, ScrollArea, Stack, Text, TextInput, UnstyledButton } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import type { Key, ReactNode } from 'react';
+import classes from './SearchablePickerModal.module.css';
 
 type SearchablePickerModalProps<TItem> = {
   opened: boolean;
   title: string;
+  hasSelection: boolean;
   searchValue: string;
   searchPlaceholder: string;
   onSearchChange: (value: string) => void;
@@ -20,6 +22,7 @@ type SearchablePickerModalProps<TItem> = {
 export function SearchablePickerModal<TItem>({
   opened,
   title,
+  hasSelection,
   searchValue,
   searchPlaceholder,
   onSearchChange,
@@ -32,7 +35,14 @@ export function SearchablePickerModal<TItem>({
   emptyMessage = 'No items found',
 }: SearchablePickerModalProps<TItem>) {
   return (
-    <Modal opened={opened} onClose={onClose} title={title} centered size="md">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={title}
+      withCloseButton={hasSelection}
+      centered
+      size="md"
+    >
       <Stack gap="sm">
         <TextInput
           placeholder={searchPlaceholder}
@@ -55,19 +65,14 @@ export function SearchablePickerModal<TItem>({
                 <UnstyledButton
                   key={getItemKey(item)}
                   onClick={() => onSelectItem(item)}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 8,
-                    width: '100%',
-                    textAlign: 'left',
-                    background: selected
-                      ? 'var(--mantine-color-orange-5)'
-                      : 'var(--mantine-color-blue-9)',
-                    border: selected
-                      ? '2px solid var(--mantine-color-blue-4)'
-                      : '2px solid var(--mantine-color-blue-8)',
-                    transition: 'all 0.12s',
-                  }}
+                  className={classes.item}
+                  data-selected={selected || undefined}
+                  py={10}
+                  px={14}
+                  bdrs={8}
+                  w="100%"
+                  ta="left"
+                  bd={selected ? '2px solid var(--mantine-color-red-8)' : '1px solid transparent'}
                 >
                   {renderItem(item, selected)}
                 </UnstyledButton>
