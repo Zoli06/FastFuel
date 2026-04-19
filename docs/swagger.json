@@ -1,0 +1,6386 @@
+{
+  "x-generator": "NSwag v14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "FastFuel",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5249"
+    }
+  ],
+  "paths": {
+    "/api/User": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Gets all users.",
+        "description": "**Required permission:** `Permission:User:Read`",
+        "operationId": "User_GetAll",
+        "responses": {
+          "200": {
+            "description": "The list of users.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:User:Read"
+      }
+    },
+    "/api/User/{id}": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Gets a user by id.",
+        "description": "**Required permission:** `Permission:User:Read`",
+        "operationId": "User_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The user identifier.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:User:Read"
+      }
+    },
+    "/api/User/me": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Gets the profile of the currently authenticated user.",
+        "operationId": "User_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "The current user profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Station": {
+      "get": {
+        "tags": [
+          "Station"
+        ],
+        "summary": "Gets all stations with optional filters.",
+        "description": "**Required permission:** `Permission:Station:Read`",
+        "operationId": "Station_GetAll",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching stations, or a bad request response if a filter is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StationResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Station:Read"
+      },
+      "post": {
+        "tags": [
+          "Station"
+        ],
+        "summary": "Creates a new station.",
+        "description": "**Required permission:** `Permission:Station:Create`",
+        "operationId": "Station_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StationRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StationResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Station:Create"
+      }
+    },
+    "/api/Station/{id}/tasks": {
+      "get": {
+        "tags": [
+          "Station"
+        ],
+        "summary": "Gets the task list for a station.",
+        "description": "**Required permission:** `Permission:Station:ViewTasks`",
+        "operationId": "Station_GetTasks",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The identifier of the station.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The station tasks when the station exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StationTasksResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Station:ViewTasks"
+      }
+    },
+    "/api/Station/{id}": {
+      "get": {
+        "tags": [
+          "Station"
+        ],
+        "summary": "Gets one station.",
+        "description": "**Required permission:** `Permission:Station:Read`",
+        "operationId": "Station_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StationResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Station:Read"
+      },
+      "put": {
+        "tags": [
+          "Station"
+        ],
+        "summary": "Updates one station.",
+        "description": "**Required permission:** `Permission:Station:Update`",
+        "operationId": "Station_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StationRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Station:Update"
+      },
+      "delete": {
+        "tags": [
+          "Station"
+        ],
+        "summary": "Deletes one station.",
+        "description": "**Required permission:** `Permission:Station:Delete`",
+        "operationId": "Station_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Station:Delete"
+      }
+    },
+    "/api/StationCategory": {
+      "get": {
+        "tags": [
+          "StationCategory"
+        ],
+        "summary": "Gets all station categorys.",
+        "description": "**Required permission:** `Permission:StationCategory:Read`",
+        "operationId": "StationCategory_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StationCategoryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:StationCategory:Read"
+      },
+      "post": {
+        "tags": [
+          "StationCategory"
+        ],
+        "summary": "Creates a new station category.",
+        "description": "**Required permission:** `Permission:StationCategory:Create`",
+        "operationId": "StationCategory_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StationCategoryRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StationCategoryResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:StationCategory:Create"
+      }
+    },
+    "/api/StationCategory/{id}": {
+      "get": {
+        "tags": [
+          "StationCategory"
+        ],
+        "summary": "Gets one station category.",
+        "description": "**Required permission:** `Permission:StationCategory:Read`",
+        "operationId": "StationCategory_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StationCategoryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:StationCategory:Read"
+      },
+      "put": {
+        "tags": [
+          "StationCategory"
+        ],
+        "summary": "Updates one station category.",
+        "description": "**Required permission:** `Permission:StationCategory:Update`",
+        "operationId": "StationCategory_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StationCategoryRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:StationCategory:Update"
+      },
+      "delete": {
+        "tags": [
+          "StationCategory"
+        ],
+        "summary": "Deletes one station category.",
+        "description": "**Required permission:** `Permission:StationCategory:Delete`",
+        "operationId": "StationCategory_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:StationCategory:Delete"
+      }
+    },
+    "/api/Shift/my": {
+      "get": {
+        "tags": [
+          "Shift"
+        ],
+        "summary": "Gets the shifts of the currently authenticated employee.",
+        "operationId": "Shift_GetShiftsForCurrentEmployee",
+        "responses": {
+          "200": {
+            "description": "The current employee's shifts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Shift": {
+      "get": {
+        "tags": [
+          "Shift"
+        ],
+        "summary": "Gets all shifts.",
+        "description": "**Required permission:** `Permission:Shift:Read`",
+        "operationId": "Shift_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Shift:Read"
+      },
+      "post": {
+        "tags": [
+          "Shift"
+        ],
+        "summary": "Creates a new shift.",
+        "description": "**Required permission:** `Permission:Shift:Create`",
+        "operationId": "Shift_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Shift:Create"
+      }
+    },
+    "/api/Shift/{id}": {
+      "get": {
+        "tags": [
+          "Shift"
+        ],
+        "summary": "Gets one shift.",
+        "description": "**Required permission:** `Permission:Shift:Read`",
+        "operationId": "Shift_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Shift:Read"
+      },
+      "put": {
+        "tags": [
+          "Shift"
+        ],
+        "summary": "Updates one shift.",
+        "description": "**Required permission:** `Permission:Shift:Update`",
+        "operationId": "Shift_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Shift:Update"
+      },
+      "delete": {
+        "tags": [
+          "Shift"
+        ],
+        "summary": "Deletes one shift.",
+        "description": "**Required permission:** `Permission:Shift:Delete`",
+        "operationId": "Shift_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Shift:Delete"
+      }
+    },
+    "/api/Role/my": {
+      "get": {
+        "tags": [
+          "Role"
+        ],
+        "summary": "Gets the roles assigned to the currently authenticated user.",
+        "operationId": "Role_GetMyRoles",
+        "responses": {
+          "200": {
+            "description": "The current user's roles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Role": {
+      "get": {
+        "tags": [
+          "Role"
+        ],
+        "summary": "Gets all roles.",
+        "description": "**Required permission:** `Permission:Role:Read`",
+        "operationId": "Role_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Role:Read"
+      },
+      "post": {
+        "tags": [
+          "Role"
+        ],
+        "summary": "Creates a new role.",
+        "description": "**Required permission:** `Permission:Role:Create`",
+        "operationId": "Role_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Role:Create"
+      }
+    },
+    "/api/Role/{id}": {
+      "get": {
+        "tags": [
+          "Role"
+        ],
+        "summary": "Gets one role.",
+        "description": "**Required permission:** `Permission:Role:Read`",
+        "operationId": "Role_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Role:Read"
+      },
+      "put": {
+        "tags": [
+          "Role"
+        ],
+        "summary": "Updates one role.",
+        "description": "**Required permission:** `Permission:Role:Update`",
+        "operationId": "Role_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Role:Update"
+      },
+      "delete": {
+        "tags": [
+          "Role"
+        ],
+        "summary": "Deletes one role.",
+        "description": "**Required permission:** `Permission:Role:Delete`",
+        "operationId": "Role_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Role:Delete"
+      }
+    },
+    "/api/Restaurant": {
+      "get": {
+        "tags": [
+          "Restaurant"
+        ],
+        "operationId": "Restaurant_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RestaurantResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Restaurant"
+        ],
+        "summary": "Creates a new restaurant.",
+        "description": "**Required permission:** `Permission:Restaurant:Create`",
+        "operationId": "Restaurant_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestaurantRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestaurantResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Restaurant:Create"
+      }
+    },
+    "/api/Restaurant/{id}": {
+      "get": {
+        "tags": [
+          "Restaurant"
+        ],
+        "operationId": "Restaurant_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestaurantResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Restaurant"
+        ],
+        "summary": "Updates one restaurant.",
+        "description": "**Required permission:** `Permission:Restaurant:Update`",
+        "operationId": "Restaurant_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestaurantRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Restaurant:Update"
+      },
+      "delete": {
+        "tags": [
+          "Restaurant"
+        ],
+        "summary": "Deletes one restaurant.",
+        "description": "**Required permission:** `Permission:Restaurant:Delete`",
+        "operationId": "Restaurant_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Restaurant:Delete"
+      }
+    },
+    "/api/Permission": {
+      "get": {
+        "tags": [
+          "Permission"
+        ],
+        "summary": "Gets all permissions available in the system.",
+        "description": "**Required permission:** `Permission:Permission:Read`",
+        "operationId": "Permission_GetAll",
+        "responses": {
+          "200": {
+            "description": "The full list of permission names.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "List of permission strings. Permissions follow the format 'Permission:{Controller}:{Operation}'. Currently 59 permissions are available in the system.",
+                  "items": {
+                    "type": "string",
+                    "description": "A permission string in the format 'Permission:{Controller}:{Operation}'",
+                    "example": "Permission:User:Read",
+                    "enum": [
+                      "Permission:User:Read",
+                      "Permission:Station:Read",
+                      "Permission:Station:ViewTasks",
+                      "Permission:Station:Create",
+                      "Permission:Station:Update",
+                      "Permission:Station:Delete",
+                      "Permission:StationCategory:Read",
+                      "Permission:StationCategory:Create",
+                      "Permission:StationCategory:Update",
+                      "Permission:StationCategory:Delete",
+                      "Permission:Shift:Read",
+                      "Permission:Shift:Create",
+                      "Permission:Shift:Update",
+                      "Permission:Shift:Delete",
+                      "Permission:Role:Read",
+                      "Permission:Role:Create",
+                      "Permission:Role:Update",
+                      "Permission:Role:Delete",
+                      "Permission:Restaurant:Create",
+                      "Permission:Restaurant:Update",
+                      "Permission:Restaurant:Delete",
+                      "Permission:Permission:Read",
+                      "Permission:Order:Read",
+                      "Permission:Order:UpdateStatus",
+                      "Permission:Order:Create",
+                      "Permission:Order:Update",
+                      "Permission:Order:Delete",
+                      "Permission:Menu:Read",
+                      "Permission:Menu:Create",
+                      "Permission:Menu:Update",
+                      "Permission:Menu:Delete",
+                      "Permission:Machine:Read",
+                      "Permission:Machine:Create",
+                      "Permission:Machine:Update",
+                      "Permission:Machine:Delete",
+                      "Permission:Ingredient:Read",
+                      "Permission:Ingredient:Create",
+                      "Permission:Ingredient:Update",
+                      "Permission:Ingredient:Delete",
+                      "Permission:Food:Read",
+                      "Permission:Food:Create",
+                      "Permission:Food:Update",
+                      "Permission:Food:Delete",
+                      "Permission:Employee:Read",
+                      "Permission:Employee:Create",
+                      "Permission:Employee:Update",
+                      "Permission:Employee:Delete",
+                      "Permission:Customer:UpdateSelf",
+                      "Permission:Customer:Read",
+                      "Permission:Customer:Update",
+                      "Permission:Customer:Delete",
+                      "Permission:Allergy:Read",
+                      "Permission:Allergy:Create",
+                      "Permission:Allergy:Update",
+                      "Permission:Allergy:Delete",
+                      "Permission:Admin:Read",
+                      "Permission:Admin:Create",
+                      "Permission:Admin:Update",
+                      "Permission:Admin:Delete"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Permission:Read"
+      }
+    },
+    "/api/Permission/my": {
+      "get": {
+        "tags": [
+          "Permission"
+        ],
+        "summary": "Gets the permissions of the currently authenticated user.",
+        "operationId": "Permission_GetMyPermissions",
+        "responses": {
+          "200": {
+            "description": "The current user's permission names.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "List of permission strings. Permissions follow the format 'Permission:{Controller}:{Operation}'. Currently 59 permissions are available in the system.",
+                  "items": {
+                    "type": "string",
+                    "description": "A permission string in the format 'Permission:{Controller}:{Operation}'",
+                    "example": "Permission:User:Read",
+                    "enum": [
+                      "Permission:User:Read",
+                      "Permission:Station:Read",
+                      "Permission:Station:ViewTasks",
+                      "Permission:Station:Create",
+                      "Permission:Station:Update",
+                      "Permission:Station:Delete",
+                      "Permission:StationCategory:Read",
+                      "Permission:StationCategory:Create",
+                      "Permission:StationCategory:Update",
+                      "Permission:StationCategory:Delete",
+                      "Permission:Shift:Read",
+                      "Permission:Shift:Create",
+                      "Permission:Shift:Update",
+                      "Permission:Shift:Delete",
+                      "Permission:Role:Read",
+                      "Permission:Role:Create",
+                      "Permission:Role:Update",
+                      "Permission:Role:Delete",
+                      "Permission:Restaurant:Create",
+                      "Permission:Restaurant:Update",
+                      "Permission:Restaurant:Delete",
+                      "Permission:Permission:Read",
+                      "Permission:Order:Read",
+                      "Permission:Order:UpdateStatus",
+                      "Permission:Order:Create",
+                      "Permission:Order:Update",
+                      "Permission:Order:Delete",
+                      "Permission:Menu:Read",
+                      "Permission:Menu:Create",
+                      "Permission:Menu:Update",
+                      "Permission:Menu:Delete",
+                      "Permission:Machine:Read",
+                      "Permission:Machine:Create",
+                      "Permission:Machine:Update",
+                      "Permission:Machine:Delete",
+                      "Permission:Ingredient:Read",
+                      "Permission:Ingredient:Create",
+                      "Permission:Ingredient:Update",
+                      "Permission:Ingredient:Delete",
+                      "Permission:Food:Read",
+                      "Permission:Food:Create",
+                      "Permission:Food:Update",
+                      "Permission:Food:Delete",
+                      "Permission:Employee:Read",
+                      "Permission:Employee:Create",
+                      "Permission:Employee:Update",
+                      "Permission:Employee:Delete",
+                      "Permission:Customer:UpdateSelf",
+                      "Permission:Customer:Read",
+                      "Permission:Customer:Update",
+                      "Permission:Customer:Delete",
+                      "Permission:Allergy:Read",
+                      "Permission:Allergy:Create",
+                      "Permission:Allergy:Update",
+                      "Permission:Allergy:Delete",
+                      "Permission:Admin:Read",
+                      "Permission:Admin:Create",
+                      "Permission:Admin:Update",
+                      "Permission:Admin:Delete"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Page": {
+      "get": {
+        "tags": [
+          "Page"
+        ],
+        "summary": "Gets static page permission metadata used by the frontend.",
+        "operationId": "Page_GetAll",
+        "responses": {
+          "200": {
+            "description": "All page permission requirements.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PagePermissionsResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/Order/my": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Gets the orders of the currently authenticated user.",
+        "operationId": "Order_GetMyOrders",
+        "responses": {
+          "200": {
+            "description": "The current user's orders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Order": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Gets all orders with optional filters.",
+        "description": "**Required permission:** `Permission:Order:Read`",
+        "operationId": "Order_GetAll",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OrderStatus"
+            }
+          },
+          {
+            "name": "restaurantId",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching orders, or a bad request response if a filter is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Order:Read"
+      },
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Creates a new order.",
+        "description": "**Required permission:** `Permission:Order:Create`",
+        "operationId": "Order_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Order:Create"
+      }
+    },
+    "/api/Order/{id}/status": {
+      "put": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Updates the status of an existing order.",
+        "description": "**Required permission:** `Permission:Order:UpdateStatus`",
+        "operationId": "Order_UpdateOrderStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The identifier of the order to update.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "orderStatus",
+          "description": "The new order status.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content when the status update succeeds; otherwise an error response."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Order:UpdateStatus"
+      }
+    },
+    "/api/Order/{id}": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Gets one order.",
+        "description": "**Required permission:** `Permission:Order:Read`",
+        "operationId": "Order_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Order:Read"
+      },
+      "put": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Updates one order.",
+        "description": "**Required permission:** `Permission:Order:Update`",
+        "operationId": "Order_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Order:Update"
+      },
+      "delete": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Deletes one order.",
+        "description": "**Required permission:** `Permission:Order:Delete`",
+        "operationId": "Order_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Order:Delete"
+      }
+    },
+    "/api/Menu": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Gets all menus.",
+        "description": "**Required permission:** `Permission:Menu:Read`",
+        "operationId": "Menu_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MenuResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Menu:Read"
+      },
+      "post": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Creates a new menu.",
+        "description": "**Required permission:** `Permission:Menu:Create`",
+        "operationId": "Menu_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MenuRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Menu:Create"
+      }
+    },
+    "/api/Menu/{id}": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Gets one menu.",
+        "description": "**Required permission:** `Permission:Menu:Read`",
+        "operationId": "Menu_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Menu:Read"
+      },
+      "put": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Updates one menu.",
+        "description": "**Required permission:** `Permission:Menu:Update`",
+        "operationId": "Menu_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MenuRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Menu:Update"
+      },
+      "delete": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Deletes one menu.",
+        "description": "**Required permission:** `Permission:Menu:Delete`",
+        "operationId": "Menu_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Menu:Delete"
+      }
+    },
+    "/api/Machine/me": {
+      "get": {
+        "tags": [
+          "Machine"
+        ],
+        "summary": "Gets the profile of the currently authenticated machine user.",
+        "operationId": "Machine_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "The current machine profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MachineResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Machine": {
+      "get": {
+        "tags": [
+          "Machine"
+        ],
+        "summary": "Gets all machines.",
+        "description": "**Required permission:** `Permission:Machine:Read`",
+        "operationId": "Machine_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MachineResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Machine:Read"
+      },
+      "post": {
+        "tags": [
+          "Machine"
+        ],
+        "summary": "Creates a new machine.",
+        "description": "**Required permission:** `Permission:Machine:Create`",
+        "operationId": "Machine_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MachineRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MachineResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Machine:Create"
+      }
+    },
+    "/api/Machine/{id}": {
+      "get": {
+        "tags": [
+          "Machine"
+        ],
+        "summary": "Gets one machine.",
+        "description": "**Required permission:** `Permission:Machine:Read`",
+        "operationId": "Machine_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MachineResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Machine:Read"
+      },
+      "put": {
+        "tags": [
+          "Machine"
+        ],
+        "summary": "Updates one machine.",
+        "description": "**Required permission:** `Permission:Machine:Update`",
+        "operationId": "Machine_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MachineRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Machine:Update"
+      },
+      "delete": {
+        "tags": [
+          "Machine"
+        ],
+        "summary": "Deletes one machine.",
+        "description": "**Required permission:** `Permission:Machine:Delete`",
+        "operationId": "Machine_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Machine:Delete"
+      }
+    },
+    "/api/Ingredient": {
+      "get": {
+        "tags": [
+          "Ingredient"
+        ],
+        "summary": "Gets all ingredients.",
+        "description": "**Required permission:** `Permission:Ingredient:Read`",
+        "operationId": "Ingredient_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IngredientResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Ingredient:Read"
+      },
+      "post": {
+        "tags": [
+          "Ingredient"
+        ],
+        "summary": "Creates a new ingredient.",
+        "description": "**Required permission:** `Permission:Ingredient:Create`",
+        "operationId": "Ingredient_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngredientRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Ingredient:Create"
+      }
+    },
+    "/api/Ingredient/{id}": {
+      "get": {
+        "tags": [
+          "Ingredient"
+        ],
+        "summary": "Gets one ingredient.",
+        "description": "**Required permission:** `Permission:Ingredient:Read`",
+        "operationId": "Ingredient_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Ingredient:Read"
+      },
+      "put": {
+        "tags": [
+          "Ingredient"
+        ],
+        "summary": "Updates one ingredient.",
+        "description": "**Required permission:** `Permission:Ingredient:Update`",
+        "operationId": "Ingredient_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngredientRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Ingredient:Update"
+      },
+      "delete": {
+        "tags": [
+          "Ingredient"
+        ],
+        "summary": "Deletes one ingredient.",
+        "description": "**Required permission:** `Permission:Ingredient:Delete`",
+        "operationId": "Ingredient_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Ingredient:Delete"
+      }
+    },
+    "/api/Food": {
+      "get": {
+        "tags": [
+          "Food"
+        ],
+        "summary": "Gets all foods.",
+        "description": "**Required permission:** `Permission:Food:Read`",
+        "operationId": "Food_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FoodResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Food:Read"
+      },
+      "post": {
+        "tags": [
+          "Food"
+        ],
+        "summary": "Creates a new food.",
+        "description": "**Required permission:** `Permission:Food:Create`",
+        "operationId": "Food_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoodRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Food:Create"
+      }
+    },
+    "/api/Food/{id}": {
+      "get": {
+        "tags": [
+          "Food"
+        ],
+        "summary": "Gets one food.",
+        "description": "**Required permission:** `Permission:Food:Read`",
+        "operationId": "Food_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Food:Read"
+      },
+      "put": {
+        "tags": [
+          "Food"
+        ],
+        "summary": "Updates one food.",
+        "description": "**Required permission:** `Permission:Food:Update`",
+        "operationId": "Food_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoodRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Food:Update"
+      },
+      "delete": {
+        "tags": [
+          "Food"
+        ],
+        "summary": "Deletes one food.",
+        "description": "**Required permission:** `Permission:Food:Delete`",
+        "operationId": "Food_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Food:Delete"
+      }
+    },
+    "/api/Employee/me": {
+      "get": {
+        "tags": [
+          "Employee"
+        ],
+        "summary": "Gets the profile of the currently authenticated employee.",
+        "operationId": "Employee_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "The current employee profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Employee": {
+      "get": {
+        "tags": [
+          "Employee"
+        ],
+        "summary": "Gets all employees.",
+        "description": "**Required permission:** `Permission:Employee:Read`",
+        "operationId": "Employee_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmployeeResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Employee:Read"
+      },
+      "post": {
+        "tags": [
+          "Employee"
+        ],
+        "summary": "Creates a new employee.",
+        "description": "**Required permission:** `Permission:Employee:Create`",
+        "operationId": "Employee_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Employee:Create"
+      }
+    },
+    "/api/Employee/{id}": {
+      "get": {
+        "tags": [
+          "Employee"
+        ],
+        "summary": "Gets one employee.",
+        "description": "**Required permission:** `Permission:Employee:Read`",
+        "operationId": "Employee_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Employee:Read"
+      },
+      "put": {
+        "tags": [
+          "Employee"
+        ],
+        "summary": "Updates one employee.",
+        "description": "**Required permission:** `Permission:Employee:Update`",
+        "operationId": "Employee_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Employee:Update"
+      },
+      "delete": {
+        "tags": [
+          "Employee"
+        ],
+        "summary": "Deletes one employee.",
+        "description": "**Required permission:** `Permission:Employee:Delete`",
+        "operationId": "Employee_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Employee:Delete"
+      }
+    },
+    "/api/Customer/me": {
+      "get": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Gets the profile of the currently authenticated customer.",
+        "operationId": "Customer_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "The current customer profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Update the currently logged-in customer.",
+        "description": "**Required permission:** `Permission:Customer:UpdateSelf`",
+        "operationId": "Customer_UpdateSelf",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The updated customer data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": "No content when the update succeeds; otherwise an error response."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Customer:UpdateSelf"
+      }
+    },
+    "/api/Customer": {
+      "post": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Creates a new customer account.",
+        "operationId": "Customer_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The customer data to create.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created customer, or an error response if creation fails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Gets all customers.",
+        "description": "**Required permission:** `Permission:Customer:Read`",
+        "operationId": "Customer_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Customer:Read"
+      }
+    },
+    "/api/Customer/{id}": {
+      "get": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Gets one customer.",
+        "description": "**Required permission:** `Permission:Customer:Read`",
+        "operationId": "Customer_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Customer:Read"
+      },
+      "put": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Updates one customer.",
+        "description": "**Required permission:** `Permission:Customer:Update`",
+        "operationId": "Customer_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Customer:Update"
+      },
+      "delete": {
+        "tags": [
+          "Customer"
+        ],
+        "summary": "Deletes one customer.",
+        "description": "**Required permission:** `Permission:Customer:Delete`",
+        "operationId": "Customer_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Customer:Delete"
+      }
+    },
+    "/api/Auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Authenticates a user with a username and password.",
+        "operationId": "Auth_Login",
+        "parameters": [
+          {
+            "name": "useCookies",
+            "in": "query",
+            "description": "Whether to use cookies for authentication.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "x-position": 2
+          },
+          {
+            "name": "useSessionCookies",
+            "in": "query",
+            "description": "Whether to use session cookies for authentication.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "x-position": 3
+          }
+        ],
+        "requestBody": {
+          "x-name": "login",
+          "description": "The login credentials.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "An access token response for bearer authentication, an empty result for cookie authentication,\nor a problem response when authentication fails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/Auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refreshes an access token by using a refresh token.",
+        "operationId": "Auth_Refresh",
+        "requestBody": {
+          "x-name": "refreshRequest",
+          "description": "The refresh token payload.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "A new bearer sign-in result when the refresh token is valid; otherwise a challenge response.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Signs the current user out.",
+        "operationId": "Auth_Logout",
+        "responses": {
+          "200": {
+            "description": "An OK result when sign-out completes."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/Allergy": {
+      "get": {
+        "tags": [
+          "Allergy"
+        ],
+        "summary": "Gets all allergys.",
+        "description": "**Required permission:** `Permission:Allergy:Read`",
+        "operationId": "Allergy_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AllergyResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Allergy:Read"
+      },
+      "post": {
+        "tags": [
+          "Allergy"
+        ],
+        "summary": "Creates a new allergy.",
+        "description": "**Required permission:** `Permission:Allergy:Create`",
+        "operationId": "Allergy_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllergyRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllergyResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Allergy:Create"
+      }
+    },
+    "/api/Allergy/{id}": {
+      "get": {
+        "tags": [
+          "Allergy"
+        ],
+        "summary": "Gets one allergy.",
+        "description": "**Required permission:** `Permission:Allergy:Read`",
+        "operationId": "Allergy_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllergyResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Allergy:Read"
+      },
+      "put": {
+        "tags": [
+          "Allergy"
+        ],
+        "summary": "Updates one allergy.",
+        "description": "**Required permission:** `Permission:Allergy:Update`",
+        "operationId": "Allergy_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllergyRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Allergy:Update"
+      },
+      "delete": {
+        "tags": [
+          "Allergy"
+        ],
+        "summary": "Deletes one allergy.",
+        "description": "**Required permission:** `Permission:Allergy:Delete`",
+        "operationId": "Allergy_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Allergy:Delete"
+      }
+    },
+    "/api/Admin/me": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets the profile of the currently authenticated admin.",
+        "operationId": "Admin_GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "The current admin profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/Admin": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets all admins.",
+        "description": "**Required permission:** `Permission:Admin:Read`",
+        "operationId": "Admin_GetAll",
+        "responses": {
+          "200": {
+            "description": "The entities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Admin:Read"
+      },
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Creates a new admin.",
+        "description": "**Required permission:** `Permission:Admin:Create`",
+        "operationId": "Admin_Create",
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "The created entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Admin:Create"
+      }
+    },
+    "/api/Admin/{id}": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets one admin.",
+        "description": "**Required permission:** `Permission:Admin:Read`",
+        "operationId": "Admin_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Admin:Read"
+      },
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Updates one admin.",
+        "description": "**Required permission:** `Permission:Admin:Update`",
+        "operationId": "Admin_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestDto",
+          "description": "The entity data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Admin:Update"
+      },
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Deletes one admin.",
+        "description": "**Required permission:** `Permission:Admin:Delete`",
+        "operationId": "Admin_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-required-permission": "Permission:Admin:Delete"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "userName",
+          "roleIds",
+          "userType",
+          "orderIds",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "userName": {
+            "type": "string",
+            "description": "The login username."
+          },
+          "roleIds": {
+            "type": "array",
+            "description": "The list of role identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "userType": {
+            "type": "string",
+            "description": "The user type."
+          },
+          "orderIds": {
+            "type": "array",
+            "description": "The list of order identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "additionalProperties": {
+          "nullable": true
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "StationResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "restaurantId",
+          "stationCategoryId",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "restaurantId": {
+            "type": "integer",
+            "description": "The restaurant identifier."
+          },
+          "stationCategoryId": {
+            "type": "integer",
+            "description": "The station category identifier."
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "StationTasksResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "orders"
+        ],
+        "properties": {
+          "orders": {
+            "type": "array",
+            "description": "The list of orders.",
+            "items": {
+              "$ref": "#/components/schemas/StationTaskOrder"
+            }
+          }
+        }
+      },
+      "StationTaskOrder": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "orderNumber",
+          "menus",
+          "foods",
+          "createdAt",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          },
+          "orderNumber": {
+            "type": "integer",
+            "description": "The public order number displayed on the screens."
+          },
+          "menus": {
+            "type": "array",
+            "description": "The list of menus.",
+            "items": {
+              "$ref": "#/components/schemas/StationTaskMenu"
+            }
+          },
+          "foods": {
+            "type": "array",
+            "description": "The list of foods.",
+            "items": {
+              "$ref": "#/components/schemas/StationTaskFood"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time when the item was created.",
+            "format": "date-time"
+          },
+          "status": {
+            "description": "The status.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          }
+        }
+      },
+      "StationTaskMenu": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "quantity",
+          "foods"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the menu."
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Additional instructions for preparation.",
+            "nullable": true
+          },
+          "foods": {
+            "type": "array",
+            "description": "The list of foods.",
+            "items": {
+              "$ref": "#/components/schemas/StationTaskFood"
+            }
+          }
+        }
+      },
+      "StationTaskFood": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "quantity",
+          "ingredients"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the food."
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Additional instructions for preparation.",
+            "nullable": true
+          },
+          "ingredients": {
+            "type": "array",
+            "description": "The list of ingredients.",
+            "items": {
+              "$ref": "#/components/schemas/StationTaskIngredient"
+            }
+          }
+        }
+      },
+      "StationTaskIngredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "quantity",
+          "unit",
+          "isRelevant"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          },
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the ingredient."
+          },
+          "unit": {
+            "type": "string",
+            "description": "The unit of measurement for the quantity."
+          },
+          "isRelevant": {
+            "type": "boolean",
+            "description": "Indicates whether the ingredient is relevant for this task."
+          }
+        }
+      },
+      "OrderStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "InProgress",
+          "Ready",
+          "Completed",
+          "Cancelled"
+        ],
+        "enum": [
+          "Pending",
+          "InProgress",
+          "Ready",
+          "Completed",
+          "Cancelled"
+        ]
+      },
+      "StationRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "restaurantId",
+          "stationCategoryId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "restaurantId": {
+            "type": "integer",
+            "description": "The restaurant identifier."
+          },
+          "stationCategoryId": {
+            "type": "integer",
+            "description": "The station category identifier."
+          }
+        }
+      },
+      "StationCategoryResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "ingredientIds",
+          "stationIds",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "ingredientIds": {
+            "type": "array",
+            "description": "The list of ingredient identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "stationIds": {
+            "type": "array",
+            "description": "The list of station identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "StationCategoryRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "ingredientIds"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "ingredientIds": {
+            "type": "array",
+            "description": "The list of ingredient identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "ShiftResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "startTime",
+          "endTime",
+          "employeeId",
+          "id"
+        ],
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "description": "The shift start date and time.",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "The shift end date and time.",
+            "format": "date-time"
+          },
+          "employeeId": {
+            "type": "integer",
+            "description": "The employee identifier."
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "ShiftRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "startTime",
+          "endTime",
+          "employeeId"
+        ],
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "description": "The shift start date and time.",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "The shift end date and time.",
+            "format": "date-time"
+          },
+          "employeeId": {
+            "type": "integer",
+            "description": "The employee identifier."
+          }
+        }
+      },
+      "RoleResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "permissions",
+          "pages",
+          "userIds",
+          "isDefault",
+          "arePermissionsImmutable",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "permissions": {
+            "type": "array",
+            "description": "The list of permissions.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pages": {
+            "type": "array",
+            "description": "The list of pages.",
+            "items": {
+              "$ref": "#/components/schemas/Page"
+            }
+          },
+          "userIds": {
+            "type": "array",
+            "description": "The list of user identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Indicates whether this role is the default role."
+          },
+          "arePermissionsImmutable": {
+            "type": "boolean",
+            "description": "Indicates whether role permissions are immutable."
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "Page": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "StationTasks",
+          "OrderStatusDisplay",
+          "OrderCreator",
+          "OrderHistory",
+          "AdminManager",
+          "AllergyManager",
+          "CustomerManager",
+          "IngredientManager",
+          "EmployeeManager",
+          "Profile",
+          "MachineManager",
+          "FoodManager",
+          "MenuManager",
+          "OrderManager",
+          "RoleManager",
+          "ShiftManager",
+          "StationCategoryManager",
+          "StationManager",
+          "RestaurantManager",
+          "MyShifts"
+        ],
+        "enum": [
+          "StationTasks",
+          "OrderStatusDisplay",
+          "OrderCreator",
+          "OrderHistory",
+          "AdminManager",
+          "AllergyManager",
+          "CustomerManager",
+          "IngredientManager",
+          "EmployeeManager",
+          "Profile",
+          "MachineManager",
+          "FoodManager",
+          "MenuManager",
+          "OrderManager",
+          "RoleManager",
+          "ShiftManager",
+          "StationCategoryManager",
+          "StationManager",
+          "RestaurantManager",
+          "MyShifts"
+        ]
+      },
+      "RoleRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "permissions",
+          "pages",
+          "userIds"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "permissions": {
+            "type": "array",
+            "description": "The list of permissions.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pages": {
+            "type": "array",
+            "description": "The list of pages.",
+            "items": {
+              "$ref": "#/components/schemas/Page"
+            }
+          },
+          "userIds": {
+            "type": "array",
+            "description": "The list of user identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "RestaurantResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "latitude",
+          "longitude",
+          "address",
+          "openingHours",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description.",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "description": "The latitude.",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "The longitude.",
+            "format": "double"
+          },
+          "address": {
+            "type": "string",
+            "description": "The address."
+          },
+          "phone": {
+            "type": "string",
+            "description": "The phone.",
+            "nullable": true
+          },
+          "openingHours": {
+            "type": "array",
+            "description": "The list of opening hours.",
+            "items": {
+              "$ref": "#/components/schemas/RestaurantOpeningHourDto"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "RestaurantOpeningHourDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dayOfWeek",
+          "openTime",
+          "closeTime"
+        ],
+        "properties": {
+          "dayOfWeek": {
+            "description": "The day of week.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DayOfWeek"
+              }
+            ]
+          },
+          "openTime": {
+            "type": "string",
+            "description": "The open time.",
+            "format": "time"
+          },
+          "closeTime": {
+            "type": "string",
+            "description": "The close time.",
+            "format": "time"
+          }
+        }
+      },
+      "DayOfWeek": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ],
+        "enum": [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ]
+      },
+      "RestaurantRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "latitude",
+          "longitude",
+          "address",
+          "openingHours"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description.",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "description": "The latitude.",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "The longitude.",
+            "format": "double"
+          },
+          "address": {
+            "type": "string",
+            "description": "The address."
+          },
+          "phone": {
+            "type": "string",
+            "description": "The phone.",
+            "nullable": true
+          },
+          "openingHours": {
+            "type": "array",
+            "description": "The list of opening hours.",
+            "items": {
+              "$ref": "#/components/schemas/RestaurantOpeningHourDto"
+            }
+          }
+        }
+      },
+      "PagePermissionsResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page",
+          "necessaryPermissions",
+          "recommendedPermissions",
+          "requiresDefaultRole",
+          "requiredForDefaultRole"
+        ],
+        "properties": {
+          "page": {
+            "description": "The name of the page.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Page"
+              }
+            ]
+          },
+          "necessaryPermissions": {
+            "type": "array",
+            "description": "The list of necessary permissions.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommendedPermissions": {
+            "type": "array",
+            "description": "The list of recommended permissions.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiresDefaultRole": {
+            "type": "array",
+            "description": "The list of required default roles.",
+            "items": {
+              "$ref": "#/components/schemas/DefaultRole"
+            }
+          },
+          "requiredForDefaultRole": {
+            "type": "array",
+            "description": "The list of required for default role.",
+            "items": {
+              "$ref": "#/components/schemas/DefaultRole"
+            }
+          }
+        }
+      },
+      "DefaultRole": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Admin",
+          "Customer",
+          "Employee",
+          "Machine"
+        ],
+        "enum": [
+          "Admin",
+          "Customer",
+          "Employee",
+          "Machine"
+        ]
+      },
+      "OrderResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "restaurantId",
+          "orderNumber",
+          "status",
+          "createdAt",
+          "menus",
+          "foods",
+          "price",
+          "id"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "The user identifier."
+          },
+          "restaurantId": {
+            "type": "integer",
+            "description": "The restaurant identifier."
+          },
+          "orderNumber": {
+            "type": "integer",
+            "description": "The public order number."
+          },
+          "status": {
+            "description": "The status of the order.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time when the item was created.",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "When the order is completed at.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "menus": {
+            "type": "array",
+            "description": "The list of menus.",
+            "items": {
+              "$ref": "#/components/schemas/OrderMenuDto"
+            }
+          },
+          "foods": {
+            "type": "array",
+            "description": "The list of foods.",
+            "items": {
+              "$ref": "#/components/schemas/OrderFoodDto"
+            }
+          },
+          "price": {
+            "type": "integer",
+            "description": "The final price."
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "OrderMenuDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "menuId",
+          "quantity"
+        ],
+        "properties": {
+          "menuId": {
+            "type": "integer",
+            "description": "The menu identifier."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the menu in the order."
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Additional instructions for preparation.",
+            "nullable": true
+          }
+        }
+      },
+      "OrderFoodDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "foodId",
+          "quantity"
+        ],
+        "properties": {
+          "foodId": {
+            "type": "integer",
+            "description": "The food identifier."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the food in the order."
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Additional instructions for preparation.",
+            "nullable": true
+          }
+        }
+      },
+      "OrderRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "restaurantId",
+          "menus",
+          "foods"
+        ],
+        "properties": {
+          "restaurantId": {
+            "type": "integer",
+            "description": "The restaurant identifier."
+          },
+          "menus": {
+            "type": "array",
+            "description": "The list of menus.",
+            "items": {
+              "$ref": "#/components/schemas/OrderMenuDto"
+            }
+          },
+          "foods": {
+            "type": "array",
+            "description": "The list of foods.",
+            "items": {
+              "$ref": "#/components/schemas/OrderFoodDto"
+            }
+          }
+        }
+      },
+      "MenuResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "price",
+          "foods",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "price": {
+            "type": "integer",
+            "description": "The price."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description.",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "The image url.",
+            "format": "uri",
+            "nullable": true
+          },
+          "foods": {
+            "type": "array",
+            "description": "The list of foods.",
+            "items": {
+              "$ref": "#/components/schemas/MenuFoodDto"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "MenuFoodDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "foodId",
+          "quantity"
+        ],
+        "properties": {
+          "foodId": {
+            "type": "integer",
+            "description": "The food identifier."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the food in the menu."
+          }
+        }
+      },
+      "MenuRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "price",
+          "foods"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "price": {
+            "type": "integer",
+            "description": "The price."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description.",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "The image url.",
+            "format": "uri",
+            "nullable": true
+          },
+          "foods": {
+            "type": "array",
+            "description": "The list of foods.",
+            "items": {
+              "$ref": "#/components/schemas/MenuFoodDto"
+            }
+          }
+        }
+      },
+      "MachineResponseDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "locatedAtRestaurantId"
+            ],
+            "properties": {
+              "locatedAtRestaurantId": {
+                "type": "integer",
+                "description": "The restaurant identifier where the machine is located at."
+              }
+            }
+          }
+        ]
+      },
+      "MachineRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserRequestDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "locatedAtRestaurantId"
+            ],
+            "properties": {
+              "locatedAtRestaurantId": {
+                "type": "integer",
+                "description": "The restaurant identifier where the machine is located at."
+              }
+            }
+          }
+        ]
+      },
+      "UserRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "userName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "userName": {
+            "type": "string",
+            "description": "The login username."
+          },
+          "password": {
+            "type": "string",
+            "description": "The account password.",
+            "nullable": true
+          }
+        }
+      },
+      "IngredientResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "foodIds",
+          "allergyIds",
+          "stationCategoryIds",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name.\n            "
+          },
+          "foodIds": {
+            "type": "array",
+            "description": "The list of food identifiers.\n            ",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "allergyIds": {
+            "type": "array",
+            "description": "The list of allergy identifiers.\n            ",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "stationCategoryIds": {
+            "type": "array",
+            "description": "The list of station category identifiers.\n            ",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier.\n            "
+          }
+        }
+      },
+      "IngredientRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "allergyIds",
+          "stationCategoryIds"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name.\n            "
+          },
+          "allergyIds": {
+            "type": "array",
+            "description": "The list of allergy identifiers.\n            ",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "stationCategoryIds": {
+            "type": "array",
+            "description": "The list of station category identifiers.\n            ",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "FoodResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "price",
+          "ingredients",
+          "menuIds",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "price": {
+            "type": "integer",
+            "description": "The price."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description.",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "The image url.",
+            "format": "uri",
+            "nullable": true
+          },
+          "ingredients": {
+            "type": "array",
+            "description": "The list of ingredients.",
+            "items": {
+              "$ref": "#/components/schemas/FoodIngredientDto"
+            }
+          },
+          "menuIds": {
+            "type": "array",
+            "description": "The list of menu identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "FoodIngredientDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ingredientId",
+          "quantity",
+          "unit"
+        ],
+        "properties": {
+          "ingredientId": {
+            "type": "integer",
+            "description": "The ingredient identifier."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the food."
+          },
+          "unit": {
+            "type": "string",
+            "description": "The unit of measurement for the quantity."
+          }
+        }
+      },
+      "FoodRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "price",
+          "ingredients"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "price": {
+            "type": "integer",
+            "description": "The price."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description.",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "The image url.",
+            "format": "uri",
+            "nullable": true
+          },
+          "ingredients": {
+            "type": "array",
+            "description": "The list of ingredients.",
+            "items": {
+              "$ref": "#/components/schemas/FoodIngredientDto"
+            }
+          }
+        }
+      },
+      "EmployeeResponseDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "email",
+              "shiftIds",
+              "stationCategoryIds",
+              "worksAtRestaurantId"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Email address of the employee."
+              },
+              "shiftIds": {
+                "type": "array",
+                "description": "The list of shift identifiers.",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "stationCategoryIds": {
+                "type": "array",
+                "description": "The list of station category identifiers.",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "worksAtRestaurantId": {
+                "type": "integer",
+                "description": "The restaurant identifier where the employee works at."
+              }
+            }
+          }
+        ]
+      },
+      "EmployeeRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserRequestDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "email",
+              "shiftIds",
+              "stationCategoryIds",
+              "worksAtRestaurantId"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Email address of the employee."
+              },
+              "shiftIds": {
+                "type": "array",
+                "description": "The list of shift identifiers.",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "stationCategoryIds": {
+                "type": "array",
+                "description": "The list of station category identifiers.",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "worksAtRestaurantId": {
+                "type": "integer",
+                "description": "The restaurant identifier where the employee works at."
+              }
+            }
+          }
+        ]
+      },
+      "CustomerResponseDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Email address of the customer."
+              }
+            }
+          }
+        ]
+      },
+      "CustomerRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserRequestDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Email address of the customer."
+              }
+            }
+          }
+        ]
+      },
+      "AccessTokenResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tokenType",
+          "accessToken",
+          "expiresIn",
+          "refreshToken"
+        ],
+        "properties": {
+          "tokenType": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userName",
+          "password"
+        ],
+        "properties": {
+          "userName": {
+            "type": "string",
+            "description": "The login username."
+          },
+          "password": {
+            "type": "string",
+            "description": "The account password."
+          }
+        }
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "refreshToken"
+        ],
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        }
+      },
+      "AllergyResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "ingredientIds",
+          "id"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "ingredientIds": {
+            "type": "array",
+            "description": "The list of ingredient identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier."
+          }
+        }
+      },
+      "AllergyRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "ingredientIds"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The displayed name."
+          },
+          "ingredientIds": {
+            "type": "array",
+            "description": "The list of ingredient identifiers.",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "AdminResponseDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Email address of the admin."
+              }
+            }
+          }
+        ]
+      },
+      "AdminRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserRequestDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Email address of the admin."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "in": "header",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
