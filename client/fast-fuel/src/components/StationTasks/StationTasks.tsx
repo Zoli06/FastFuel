@@ -462,7 +462,7 @@ export const StationTasks = () => {
               <>
                 <Group mb="sm" gap="xs">
                   <Title order={3}>Pending</Title>
-                  <Badge color="yellow" variant="filled" size="lg">
+                  <Badge color="blue" variant="filled" size="lg">
                     {pendingOrders.length}
                   </Badge>
                 </Group>
@@ -491,7 +491,7 @@ export const StationTasks = () => {
               <>
                 <Group mb="sm" gap="xs">
                   <Title order={3}>In Progress</Title>
-                  <Badge color="blue" variant="filled" size="lg">
+                  <Badge color="cyan" variant="filled" size="lg">
                     {inProgressOrders.length}
                   </Badge>
                 </Group>
@@ -520,7 +520,7 @@ export const StationTasks = () => {
               <>
                 <Group mb="sm" gap="xs">
                   <Title order={3}>Ready</Title>
-                  <Badge color="cyan" variant="filled" size="lg">
+                  <Badge color="green" variant="filled" size="lg">
                     {readyOrders.length}
                   </Badge>
                 </Group>
