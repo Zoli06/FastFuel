@@ -18,7 +18,7 @@ public class AdminController(
     /// Gets the profile of the currently authenticated admin.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The current admin profile when it exists.</returns>
+    /// <returns>The current admin profile.</returns>
     [HttpGet("me")]
     public Task<Results<Ok<AdminResponseDto>, NotFound, UnauthorizedHttpResult>> GetCurrentUser(
         CancellationToken cancellationToken = default)
