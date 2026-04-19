@@ -2,7 +2,7 @@ import type { OrderStatus, OrderSummary, OrderSummaryItem, SortKey } from './typ
 
 export const STATUS_META: Record<OrderStatus, { label: string; color: string }> = {
   Pending: { label: 'Pending', color: '#c92a2a' },
-  InProgress: { label: 'In Progress', color: '#BFB48F' },
+  InProgress: { label: 'In Progress', color: 'blue' },
   Ready: { label: 'Ready', color: 'teal' },
   Completed: { label: 'Completed', color: 'green' },
   Cancelled: { label: 'Cancelled', color: 'red' },
