@@ -137,7 +137,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var bigBurger = await _foodService.CreateAsync(new FoodRequestDto
         {
             Name = "Big Burger",
-            Price = 800,
+            Price = 6.89,
             Description = "A big beef burger with lettuce, tomato, and cheese.",
             ImageUrl = new Uri("https://cdn.pixabay.com/photo/2022/08/29/17/44/burger-7419420_1280.jpg"),
             Ingredients =
@@ -152,7 +152,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var cheeseBurger = await _foodService.CreateAsync(new FoodRequestDto
         {
             Name = "Cheese Burger",
-            Price = 700,
+            Price = 5.95,
             Description = "A beef burger with cheese.",
             ImageUrl = null,
             Ingredients =
@@ -165,9 +165,9 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var fries = await _foodService.CreateAsync(new FoodRequestDto
         {
             Name = "Fries",
-            Price = 300,
+            Price = 1.29,
             Description = "Crispy golden fries.",
-            ImageUrl = null,
+            ImageUrl = new Uri("https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg"),
             Ingredients =
             [
                 new FoodIngredientDto { IngredientId = potato.Id, Quantity = 3, Unit = "piece" },
@@ -179,12 +179,24 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         var lunchMenu = await _menuService.CreateAsync(new MenuRequestDto
         {
             Name = "Lunch Menu",
-            Price = 1000,
+            Price = 9.89,
             Description = "A special lunch menu with a Big Burger and Fries.",
-            ImageUrl = null,
+            ImageUrl = new Uri("https://i2.pickpik.com/photos/213/12/34/burger-french-fries-potato-chips-tomato-preview.jpg"),
             Foods =
             [
                 new MenuFoodDto { FoodId = bigBurger.Id, Quantity = 1 },
+                new MenuFoodDto { FoodId = fries.Id, Quantity = 1 }
+            ]
+        });
+        await _menuService.CreateAsync(new MenuRequestDto
+        {
+            Name = "Dinner Menu",
+            Price = 11.95,
+            Description = "A special dinner menu with a Cheese Burger and Fries.",
+            ImageUrl = null,
+            Foods =
+            [
+                new MenuFoodDto { FoodId = cheeseBurger.Id, Quantity = 1 },
                 new MenuFoodDto { FoodId = fries.Id, Quantity = 1 }
             ]
         });
@@ -205,6 +217,22 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             }).ToList()
         });
 
+        await _restaurantService.CreateAsync(new RestaurantRequestDto
+        {
+            Name = "FastFuel Express",
+            Description = "A fast food restaurant serving burgers and fries.",
+            Address = "456 Elm St, Othertown, USA",
+            Latitude = 34.0522,
+            Longitude = -118.2437,
+            Phone = "555-5678",
+            OpeningHours = Enum.GetValues<DayOfWeek>().Select(day => new RestaurantOpeningHourDto
+            {
+                DayOfWeek = day,
+                OpenTime = new TimeOnly(10, 0),
+                CloseTime = new TimeOnly(22, 0)
+            }).ToList()
+        });
+
         await _stationService.CreateAsync(new StationRequestDto
         {
             Name = "Burger Station 1",
@@ -221,6 +249,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         await SeedAdmin();
         await SeedEmployee(restaurant.Id);
         await SeedMachine(restaurant.Id);
+        await SeedShiftManager(restaurant.Id);
         var customerId = await SeedCustomer();
 
         await _orderService.CreateAsync(new OrderRequestDto
@@ -314,5 +343,23 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
         var machine = await _machineService.CreateAsync(machineRequestDto);
         return machine.Id;
+    }
+
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<uint> SeedShiftManager(uint restaurantId)
+    {
+        var shiftManagerRequestDto = new EmployeeRequestDto
+        {
+            UserName = "shiftmanager",
+            Email = "shiftmanager@example.com",
+            Name = "Shift Manager User",
+            Password = "ShiftManager123!",
+            WorksAtRestaurantId = restaurantId,
+            ShiftIds = [],
+            StationCategoryIds = []
+        };
+
+        var shiftManager = await _employeeService.CreateAsync(shiftManagerRequestDto);
+        return shiftManager.Id;
     }
 }

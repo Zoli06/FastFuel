@@ -20,6 +20,6 @@ public class Order : IIdentifiable
     public virtual User User { get; init; } = null!;
     public virtual List<OrderFood> Foods { get; init; } = [];
     public virtual List<OrderMenu> Menus { get; init; } = [];
-    public uint Price { get; set; }
+    public double Price { get; set; }
     public uint Id { get; init; }
 }

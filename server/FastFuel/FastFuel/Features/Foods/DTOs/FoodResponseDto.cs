@@ -11,7 +11,7 @@ public record FoodResponseDto : IIdentifiable
     /// <summary>
     /// The price.
     /// </summary>
-    public required uint Price { get; init; }
+    public required double Price { get; init; }
     /// <summary>
     /// The description.
     /// </summary>

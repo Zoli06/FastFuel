@@ -182,7 +182,7 @@ public static class Program
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<FastFuelDbContext>();
 
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
         {
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
@@ -197,7 +197,7 @@ public static class Program
         await roleInitializer.InitializeAsync();
 
         var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
             await databaseSeeder.SeedTestAsync();
         else
             await databaseSeeder.SeedProdAsync();

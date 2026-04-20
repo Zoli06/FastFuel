@@ -172,7 +172,7 @@ public class MenuServiceTests(MariaDbFixture fixture)
         var updated = await _service.GetByIdAsync(created.Id);
 
         Assert.Equal("New Menu", updated!.Name);
-        Assert.Equal((uint)2000, updated.Price);
+        Assert.Equal(2000, updated.Price);
         Assert.Equal("Updated description", updated.Description);
     }
 
