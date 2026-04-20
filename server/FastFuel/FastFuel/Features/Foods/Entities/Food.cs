@@ -7,7 +7,7 @@ namespace FastFuel.Features.Foods.Entities;
 public class Food : IIdentifiable
 {
     public string Name { get; set; } = string.Empty;
-    public uint Price { get; set; }
+    public double Price { get; set; }
     public string? Description { get; set; }
     public Uri? ImageUrl { get; set; }
     public virtual List<MenuFood> MenuFoods { get; init; } = [];

@@ -132,7 +132,7 @@ const OrderCard = ({
                             <Text size="xs" c="grape.6" ml="sm">
                               {food.ingredients
                                 .filter((i) => i.isRelevant)
-                                .map((i) => `${i.quantity}${i.unit} ${i.name}`)
+                                .map((i) => `${i.quantity} ${i.unit} ${i.name}`)
                                 .join(', ')}
                             </Text>
                           )}

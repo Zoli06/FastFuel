@@ -40,7 +40,7 @@ public record OrderResponseDto : IIdentifiable
     /// <summary>
     /// The final price.
     /// </summary>
-    public required uint Price { get; init; }
+    public required double Price { get; init; }
     /// <summary>
     /// The unique identifier.
     /// </summary>
