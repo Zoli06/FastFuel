@@ -1670,7 +1670,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "description": "List of permission strings. Permissions follow the format 'Permission:{Controller}:{Operation}'. Currently 59 permissions are available in the system.",
+                  "description": "List of permission strings. Permissions follow the format 'Permission:{Controller}:{Operation}'. Currently 58 permissions are available in the system.",
                   "items": {
                     "type": "string",
                     "description": "A permission string in the format 'Permission:{Controller}:{Operation}'",
@@ -1699,10 +1699,9 @@
                       "Permission:Restaurant:Delete",
                       "Permission:Permission:Read",
                       "Permission:Order:Read",
-                      "Permission:Order:UpdateStatus",
                       "Permission:Order:Create",
-                      "Permission:Order:Update",
                       "Permission:Order:Delete",
+                      "Permission:Order:UpdateStatus",
                       "Permission:Menu:Read",
                       "Permission:Menu:Create",
                       "Permission:Menu:Update",
@@ -1770,7 +1769,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "description": "List of permission strings. Permissions follow the format 'Permission:{Controller}:{Operation}'. Currently 59 permissions are available in the system.",
+                  "description": "List of permission strings. Permissions follow the format 'Permission:{Controller}:{Operation}'. Currently 58 permissions are available in the system.",
                   "items": {
                     "type": "string",
                     "description": "A permission string in the format 'Permission:{Controller}:{Operation}'",
@@ -1799,10 +1798,9 @@
                       "Permission:Restaurant:Delete",
                       "Permission:Permission:Read",
                       "Permission:Order:Read",
-                      "Permission:Order:UpdateStatus",
                       "Permission:Order:Create",
-                      "Permission:Order:Update",
                       "Permission:Order:Delete",
+                      "Permission:Order:UpdateStatus",
                       "Permission:Menu:Read",
                       "Permission:Menu:Create",
                       "Permission:Menu:Update",
@@ -1879,38 +1877,6 @@
         }
       }
     },
-    "/api/Order/my": {
-      "get": {
-        "tags": [
-          "Order"
-        ],
-        "summary": "Gets the orders of the currently authenticated user.",
-        "operationId": "Order_GetMyOrders",
-        "responses": {
-          "200": {
-            "description": "The current user's orders.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/OrderResponseDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      }
-    },
     "/api/Order": {
       "get": {
         "tags": [
@@ -1923,16 +1889,26 @@
           {
             "name": "status",
             "in": "query",
+            "description": "An optional order status filter.",
             "schema": {
-              "$ref": "#/components/schemas/OrderStatus"
-            }
+              "nullable": true,
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/OrderStatus"
+                }
+              ]
+            },
+            "x-position": 1
           },
           {
             "name": "restaurantId",
             "in": "query",
+            "description": "An optional restaurant ID filter.",
             "schema": {
-              "type": "integer"
-            }
+              "type": "integer",
+              "nullable": true
+            },
+            "x-position": 2
           }
         ],
         "responses": {
@@ -1966,18 +1942,13 @@
             "description": "Forbidden"
           }
         },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
         "x-required-permission": "Permission:Order:Read"
       },
       "post": {
         "tags": [
           "Order"
         ],
-        "summary": "Creates a new order.",
+        "summary": "Makes a new entity.",
         "description": "**Required permission:** `Permission:Order:Create`",
         "operationId": "Order_Create",
         "requestBody": {
@@ -2031,12 +2002,123 @@
             "description": "Forbidden"
           }
         },
-        "security": [
+        "x-required-permission": "Permission:Order:Create"
+      }
+    },
+    "/api/Order/{id}": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Gets one entity.",
+        "description": "**Required permission:** `Permission:Order:Read`",
+        "operationId": "Order_GetById",
+        "parameters": [
           {
-            "Bearer": []
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
           }
         ],
-        "x-required-permission": "Permission:Order:Create"
+        "responses": {
+          "200": {
+            "description": "The entity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "x-required-permission": "Permission:Order:Read"
+      },
+      "delete": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Deletes one entity.",
+        "description": "**Required permission:** `Permission:Order:Delete`",
+        "operationId": "Order_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The entity id.",
+            "schema": {
+              "type": "integer"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content."
+          },
+          "404": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "x-required-permission": "Permission:Order:Delete"
+      }
+    },
+    "/api/Order/my": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Gets the orders of the currently authenticated user.",
+        "operationId": "Order_GetMyOrders",
+        "responses": {
+          "200": {
+            "description": "The current user's orders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
       }
     },
     "/api/Order/{id}/status": {
@@ -2096,184 +2178,7 @@
             "description": "Forbidden"
           }
         },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
         "x-required-permission": "Permission:Order:UpdateStatus"
-      }
-    },
-    "/api/Order/{id}": {
-      "get": {
-        "tags": [
-          "Order"
-        ],
-        "summary": "Gets one order.",
-        "description": "**Required permission:** `Permission:Order:Read`",
-        "operationId": "Order_GetById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "The entity id.",
-            "schema": {
-              "type": "integer"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The entity.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": ""
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "x-required-permission": "Permission:Order:Read"
-      },
-      "put": {
-        "tags": [
-          "Order"
-        ],
-        "summary": "Updates one order.",
-        "description": "**Required permission:** `Permission:Order:Update`",
-        "operationId": "Order_Update",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "The entity id.",
-            "schema": {
-              "type": "integer"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "requestDto",
-          "description": "The entity data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OrderRequestDto"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "204": {
-            "description": "No content."
-          },
-          "404": {
-            "description": ""
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "x-required-permission": "Permission:Order:Update"
-      },
-      "delete": {
-        "tags": [
-          "Order"
-        ],
-        "summary": "Deletes one order.",
-        "description": "**Required permission:** `Permission:Order:Delete`",
-        "operationId": "Order_Delete",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "The entity id.",
-            "schema": {
-              "type": "integer"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No content."
-          },
-          "404": {
-            "description": ""
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "x-required-permission": "Permission:Order:Delete"
       }
     },
     "/api/Menu": {
@@ -5634,24 +5539,23 @@
           "createdAt",
           "menus",
           "foods",
-          "price",
           "id"
         ],
         "properties": {
           "userId": {
             "type": "integer",
-            "description": "The user identifier."
+            "description": "The user identifier.\n            "
           },
           "restaurantId": {
             "type": "integer",
-            "description": "The restaurant identifier."
+            "description": "The restaurant identifier.\n            "
           },
           "orderNumber": {
             "type": "integer",
-            "description": "The public order number."
+            "description": "The public order number.\n            "
           },
           "status": {
-            "description": "The status of the order.",
+            "description": "The status of the order.\n            ",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/OrderStatus"
@@ -5660,81 +5564,99 @@
           },
           "createdAt": {
             "type": "string",
-            "description": "The date and time when the item was created.",
+            "description": "The date and time when the item was created.\n            ",
             "format": "date-time"
           },
           "completedAt": {
             "type": "string",
-            "description": "When the order is completed at.",
+            "description": "When the order is completed at.\n            ",
             "format": "date-time",
             "nullable": true
           },
           "menus": {
             "type": "array",
-            "description": "The list of menus.",
+            "description": "The list of menus.\n            ",
             "items": {
-              "$ref": "#/components/schemas/OrderMenuDto"
+              "$ref": "#/components/schemas/OrderMenuResponseDto"
             }
           },
           "foods": {
             "type": "array",
-            "description": "The list of foods.",
+            "description": "The list of foods.\n            ",
             "items": {
-              "$ref": "#/components/schemas/OrderFoodDto"
+              "$ref": "#/components/schemas/OrderFoodResponseDto"
             }
-          },
-          "price": {
-            "type": "integer",
-            "description": "The final price."
           },
           "id": {
             "type": "integer",
-            "description": "The unique identifier."
+            "description": "The unique identifier.\n            "
           }
         }
       },
-      "OrderMenuDto": {
+      "OrderMenuResponseDto": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "menuId",
+          "originalMenuName",
+          "originalMenuPrice",
           "quantity"
         ],
         "properties": {
           "menuId": {
             "type": "integer",
-            "description": "The menu identifier."
+            "description": "The menu identifier.\n            "
+          },
+          "originalMenuName": {
+            "type": "string",
+            "description": "The original menu name at the time of order placement.\n            "
+          },
+          "originalMenuPrice": {
+            "type": "number",
+            "description": "The original menu price at the time of order placement.\n            ",
+            "format": "double"
           },
           "quantity": {
             "type": "integer",
-            "description": "The quantity of the menu in the order."
+            "description": "The quantity of the menu in the order.\n            "
           },
           "specialInstructions": {
             "type": "string",
-            "description": "Additional instructions for preparation.",
+            "description": "Additional instructions for preparation.\n            ",
             "nullable": true
           }
         }
       },
-      "OrderFoodDto": {
+      "OrderFoodResponseDto": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "foodId",
+          "originalFoodName",
+          "originalFoodPrice",
           "quantity"
         ],
         "properties": {
           "foodId": {
             "type": "integer",
-            "description": "The food identifier."
+            "description": "The food identifier.\n            "
+          },
+          "originalFoodName": {
+            "type": "string",
+            "description": "The original food name at the time of order placement.\n            "
+          },
+          "originalFoodPrice": {
+            "type": "number",
+            "description": "The original food price at the time of order placement.\n            ",
+            "format": "double"
           },
           "quantity": {
             "type": "integer",
-            "description": "The quantity of the food in the order."
+            "description": "The quantity of the food in the order.\n            "
           },
           "specialInstructions": {
             "type": "string",
-            "description": "Additional instructions for preparation.",
+            "description": "Additional instructions for preparation.\n            ",
             "nullable": true
           }
         }
@@ -5750,21 +5672,67 @@
         "properties": {
           "restaurantId": {
             "type": "integer",
-            "description": "The restaurant identifier."
+            "description": "The restaurant identifier.\n            "
           },
           "menus": {
             "type": "array",
-            "description": "The list of menus.",
+            "description": "The list of menus.\n            ",
             "items": {
-              "$ref": "#/components/schemas/OrderMenuDto"
+              "$ref": "#/components/schemas/OrderMenuRequestDto"
             }
           },
           "foods": {
             "type": "array",
-            "description": "The list of foods.",
+            "description": "The list of foods.\n            ",
             "items": {
-              "$ref": "#/components/schemas/OrderFoodDto"
+              "$ref": "#/components/schemas/OrderFoodRequestDto"
             }
+          }
+        }
+      },
+      "OrderMenuRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "menuId",
+          "quantity"
+        ],
+        "properties": {
+          "menuId": {
+            "type": "integer",
+            "description": "The menu identifier.\n            "
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the menu in the order.\n            "
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Additional instructions for preparation.\n            ",
+            "nullable": true
+          }
+        }
+      },
+      "OrderFoodRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "foodId",
+          "quantity"
+        ],
+        "properties": {
+          "foodId": {
+            "type": "integer",
+            "description": "The food identifier.\n            "
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the food in the order.\n            "
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Additional instructions for preparation.\n            ",
+            "nullable": true
           }
         }
       },
@@ -5783,8 +5751,9 @@
             "description": "The displayed name."
           },
           "price": {
-            "type": "integer",
-            "description": "The price."
+            "type": "number",
+            "description": "The price.",
+            "format": "double"
           },
           "description": {
             "type": "string",
@@ -5842,8 +5811,9 @@
             "description": "The displayed name."
           },
           "price": {
-            "type": "integer",
-            "description": "The price."
+            "type": "number",
+            "description": "The price.",
+            "format": "double"
           },
           "description": {
             "type": "string",
@@ -6015,8 +5985,9 @@
             "description": "The displayed name."
           },
           "price": {
-            "type": "integer",
-            "description": "The price."
+            "type": "number",
+            "description": "The price.",
+            "format": "double"
           },
           "description": {
             "type": "string",
@@ -6086,8 +6057,9 @@
             "description": "The displayed name."
           },
           "price": {
-            "type": "integer",
-            "description": "The price."
+            "type": "number",
+            "description": "The price.",
+            "format": "double"
           },
           "description": {
             "type": "string",

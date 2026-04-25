@@ -10,10 +10,7 @@ import { resolveItems, sortOrders } from './helpers.ts';
 import type { OrderStatus, OrderSummary, SortKey } from './types.ts';
 
 export const OrderHistory = () => {
-  const { useNoPerm, useNecessaryPerm } = useApi('OrderHistory');
-
-  const foodReadApi = useNecessaryPerm('Permission:Food:Read');
-  const menuReadApi = useNecessaryPerm('Permission:Menu:Read');
+  const { useNoPerm } = useApi('OrderHistory');
 
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [search, setSearch] = useState('');
@@ -22,15 +19,10 @@ export const OrderHistory = () => {
     useNoPerm().queryOptions('get', '/api/Order/my'),
   );
 
-  const [{ data: foods = [] }, { data: menus = [] }, { data: restaurants = [] }] =
-    useConditionalSuspenseQueries([
-      foodReadApi?.queryOptions('get', '/api/Food'),
-      menuReadApi?.queryOptions('get', '/api/Menu'),
-      useNoPerm().queryOptions('get', '/api/Restaurant'),
-    ]);
+  const [{ data: restaurants = [] }] = useConditionalSuspenseQueries([
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
+  ]);
 
-  const foodMap = new Map(foods.map((f) => [f.id, f]));
-  const menuMap = new Map(menus.map((m) => [m.id, m]));
   const restaurantMap = new Map(restaurants.map((r) => [r.id, r]));
 
   const mapped: OrderSummary[] = rawOrders.map((o) => ({
@@ -39,9 +31,11 @@ export const OrderHistory = () => {
     restaurantId: o.restaurantId,
     restaurantName: restaurantMap.get(o.restaurantId)?.name ?? `Restaurant #${o.restaurantId}`,
     status: o.status as OrderStatus,
-    totalPrice: o.price,
+    totalPrice:
+      o.foods.reduce((sum, f) => sum + f.originalFoodPrice * f.quantity, 0) +
+      o.menus.reduce((sum, m) => sum + m.originalMenuPrice * m.quantity, 0),
     placedAt: o.createdAt,
-    items: resolveItems(o.foods ?? [], o.menus ?? [], foodMap, menuMap),
+    items: resolveItems(o.foods ?? [], o.menus ?? []),
   }));
 
   const filtered = mapped

@@ -7,6 +7,8 @@ using FastFuel.Features.Foods.DTOs;
 using FastFuel.Features.Ingredients.DTOs;
 using FastFuel.Features.Machines.DTOs;
 using FastFuel.Features.Menus.DTOs;
+using FastFuel.Features.OrderFoods.DTOs;
+using FastFuel.Features.OrderMenus.DTOs;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Services;
 using FastFuel.Features.Restaurants.DTOs;
@@ -25,17 +27,17 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
     private readonly ICrudService<AllergyRequestDto, AllergyResponseDto> _allergyService =
         serviceProvider.GetRequiredService<ICrudService<AllergyRequestDto, AllergyResponseDto>>();
 
-    private readonly ICrudService<FoodRequestDto, FoodResponseDto> _foodService =
-        serviceProvider.GetRequiredService<ICrudService<FoodRequestDto, FoodResponseDto>>();
-
-    private readonly ICrudService<IngredientRequestDto, IngredientResponseDto> _ingredientService =
-        serviceProvider.GetRequiredService<ICrudService<IngredientRequestDto, IngredientResponseDto>>();
-
     private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
         serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();
 
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
+
+    private readonly ICrudService<FoodRequestDto, FoodResponseDto> _foodService =
+        serviceProvider.GetRequiredService<ICrudService<FoodRequestDto, FoodResponseDto>>();
+
+    private readonly ICrudService<IngredientRequestDto, IngredientResponseDto> _ingredientService =
+        serviceProvider.GetRequiredService<ICrudService<IngredientRequestDto, IngredientResponseDto>>();
 
     private readonly ICrudService<MachineRequestDto, MachineResponseDto> _machineService =
         serviceProvider.GetRequiredService<ICrudService<MachineRequestDto, MachineResponseDto>>();
@@ -181,7 +183,8 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             Name = "Lunch Menu",
             Price = 9.89,
             Description = "A special lunch menu with a Big Burger and Fries.",
-            ImageUrl = new Uri("https://i2.pickpik.com/photos/213/12/34/burger-french-fries-potato-chips-tomato-preview.jpg"),
+            ImageUrl = new Uri(
+                "https://i2.pickpik.com/photos/213/12/34/burger-french-fries-potato-chips-tomato-preview.jpg"),
             Foods =
             [
                 new MenuFoodDto { FoodId = bigBurger.Id, Quantity = 1 },
@@ -257,7 +260,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             RestaurantId = restaurant.Id,
             Menus =
             [
-                new OrderMenuDto
+                new OrderMenuRequestDto
                 {
                     MenuId = lunchMenu.Id,
                     Quantity = 1,
@@ -266,7 +269,7 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
             ],
             Foods =
             [
-                new OrderFoodDto
+                new OrderFoodRequestDto
                 {
                     FoodId = cheeseBurger.Id,
                     Quantity = 1,

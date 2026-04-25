@@ -51,33 +51,41 @@ export function sortOrders(orders: OrderSummary[], key: SortKey): OrderSummary[]
 }
 
 export function resolveItems(
-  foods: { foodId: number; quantity: number; specialInstructions?: string | null }[],
-  menus: { menuId: number; quantity: number; specialInstructions?: string | null }[],
-  foodMap: Map<number, { id: number; name: string; price: number }>,
-  menuMap: Map<number, { id: number; name: string; price: number }>,
+  foods: {
+    foodId: number;
+    quantity: number;
+    specialInstructions?: string | null;
+    originalFoodPrice: number;
+    originalFoodName: string;
+  }[],
+  menus: {
+    menuId: number;
+    quantity: number;
+    specialInstructions?: string | null;
+    originalMenuPrice: number;
+    originalMenuName: string;
+  }[],
 ): OrderSummaryItem[] {
   const items: OrderSummaryItem[] = [];
 
   for (const f of foods ?? []) {
-    const found = foodMap.get(f.foodId);
     items.push({
       itemId: f.foodId,
       type: 'food',
-      name: found?.name ?? `Food #${f.foodId}`,
+      name: f.originalFoodName,
       quantity: f.quantity,
-      price: found?.price ?? 0,
+      price: f.originalFoodPrice,
       note: f.specialInstructions ?? undefined,
     });
   }
 
   for (const m of menus ?? []) {
-    const found = menuMap.get(m.menuId);
     items.push({
       itemId: m.menuId,
       type: 'menu',
-      name: found?.name ? `${found.name} (Menu)` : `Menu #${m.menuId}`,
+      name: m.originalMenuName,
       quantity: m.quantity,
-      price: found?.price ?? 0,
+      price: m.originalMenuPrice,
       note: m.specialInstructions ?? undefined,
     });
   }
