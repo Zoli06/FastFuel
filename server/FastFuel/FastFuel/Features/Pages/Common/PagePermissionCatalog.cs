@@ -125,7 +125,6 @@ public static class PagePermissionCatalog
                         ["Permission:Order:Read"],
                         [
                             "Permission:Order:Create",
-                            "Permission:Order:Update",
                             "Permission:Order:Delete",
                             "Permission:Order:UpdateStatus",
                             "Permission:Menu:Read",
@@ -207,9 +206,7 @@ public static class PagePermissionCatalog
                     ),
                 [Page.OrderHistory] =
                     new(
-                        [
-                            "Permission:Food:Read", "Permission:Menu:Read"
-                        ],
+                        [],
                         [],
                         [],
                         []

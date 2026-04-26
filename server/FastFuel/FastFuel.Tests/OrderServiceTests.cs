@@ -1,12 +1,19 @@
 using System.Security.Claims;
 using FastFuel.Features.Common.DbContexts;
 using FastFuel.Features.Foods.Entities;
+using FastFuel.Features.Foods.Mappers;
+using FastFuel.Features.Foods.Services;
 using FastFuel.Features.Menus.Entities;
+using FastFuel.Features.Menus.Mappers;
+using FastFuel.Features.Menus.Services;
+using FastFuel.Features.OrderFoods.DTOs;
+using FastFuel.Features.OrderFoods.Mappers;
+using FastFuel.Features.OrderMenus.DTOs;
+using FastFuel.Features.OrderMenus.Mappers;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Mappers;
 using FastFuel.Features.Orders.Services;
-using FastFuel.Features.Orders.Services.OrderFilter;
 using FastFuel.Features.Restaurants.Entities;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -16,12 +23,12 @@ namespace FastFuel.Tests;
 public class OrderServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
+    private User _customer = null!;
     private FastFuelDbContext _dbContext = null!;
     private Food _food = null!;
     private Menu _menu = null!;
 
     private Restaurant _restaurant = null!;
-    private User _customer = null!;
     private IOrderService _service = null!;
 
     // ─── Lifecycle ─────────────────────────────────────────────
@@ -29,7 +36,13 @@ public class OrderServiceTests(MariaDbFixture fixture)
     public async Task InitializeAsync()
     {
         _dbContext = fixture.CreateDbContext();
-        _service = new OrderService(_dbContext, new OrderMapper());
+        var foodService = new FoodService(_dbContext, new FoodMapper());
+        var menuService = new MenuService(_dbContext, new MenuMapper());
+        _service = new OrderService(
+            _dbContext,
+            new OrderMapper(new OrderFoodMapper(), new OrderMenuMapper()),
+            foodService,
+            menuService);
 
         // Seed required data dynamically
         _restaurant = new Restaurant { Name = "Test Restaurant" };
@@ -74,7 +87,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
         List<uint>? menuIds = null)
     {
         var foods = (foodIds ?? new List<uint> { _food.Id })
-            .Select(id => new OrderFoodDto
+            .Select(id => new OrderFoodRequestDto
             {
                 FoodId = id,
                 Quantity = 1,
@@ -83,7 +96,7 @@ public class OrderServiceTests(MariaDbFixture fixture)
             .ToList();
 
         var menus = (menuIds ?? new List<uint> { _menu.Id })
-            .Select(id => new OrderMenuDto
+            .Select(id => new OrderMenuRequestDto
             {
                 MenuId = id,
                 Quantity = 1,
@@ -172,24 +185,6 @@ public class OrderServiceTests(MariaDbFixture fixture)
     }
 
     [Fact]
-    public async Task UpdateAsync_WithValidId_UpdatesOrder()
-    {
-        var created = await _service.CreateAsync(BuildRequest(), _customer.Id);
-        var success = await _service.UpdateAsync(created.Id, BuildRequest());
-        Assert.True(success);
-
-        var updated = await _service.GetByIdAsync(created.Id);
-        Assert.Equal(_restaurant.Id, updated!.RestaurantId);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_WithInvalidId_ReturnsFalse()
-    {
-        var success = await _service.UpdateAsync(99999, BuildRequest());
-        Assert.False(success);
-    }
-
-    [Fact]
     public async Task DeleteAsync_WithValidId_RemovesOrder()
     {
         var created = await _service.CreateAsync(BuildRequest(), _customer.Id);
@@ -253,36 +248,5 @@ public class OrderServiceTests(MariaDbFixture fixture)
         Assert.Single(result);
         Assert.Equal(_restaurant.Id, result[0].RestaurantId);
         Assert.Equal(OrderStatus.Completed, result[0].Status);
-    }
-
-    [Fact]
-    public void OrderFilterParams_TryParse_WithValidRestaurantId_SetsRestaurantId()
-    {
-        var factory = new OrderFilterParams();
-
-        var parsed = factory.TryParse(null, _restaurant.Id.ToString(), out var filterParams);
-
-        Assert.True(parsed);
-        Assert.Equal(_restaurant.Id, filterParams.RestaurantId);
-    }
-
-    [Fact]
-    public void OrderFilterParams_TryParse_WithInvalidRestaurantId_ReturnsFalse()
-    {
-        var factory = new OrderFilterParams();
-
-        var parsed = factory.TryParse(null, "invalid", out _);
-
-        Assert.False(parsed);
-    }
-
-    [Fact]
-    public void OrderFilterParams_TryParse_WithInvalidStatus_ReturnsFalse()
-    {
-        var factory = new OrderFilterParams();
-
-        var parsed = factory.TryParse("invalid", null, out _);
-
-        Assert.False(parsed);
     }
 }

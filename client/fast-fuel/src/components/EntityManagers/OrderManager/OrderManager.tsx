@@ -27,8 +27,6 @@ export const OrderManager = () => {
 
   type Order = (typeof orders)[number];
 
-  const menuNameById = new Map(menus.map((m) => [m.id, m.name]));
-  const foodNameById = new Map(foods.map((f) => [f.id, f.name]));
   const userNameById = new Map(users.map((u) => [u.id, u.name]));
   const restaurantNameById = new Map(restaurants.map((r) => [r.id, r.name]));
 
@@ -51,39 +49,34 @@ export const OrderManager = () => {
         ]
       : []),
     { header: 'Status', accessor: 'status' },
-    { header: 'Price', render: (order) => `${order.price.toFixed(2)}` },
-    ...(menuReadApi
-      ? [
-          {
-            header: 'Menus',
-            render: (order: Order) => {
-              if (!order.menus?.length) return 'None';
-              return order.menus
-                .map((om) => {
-                  const name = menuNameById.get(om.menuId) ?? `#${om.menuId}`;
-                  return `${name} ×${om.quantity}`;
-                })
-                .join(', ');
-            },
-          },
-        ]
-      : []),
-    ...(foodReadApi
-      ? [
-          {
-            header: 'Foods',
-            render: (order: Order) => {
-              if (!order.foods?.length) return 'None';
-              return order.foods
-                .map((of) => {
-                  const name = foodNameById.get(of.foodId) ?? `#${of.foodId}`;
-                  return `${name} ×${of.quantity}`;
-                })
-                .join(', ');
-            },
-          },
-        ]
-      : []),
+    {
+      header: 'Price (USD)',
+      render: (order) =>
+        order.foods.reduce((sum, of) => sum + of.originalFoodPrice * of.quantity, 0) +
+        order.menus.reduce((sum, om) => sum + om.originalMenuPrice * om.quantity, 0),
+    },
+    {
+      header: 'Menus',
+      render: (order: Order) => {
+        if (!order.menus?.length) return 'None';
+        return order.menus
+          .map((om) => {
+            return `${om.originalMenuName} ×${om.quantity}`;
+          })
+          .join(', ');
+      },
+    },
+    {
+      header: 'Foods',
+      render: (order: Order) => {
+        if (!order.foods?.length) return 'None';
+        return order.foods
+          .map((of) => {
+            return `${of.originalFoodName} ×${of.quantity}`;
+          })
+          .join(', ');
+      },
+    },
     {
       header: 'Created At',
       render: (order) => new Date(order.createdAt).toLocaleString(),
@@ -229,13 +222,6 @@ export const OrderManager = () => {
       onSuccess: () => refetchOrders(),
     },
   ).mutateAsync;
-  const updateOrder = useRecommendedPerm('Permission:Order:Update')?.useMutation(
-    'put',
-    '/api/Order/{id}',
-    {
-      onSuccess: () => refetchOrders(),
-    },
-  ).mutateAsync;
   const deleteOrder = useRecommendedPerm('Permission:Order:Delete')?.useMutation(
     'delete',
     '/api/Order/{id}',
@@ -247,8 +233,6 @@ export const OrderManager = () => {
   const handleSubmit = async (values: Order, mode: 'create' | 'edit') => {
     if (mode === 'create' && createOrder) {
       await createOrder({ body: values });
-    } else if (mode === 'edit' && updateOrder) {
-      await updateOrder({ params: { path: { id: values.id } }, body: values });
     }
   };
 
@@ -262,7 +246,7 @@ export const OrderManager = () => {
       onSubmit={handleSubmit}
       onDelete={deleteOrder ? (o) => deleteOrder({ params: { path: { id: o.id } } }) : undefined}
       canCreate={!!createOrder}
-      canEdit={!!updateOrder}
+      canEdit={false}
       canDelete={!!deleteOrder}
     />
   );

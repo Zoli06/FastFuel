@@ -256,7 +256,7 @@
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
 			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="Price" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Price" type="DOUBLE" mandatory="y" />
 			<column name="Description" type="VARCHAR" length="600" />
 			<column name="ImageUrl" type="LONGTEXT" />
 			<index name="pk_foods" unique="PRIMARY_KEY" >
@@ -339,7 +339,7 @@
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
 			<column name="Name" type="VARCHAR" length="100" mandatory="y" />
-			<column name="Price" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="Price" type="DOUBLE" mandatory="y" />
 			<column name="Description" type="VARCHAR" length="600" />
 			<column name="ImageUrl" type="LONGTEXT" />
 			<index name="pk_menus" unique="PRIMARY_KEY" >
@@ -375,6 +375,8 @@
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
 			<column name="OrderId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="OriginalFoodName" type="VARCHAR" length="100" mandatory="y" />
+			<column name="OriginalFoodPrice" type="DOUBLE" mandatory="y" />
 			<column name="FoodId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="SpecialInstructions" type="VARCHAR" length="300" />
@@ -400,6 +402,8 @@
 				<identity><![CDATA[AUTO_INCREMENT]]></identity>
 			</column>
 			<column name="OrderId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="OriginalMenuName" type="VARCHAR" length="100" mandatory="y" />
+			<column name="OriginalMenuPrice" type="DOUBLE" mandatory="y" />
 			<column name="MenuId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="SpecialInstructions" type="VARCHAR" length="300" />
@@ -434,7 +438,6 @@
 			</column>
 			<column name="CompletedAt" type="DATETIME" length="6" />
 			<column name="UserId" type="INT" length="10" mandatory="y" unsigned="y" />
-			<column name="Price" type="INT" length="10" mandatory="y" unsigned="y" />
 			<index name="pk_orders" unique="PRIMARY_KEY" >
 				<column name="Id" />
 			</index>
@@ -554,9 +557,9 @@
 			<entity schema="fast_fuel" name="menufoods" color="FF00FF" x="1672" y="304" />
 			<entity schema="fast_fuel" name="menus" color="FF00FF" x="1805" y="95" />
 			<entity schema="fast_fuel" name="openinghours" color="FFFF00" x="494" y="1121" />
-			<entity schema="fast_fuel" name="orderfoods" color="00FF00" x="1406" y="551" />
-			<entity schema="fast_fuel" name="ordermenus" color="00FF00" x="1748" y="551" />
-			<entity schema="fast_fuel" name="orders" color="00FF00" x="1406" y="760" />
+			<entity schema="fast_fuel" name="orderfoods" color="00FF00" x="1330" y="532" />
+			<entity schema="fast_fuel" name="ordermenus" color="00FF00" x="1672" y="532" />
+			<entity schema="fast_fuel" name="orders" color="00FF00" x="1330" y="741" />
 			<entity schema="fast_fuel" name="restaurants" color="FFFF00" x="760" y="1045" />
 			<entity schema="fast_fuel" name="shifts" color="FFFF00" x="76" y="1273" />
 			<entity schema="fast_fuel" name="stationcategories" color="FFFF00" x="798" y="1349" />

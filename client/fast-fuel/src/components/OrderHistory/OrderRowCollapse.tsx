@@ -123,6 +123,9 @@ export const OrderRowCollapse = ({ order }: OrderRowCollapseProps) => {
                       <Text size="sm" lineClamp={1}>
                         {item.name}
                       </Text>
+                      <Text size="xs" c="dimmed">
+                        ${item.price.toFixed(2)} each
+                      </Text>
                       <Badge size="xs" color="#c92a2a" variant="outline">
                         ×{item.quantity}
                       </Badge>
