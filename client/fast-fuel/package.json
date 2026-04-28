@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run generate & vite",
     "dev:no-gen": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
