@@ -10,6 +10,7 @@ interface HeaderProps {
   authButton?: HeaderAuthButton;
   showHomeButton?: boolean;
   showAuthButton?: boolean;
+  titleSize?: string;
 }
 
 const authButtonConfig = {
@@ -55,9 +56,14 @@ export const Header = ({
       </Flex>
       <Center flex={1}>
         <Stack align="center" gap={0}>
-          <Text fz={{ base: '1em', xs: '1.2rem', sm: '1.5em' }} ta={'center'}>
-            {title}
-          </Text>
+          {title && (
+            <Text
+              fz={!currentUser ? { base: '3rem' } : { base: '1em', xs: '1.2rem', sm: '1.5em' }}
+              ta={'center'}
+            >
+              {title}
+            </Text>
+          )}
           {currentUser && (
             <Text size="sm" c="dimmed" ta={'center'}>
               {currentUser.name} ({currentUser.userType.toLowerCase()})
