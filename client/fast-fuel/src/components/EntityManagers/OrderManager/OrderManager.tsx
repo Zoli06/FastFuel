@@ -3,6 +3,7 @@ import type { Field } from '../../EntityManager/EntityEditor/types.ts';
 import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
+import type { components } from '../../../types/api-schema.generated.ts';
 
 export const OrderManager = () => {
   const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('OrderManager');
@@ -232,7 +233,7 @@ export const OrderManager = () => {
 
   const handleSubmit = async (values: Order, mode: 'create' | 'edit') => {
     if (mode === 'create' && createOrder) {
-      await createOrder({ body: values });
+      await createOrder({ body: values as components['schemas']['OrderRequestDto'] });
     }
   };
 

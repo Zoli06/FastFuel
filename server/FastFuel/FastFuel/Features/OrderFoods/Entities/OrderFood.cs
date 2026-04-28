@@ -10,8 +10,8 @@ public class OrderFood
     public virtual Order Order { get; set; } = null!;
     public string OriginalFoodName { get; set; } = string.Empty;
     public double OriginalFoodPrice { get; set; }
-    public uint FoodId { get; set; }
-    public virtual Food Food { get; set; } = null!;
+    public uint? FoodId { get; set; }
+    public virtual Food? Food { get; set; } = null!;
 
     public uint Quantity { get; set; }
     public string? SpecialInstructions { get; set; }

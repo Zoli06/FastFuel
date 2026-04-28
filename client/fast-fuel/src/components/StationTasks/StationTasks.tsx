@@ -105,7 +105,7 @@ const OrderCard = ({
             </Text>
             <Stack gap={4}>
               {order.menus.map((menu) => (
-                <Box key={menu.id}>
+                <Box key={menu.menuId}>
                   <Group justify="space-between">
                     <Text size="sm" fw={500}>
                       {menu.quantity}× {menu.name}
@@ -119,7 +119,7 @@ const OrderCard = ({
                   {menu.foods.length > 0 && (
                     <Stack gap={2} ml="sm" mt={2}>
                       {menu.foods.map((food) => (
-                        <Box key={food.id}>
+                        <Box key={food.foodId}>
                           <Text size="xs" c="dimmed">
                             {food.quantity}× {food.name}
                           </Text>
@@ -153,7 +153,7 @@ const OrderCard = ({
             </Text>
             <Stack gap={4}>
               {order.foods.map((food) => (
-                <Box key={food.id}>
+                <Box key={food.foodId}>
                   <Group justify="space-between">
                     <Text size="sm" fw={500}>
                       {food.quantity}× {food.name}
@@ -168,7 +168,7 @@ const OrderCard = ({
                     <Text size="xs" c="grape.6" ml="sm">
                       {food.ingredients
                         .filter((i) => i.isRelevant)
-                        .map((i) => `${i.quantity}${i.unit} ${i.name}`)
+                        .map((i) => `${i.quantity} ${i.unit} ${i.name}`)
                         .join(', ')}
                     </Text>
                   )}

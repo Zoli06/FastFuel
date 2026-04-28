@@ -5,7 +5,7 @@ public record StationTaskFood
     /// <summary>
     /// The unique identifier.
     /// </summary>
-    public required uint Id { get; init; }
+    public required uint? FoodId { get; init; }
     /// <summary>
     /// The displayed name.
     /// </summary>

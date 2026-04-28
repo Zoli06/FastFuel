@@ -377,7 +377,7 @@
 			<column name="OrderId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="OriginalFoodName" type="VARCHAR" length="100" mandatory="y" />
 			<column name="OriginalFoodPrice" type="DOUBLE" mandatory="y" />
-			<column name="FoodId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="FoodId" type="INT" length="10" unsigned="y" />
 			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="SpecialInstructions" type="VARCHAR" length="300" />
 			<index name="pk_orderfoods" unique="PRIMARY_KEY" >
@@ -389,7 +389,7 @@
 			<index name="IX_OrderFoods_OrderId" unique="NORMAL" >
 				<column name="OrderId" />
 			</index>
-			<fk name="FK_OrderFoods_Foods_FoodId" to_schema="fast_fuel" to_table="foods" delete_action="cascade" options="" >
+			<fk name="FK_OrderFoods_Foods_FoodId" to_schema="fast_fuel" to_table="foods" delete_action="setNull" options="" >
 				<fk_column name="FoodId" pk="Id" />
 			</fk>
 			<fk name="FK_OrderFoods_Orders_OrderId" to_schema="fast_fuel" to_table="orders" delete_action="cascade" options="" >
@@ -404,7 +404,7 @@
 			<column name="OrderId" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="OriginalMenuName" type="VARCHAR" length="100" mandatory="y" />
 			<column name="OriginalMenuPrice" type="DOUBLE" mandatory="y" />
-			<column name="MenuId" type="INT" length="10" mandatory="y" unsigned="y" />
+			<column name="MenuId" type="INT" length="10" unsigned="y" />
 			<column name="Quantity" type="INT" length="10" mandatory="y" unsigned="y" />
 			<column name="SpecialInstructions" type="VARCHAR" length="300" />
 			<index name="pk_ordermenus" unique="PRIMARY_KEY" >
@@ -416,7 +416,7 @@
 			<index name="IX_OrderMenus_OrderId" unique="NORMAL" >
 				<column name="OrderId" />
 			</index>
-			<fk name="FK_OrderMenus_Menus_MenuId" to_schema="fast_fuel" to_table="menus" delete_action="cascade" options="" >
+			<fk name="FK_OrderMenus_Menus_MenuId" to_schema="fast_fuel" to_table="menus" delete_action="setNull" options="" >
 				<fk_column name="MenuId" pk="Id" />
 			</fk>
 			<fk name="FK_OrderMenus_Orders_OrderId" to_schema="fast_fuel" to_table="orders" delete_action="cascade" options="" >
@@ -539,7 +539,7 @@
 			<entity schema="fast_fuel" name="admins" color="CC6633" x="57" y="817" />
 			<entity schema="fast_fuel" name="allergies" color="FF00FF" x="1007" y="95" />
 			<entity schema="fast_fuel" name="allergyingredient" color="FF00FF" x="1102" y="304" />
-			<entity schema="fast_fuel" name="aspnetroleclaims" color="00FFFF" x="57" y="323" />
+			<entity schema="fast_fuel" name="aspnetroleclaims" color="00FFFF" x="57" y="380" />
 			<entity schema="fast_fuel" name="aspnetroles" color="00FFFF" x="57" y="95" />
 			<entity schema="fast_fuel" name="aspnetuserclaims" color="00FFFF" x="361" y="361" />
 			<entity schema="fast_fuel" name="aspnetuserlogins" color="00FFFF" x="361" y="209" />
@@ -552,18 +552,18 @@
 			<entity schema="fast_fuel" name="foodingredients" color="FF00FF" x="1368" y="304" />
 			<entity schema="fast_fuel" name="foods" color="FF00FF" x="1520" y="95" />
 			<entity schema="fast_fuel" name="ingredients" color="FF00FF" x="1216" y="95" />
-			<entity schema="fast_fuel" name="ingredientstationcategory" color="FFFF00" x="1083" y="1064" />
+			<entity schema="fast_fuel" name="ingredientstationcategory" color="FFFF00" x="1083" y="1121" />
 			<entity schema="fast_fuel" name="machines" color="CC6633" x="494" y="817" />
 			<entity schema="fast_fuel" name="menufoods" color="FF00FF" x="1672" y="304" />
 			<entity schema="fast_fuel" name="menus" color="FF00FF" x="1805" y="95" />
 			<entity schema="fast_fuel" name="openinghours" color="FFFF00" x="494" y="1121" />
-			<entity schema="fast_fuel" name="orderfoods" color="00FF00" x="1330" y="532" />
+			<entity schema="fast_fuel" name="orderfoods" color="00FF00" x="1406" y="532" />
 			<entity schema="fast_fuel" name="ordermenus" color="00FF00" x="1672" y="532" />
-			<entity schema="fast_fuel" name="orders" color="00FF00" x="1330" y="741" />
+			<entity schema="fast_fuel" name="orders" color="00FF00" x="1444" y="798" />
 			<entity schema="fast_fuel" name="restaurants" color="FFFF00" x="760" y="1045" />
 			<entity schema="fast_fuel" name="shifts" color="FFFF00" x="76" y="1273" />
 			<entity schema="fast_fuel" name="stationcategories" color="FFFF00" x="798" y="1349" />
-			<entity schema="fast_fuel" name="stations" color="FFFF00" x="1083" y="1292" />
+			<entity schema="fast_fuel" name="stations" color="FFFF00" x="1102" y="1368" />
 			<group name="Orders" color="00FF00" >
 				<entity schema="fast_fuel" name="orderfoods" />
 				<entity schema="fast_fuel" name="ordermenus" />

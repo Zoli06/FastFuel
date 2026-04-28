@@ -28,8 +28,14 @@ public class StationTaskMapper : IStationTasksMapper
             OrderNumber = order.OrderNumber,
             CreatedAt = order.CreatedAt,
             Foods = order.Foods.ConvertAll(f => ToDto(f, stationCategory)),
-            Menus = order.Menus.ConvertAll(m => ToDto(m, stationCategory,
-                relevantMenuFoodsByMenuId.GetValueOrDefault(m.MenuId, []))),
+            Menus = order.Menus.ConvertAll(m =>
+            {
+                var relevantMenuFoods = m.MenuId.HasValue &&
+                                        relevantMenuFoodsByMenuId.TryGetValue(m.MenuId.Value, out var foods)
+                    ? foods
+                    : new List<MenuFood>();
+                return ToDto(m, stationCategory, relevantMenuFoods);
+            }),
             Status = order.Status
         };
     }
@@ -38,11 +44,11 @@ public class StationTaskMapper : IStationTasksMapper
     {
         return new StationTaskFood
         {
-            Id = orderFood.Food.Id,
-            Name = orderFood.Food.Name,
+            FoodId = orderFood.FoodId,
+            Name = orderFood.OriginalFoodName,
             Quantity = orderFood.Quantity,
             SpecialInstructions = orderFood.SpecialInstructions,
-            Ingredients = orderFood.Food.FoodIngredients.ConvertAll(fi => ToDto(fi, stationCategory))
+            Ingredients = orderFood.Food?.FoodIngredients.ConvertAll(fi => ToDto(fi, stationCategory)) ?? []
         };
     }
 
@@ -51,8 +57,8 @@ public class StationTaskMapper : IStationTasksMapper
     {
         return new StationTaskMenu
         {
-            Id = orderMenu.Menu.Id,
-            Name = orderMenu.Menu.Name,
+            MenuId = orderMenu.MenuId,
+            Name = orderMenu.OriginalMenuName,
             Quantity = orderMenu.Quantity,
             SpecialInstructions = orderMenu.SpecialInstructions,
             Foods = relevantMenuFoods.ConvertAll(mf => ToDto(mf, stationCategory))
@@ -63,7 +69,7 @@ public class StationTaskMapper : IStationTasksMapper
     {
         return new StationTaskFood
         {
-            Id = menuFood.Food.Id,
+            FoodId = menuFood.Food.Id,
             Name = menuFood.Food.Name,
             Quantity = menuFood.Quantity,
             SpecialInstructions = null,

@@ -4922,15 +4922,15 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "id",
           "name",
           "quantity",
           "foods"
         ],
         "properties": {
-          "id": {
+          "menuId": {
             "type": "integer",
-            "description": "The unique identifier."
+            "description": "The unique identifier.",
+            "nullable": true
           },
           "name": {
             "type": "string",
@@ -4958,15 +4958,15 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "id",
           "name",
           "quantity",
           "ingredients"
         ],
         "properties": {
-          "id": {
+          "foodId": {
             "type": "integer",
-            "description": "The unique identifier."
+            "description": "The unique identifier.",
+            "nullable": true
           },
           "name": {
             "type": "string",
@@ -5597,7 +5597,6 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "menuId",
           "originalMenuName",
           "originalMenuPrice",
           "quantity"
@@ -5605,7 +5604,8 @@
         "properties": {
           "menuId": {
             "type": "integer",
-            "description": "The menu identifier.\n            "
+            "description": "The menu identifier.\n            ",
+            "nullable": true
           },
           "originalMenuName": {
             "type": "string",
@@ -5631,7 +5631,6 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "foodId",
           "originalFoodName",
           "originalFoodPrice",
           "quantity"
@@ -5639,7 +5638,8 @@
         "properties": {
           "foodId": {
             "type": "integer",
-            "description": "The food identifier.\n            "
+            "description": "The food identifier.\n            ",
+            "nullable": true
           },
           "originalFoodName": {
             "type": "string",

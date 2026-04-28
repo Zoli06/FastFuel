@@ -52,14 +52,14 @@ export function sortOrders(orders: OrderSummary[], key: SortKey): OrderSummary[]
 
 export function resolveItems(
   foods: {
-    foodId: number;
+    foodId?: number | null;
     quantity: number;
     specialInstructions?: string | null;
     originalFoodPrice: number;
     originalFoodName: string;
   }[],
   menus: {
-    menuId: number;
+    menuId?: number | null;
     quantity: number;
     specialInstructions?: string | null;
     originalMenuPrice: number;
