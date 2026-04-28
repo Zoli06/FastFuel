@@ -5,7 +5,7 @@ public record OrderFoodResponseDto
     /// <summary>
     ///     The food identifier.
     /// </summary>
-    public required uint FoodId { get; init; }
+    public required uint? FoodId { get; init; }
 
     /// <summary>
     ///     The original food name at the time of order placement.

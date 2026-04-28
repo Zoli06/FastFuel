@@ -5,7 +5,7 @@ public record OrderMenuResponseDto
     /// <summary>
     ///     The menu identifier.
     /// </summary>
-    public required uint MenuId { get; init; }
+    public required uint? MenuId { get; init; }
 
     /// <summary>
     ///     The original menu name at the time of order placement.

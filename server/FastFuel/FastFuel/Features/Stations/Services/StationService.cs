@@ -83,7 +83,8 @@ public class StationService(
                 f.Order.RestaurantId == restaurantId &&
                 (f.Order.Status == OrderStatus.Pending || f.Order.Status == OrderStatus.InProgress ||
                  f.Order.Status == OrderStatus.Ready) &&
-                relevantFoodIds.Contains(f.FoodId))
+                f.FoodId.HasValue &&
+                relevantFoodIds.Contains(f.FoodId.Value))
             .ToListAsync(cancellationToken);
     }
 
@@ -95,7 +96,8 @@ public class StationService(
                 m.Order.RestaurantId == restaurantId &&
                 (m.Order.Status == OrderStatus.Pending || m.Order.Status == OrderStatus.InProgress ||
                  m.Order.Status == OrderStatus.Ready) &&
-                relevantMenuIds.Contains(m.MenuId))
+                m.MenuId.HasValue &&
+                relevantMenuIds.Contains(m.MenuId.Value))
             .ToListAsync(cancellationToken);
     }
 

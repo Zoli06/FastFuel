@@ -164,7 +164,9 @@ public class OrderService(
 
             foreach (var food in entity.Foods)
             {
-                var originalFood = foodService.GetByIdAsync(food.FoodId, null, cancellationToken).Result
+                if (!food.FoodId.HasValue)
+                    continue;
+                var originalFood = foodService.GetByIdAsync(food.FoodId.Value, null, cancellationToken).Result
                                    ?? throw new ResourceNotFoundAppException(nameof(Food), food.FoodId);
                 food.OriginalFoodName = originalFood.Name;
                 food.OriginalFoodPrice = originalFood.Price;
@@ -172,7 +174,9 @@ public class OrderService(
 
             foreach (var menu in entity.Menus)
             {
-                var originalMenu = menuService.GetByIdAsync(menu.MenuId, null, cancellationToken).Result
+                if (!menu.MenuId.HasValue)
+                    continue;
+                var originalMenu = menuService.GetByIdAsync(menu.MenuId.Value, null, cancellationToken).Result
                                    ?? throw new ResourceNotFoundAppException(nameof(Menu), menu.MenuId);
                 menu.OriginalMenuName = originalMenu.Name;
                 menu.OriginalMenuPrice = originalMenu.Price;

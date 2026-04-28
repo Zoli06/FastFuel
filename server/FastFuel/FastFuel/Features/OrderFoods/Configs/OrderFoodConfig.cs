@@ -10,5 +10,10 @@ public class OrderFoodConfig : IEntityTypeConfiguration<OrderFood>
     {
         builder.Property(of => of.SpecialInstructions).HasMaxLength(300);
         builder.Property(of => of.OriginalFoodName).HasMaxLength(100);
+
+        builder.HasOne(om => om.Food)
+            .WithMany()
+            .HasForeignKey(om => om.FoodId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

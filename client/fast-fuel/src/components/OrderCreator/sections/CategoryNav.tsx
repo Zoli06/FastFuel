@@ -16,7 +16,6 @@ export const CategoryNav = ({ activeCategory, onCategoryChange }: CategoryNavPro
         width: 100,
         minHeight: '100vh',
         background: 'var(--mantine-color-dark-8, #1a1a1a)',
-        borderRight: '2px solid beige',
         position: 'sticky',
         top: 0,
         flexShrink: 0,

@@ -5,7 +5,7 @@ public record StationTaskMenu
     /// <summary>
     /// The unique identifier.
     /// </summary>
-    public required uint Id { get; init; }
+    public required uint? MenuId { get; init; }
     /// <summary>
     /// The displayed name.
     /// </summary>

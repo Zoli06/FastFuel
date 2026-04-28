@@ -24,5 +24,5 @@ export interface OrderSummaryItem {
   price: number;
   note?: string;
   type: 'food' | 'menu';
-  itemId: number;
+  itemId?: number | null;
 }
