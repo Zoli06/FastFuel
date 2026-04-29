@@ -168,10 +168,16 @@ export const MenuManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Menu, mode: 'create' | 'edit') => {
+    const fallbackFoods =
+      mode === 'edit' ? (menus.find((menu) => menu.id === values.id)?.foods ?? []) : [];
+    const payload = foodReadApi
+      ? { ...values, foods: values.foods ?? [] }
+      : { ...values, foods: fallbackFoods };
+
     if (mode === 'create' && createMenu) {
-      await createMenu({ body: values });
+      await createMenu({ body: payload });
     } else if (mode === 'edit' && updateMenu) {
-      await updateMenu({ params: { path: { id: values.id } }, body: values });
+      await updateMenu({ params: { path: { id: values.id } }, body: payload });
     }
   };
 

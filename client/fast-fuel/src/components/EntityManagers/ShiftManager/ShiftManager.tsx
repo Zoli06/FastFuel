@@ -8,11 +8,10 @@ import { getDuration, normalizeDateTime, parseAsUtcDate } from '../../../lib/tim
 
 export const ShiftManager = () => {
   const { useNecessaryPerm, useRecommendedPerm } = useApi('ShiftManager');
-  const employeeReadApi = useRecommendedPerm('Permission:Employee:Read');
 
   const [{ data: employees = [] }, { data: shifts = [], refetch: refetchShifts }] =
     useConditionalSuspenseQueries([
-      employeeReadApi?.queryOptions('get', '/api/Employee'),
+      useNecessaryPerm('Permission:Employee:Read').queryOptions('get', '/api/Employee'),
       useNecessaryPerm('Permission:Shift:Read').queryOptions('get', '/api/Shift'),
     ]);
 
@@ -28,15 +27,11 @@ export const ShiftManager = () => {
   }));
 
   const tableColumns: ColumnDefinition<Shift>[] = [
-    ...(employeeReadApi
-      ? [
-          {
-            header: 'Employee',
-            render: (s: Shift) =>
-              employeeOptions.find((o) => o.value === s.employeeId)?.label ?? `#${s.employeeId}`,
-          },
-        ]
-      : []),
+    {
+      header: 'Employee',
+      render: (s: Shift) =>
+        employeeOptions.find((o) => o.value === s.employeeId)?.label ?? `#${s.employeeId}`,
+    },
     {
       header: 'Start',
       render: (s) => parseAsUtcDate(s.startTime).toLocaleString(),
@@ -55,23 +50,19 @@ export const ShiftManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(employeeReadApi
-      ? [
-          {
-            type: 'numericSelect',
-            key: 'employeeId',
-            label: 'Employee',
-            initialValue: null,
-            nullable: 'never',
-            required: 'always',
-            fieldProps: {
-              data: employeeOptions,
-              placeholder: 'Select employee...',
-              searchable: true,
-            },
-          } satisfies Field,
-        ]
-      : []),
+    {
+      type: 'numericSelect',
+      key: 'employeeId',
+      label: 'Employee',
+      initialValue: null,
+      nullable: 'never',
+      required: 'always',
+      fieldProps: {
+        data: employeeOptions,
+        placeholder: 'Select employee...',
+        searchable: true,
+      },
+    },
     {
       type: 'dateTime',
       key: 'startTime',

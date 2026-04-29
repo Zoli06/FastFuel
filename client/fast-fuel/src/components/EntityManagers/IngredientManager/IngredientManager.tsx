@@ -122,10 +122,22 @@ export const IngredientManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Ingredient, mode: 'create' | 'edit') => {
+    const fallbackIngredient =
+      mode === 'edit' ? ingredients.find((ingredient) => ingredient.id === values.id) : undefined;
+    const payload = {
+      ...values,
+      allergyIds: allergyReadApi
+        ? (values.allergyIds ?? [])
+        : (fallbackIngredient?.allergyIds ?? []),
+      stationCategoryIds: stationCategoryReadApi
+        ? (values.stationCategoryIds ?? [])
+        : (fallbackIngredient?.stationCategoryIds ?? []),
+    };
+
     if (mode === 'create' && createIngredient) {
-      await createIngredient({ body: values });
+      await createIngredient({ body: payload });
     } else if (mode === 'edit' && updateIngredient) {
-      await updateIngredient({ params: { path: { id: values.id } }, body: values });
+      await updateIngredient({ params: { path: { id: values.id } }, body: payload });
     }
   };
 
