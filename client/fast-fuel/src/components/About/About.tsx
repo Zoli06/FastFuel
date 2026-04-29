@@ -37,7 +37,7 @@ export const About = () => {
           <Title order={3}>What we do</Title>
           <Text>
             The system brings customer ordering and internal restaurant workflows under the same
-            umbrela so teams can move from order intake to preparation and status tracking with
+            umbrella so teams can move from order intake to preparation and status tracking with
             smoothness.
           </Text>
         </Stack>
