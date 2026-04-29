@@ -12,6 +12,8 @@ using FastFuel.Features.OrderMenus.DTOs;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Services;
 using FastFuel.Features.Restaurants.DTOs;
+using FastFuel.Features.Shifts.DTOs;
+using FastFuel.Features.Shifts.Services;
 using FastFuel.Features.StationCategories.DTOs;
 using FastFuel.Features.Stations.DTOs;
 using FastFuel.Features.Stations.Services;
@@ -49,6 +51,8 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
     private readonly ICrudService<RestaurantRequestDto, RestaurantResponseDto> _restaurantService =
         serviceProvider.GetRequiredService<ICrudService<RestaurantRequestDto, RestaurantResponseDto>>();
+
+    private readonly IShiftService _shiftService = serviceProvider.GetRequiredService<IShiftService>();
 
     private readonly ICrudService<StationCategoryRequestDto, StationCategoryResponseDto> _stationCategoryService =
         serviceProvider.GetRequiredService<ICrudService<StationCategoryRequestDto, StationCategoryResponseDto>>();
@@ -250,7 +254,8 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
         });
 
         await SeedAdmin();
-        await SeedEmployee(restaurant.Id);
+        var employeeId = await SeedEmployee(restaurant.Id);
+        await SeedShifts(employeeId);
         await SeedMachine(restaurant.Id);
         await SeedShiftManager(restaurant.Id);
         var customerId = await SeedCustomer();
@@ -364,5 +369,49 @@ public class DatabaseSeeder(IServiceProvider serviceProvider)
 
         var shiftManager = await _employeeService.CreateAsync(shiftManagerRequestDto);
         return shiftManager.Id;
+    }
+
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task SeedShifts(uint employeeId)
+    {
+        // Create shifts for the employee for a few days in June 2026
+        var shiftsToCreate = new[]
+        {
+            new ShiftRequestDto
+            {
+                EmployeeId = employeeId,
+                StartTime = new DateTime(2026, 6, 1, 9, 0, 0),
+                EndTime = new DateTime(2026, 6, 1, 17, 0, 0)
+            },
+            new ShiftRequestDto
+            {
+                EmployeeId = employeeId,
+                StartTime = new DateTime(2026, 6, 2, 10, 0, 0),
+                EndTime = new DateTime(2026, 6, 2, 18, 0, 0)
+            },
+            new ShiftRequestDto
+            {
+                EmployeeId = employeeId,
+                StartTime = new DateTime(2026, 6, 5, 8, 0, 0),
+                EndTime = new DateTime(2026, 6, 5, 16, 0, 0)
+            },
+            new ShiftRequestDto
+            {
+                EmployeeId = employeeId,
+                StartTime = new DateTime(2026, 6, 8, 14, 0, 0),
+                EndTime = new DateTime(2026, 6, 8, 22, 0, 0)
+            },
+            new ShiftRequestDto
+            {
+                EmployeeId = employeeId,
+                StartTime = new DateTime(2026, 6, 15, 9, 0, 0),
+                EndTime = new DateTime(2026, 6, 15, 17, 0, 0)
+            }
+        };
+
+        foreach (var shiftRequest in shiftsToCreate)
+        {
+            await _shiftService.CreateAsync(shiftRequest);
+        }
     }
 }

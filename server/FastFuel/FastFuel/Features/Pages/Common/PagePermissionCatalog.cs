@@ -149,12 +149,11 @@ public static class PagePermissionCatalog
                     ),
                 [Page.ShiftManager] =
                     new(
-                        ["Permission:Shift:Read"],
+                        ["Permission:Shift:Read", "Permission:Employee:Read"],
                         [
                             "Permission:Shift:Create",
                             "Permission:Shift:Update",
-                            "Permission:Shift:Delete",
-                            "Permission:Employee:Read"
+                            "Permission:Shift:Delete"
                         ],
                         [],
                         []

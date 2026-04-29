@@ -143,21 +143,32 @@ export const EmployeeManager = () => {
     },
   ).mutate;
 
-  const toRequestDto = (values: EmployeeFormValues) => ({
+  const toRequestDto = (values: EmployeeFormValues, stationCategoryIds: number[]) => ({
     name: values.name,
     email: values.email,
     userName: values.userName,
     password: values.password ?? null,
     shiftIds: values.shiftIds ?? [],
-    stationCategoryIds: values.stationCategoryIds,
+    stationCategoryIds,
     worksAtRestaurantId: values.worksAtRestaurantId,
   });
 
   const handleSubmit = async (values: EmployeeFormValues, mode: 'create' | 'edit') => {
+    const fallbackStationCategoryIds =
+      mode === 'edit'
+        ? (employees.find((employee) => employee.id === values.id)?.stationCategoryIds ?? [])
+        : [];
+    const stationCategoryIds = stationCategoryReadApi
+      ? (values.stationCategoryIds ?? [])
+      : fallbackStationCategoryIds;
+
     if (mode === 'create' && createEmployee) {
-      await createEmployee({ body: toRequestDto(values) });
+      await createEmployee({ body: toRequestDto(values, stationCategoryIds) });
     } else if (mode === 'edit' && updateEmployee) {
-      await updateEmployee({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+      await updateEmployee({
+        params: { path: { id: values.id } },
+        body: toRequestDto(values, stationCategoryIds),
+      });
     }
   };
 

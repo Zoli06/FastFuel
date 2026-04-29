@@ -179,10 +179,16 @@ export const FoodManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Food, mode: 'create' | 'edit') => {
+    const fallbackIngredients =
+      mode === 'edit' ? (foods.find((food) => food.id === values.id)?.ingredients ?? []) : [];
+    const payload = ingredientReadApi
+      ? { ...values, ingredients: values.ingredients ?? [] }
+      : { ...values, ingredients: fallbackIngredients };
+
     if (mode === 'create' && createFood) {
-      await createFood({ body: values });
+      await createFood({ body: payload });
     } else if (mode === 'edit' && updateFood) {
-      await updateFood({ params: { path: { id: values.id } }, body: values });
+      await updateFood({ params: { path: { id: values.id } }, body: payload });
     }
   };
 

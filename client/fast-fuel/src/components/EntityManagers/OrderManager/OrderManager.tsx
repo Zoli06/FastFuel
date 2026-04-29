@@ -232,8 +232,14 @@ export const OrderManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Order, mode: 'create' | 'edit') => {
+    const payload = {
+      ...values,
+      menus: menuReadApi ? (values.menus ?? []) : [],
+      foods: foodReadApi ? (values.foods ?? []) : [],
+    } as components['schemas']['OrderRequestDto'];
+
     if (mode === 'create' && createOrder) {
-      await createOrder({ body: values as components['schemas']['OrderRequestDto'] });
+      await createOrder({ body: payload });
     }
   };
 
