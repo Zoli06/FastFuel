@@ -90,9 +90,13 @@ export const AllergyManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Allergy, mode: 'create' | 'edit') => {
+    const fallbackIngredientIds =
+      mode === 'edit'
+        ? (allergies.find((allergy) => allergy.id === values.id)?.ingredientIds ?? [])
+        : [];
     const payload = ingredientReadApi
       ? { ...values, ingredientIds: values.ingredientIds ?? [] }
-      : { ...values, ingredientIds: [] };
+      : { ...values, ingredientIds: fallbackIngredientIds };
 
     if (mode === 'create' && createAllergy) {
       await createAllergy({ body: payload });

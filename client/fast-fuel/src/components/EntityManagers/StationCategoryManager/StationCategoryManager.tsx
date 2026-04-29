@@ -86,9 +86,13 @@ export const StationCategoryManager = () => {
   }).mutate;
 
   const handleSubmit = async (values: StationCategory, mode: 'create' | 'edit') => {
+    const fallbackIngredientIds =
+      mode === 'edit'
+        ? (stationCategories.find((category) => category.id === values.id)?.ingredientIds ?? [])
+        : [];
     const payload = ingredientReadApi
       ? { ...values, ingredientIds: values.ingredientIds ?? [] }
-      : { ...values, ingredientIds: [] };
+      : { ...values, ingredientIds: fallbackIngredientIds };
 
     if (mode === 'create' && createStationCategory) {
       await createStationCategory({ body: payload });

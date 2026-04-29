@@ -121,14 +121,18 @@ export const IngredientManager = () => {
     },
   ).mutate;
 
-  const normalizePayload = (values: Ingredient) => ({
-    ...values,
-    allergyIds: allergyReadApi ? (values.allergyIds ?? []) : [],
-    stationCategoryIds: stationCategoryReadApi ? (values.stationCategoryIds ?? []) : [],
-  });
-
   const handleSubmit = async (values: Ingredient, mode: 'create' | 'edit') => {
-    const payload = normalizePayload(values);
+    const fallbackIngredient =
+      mode === 'edit' ? ingredients.find((ingredient) => ingredient.id === values.id) : undefined;
+    const payload = {
+      ...values,
+      allergyIds: allergyReadApi
+        ? (values.allergyIds ?? [])
+        : (fallbackIngredient?.allergyIds ?? []),
+      stationCategoryIds: stationCategoryReadApi
+        ? (values.stationCategoryIds ?? [])
+        : (fallbackIngredient?.stationCategoryIds ?? []),
+    };
 
     if (mode === 'create' && createIngredient) {
       await createIngredient({ body: payload });

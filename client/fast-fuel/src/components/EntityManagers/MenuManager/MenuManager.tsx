@@ -168,9 +168,11 @@ export const MenuManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Menu, mode: 'create' | 'edit') => {
+    const fallbackFoods =
+      mode === 'edit' ? (menus.find((menu) => menu.id === values.id)?.foods ?? []) : [];
     const payload = foodReadApi
       ? { ...values, foods: values.foods ?? [] }
-      : { ...values, foods: [] };
+      : { ...values, foods: fallbackFoods };
 
     if (mode === 'create' && createMenu) {
       await createMenu({ body: payload });
