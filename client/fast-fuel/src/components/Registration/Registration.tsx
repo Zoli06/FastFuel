@@ -1,9 +1,10 @@
 import { Button, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
 import { Paper } from '../common/Paper/Paper';
-import { apiClient, triggerPermissionsRefresh } from '../../lib/api-client';
-import type { components } from '../../types/api';
+import { useApi } from '../../lib/api.ts';
+import type { components } from '../../types/api-schema.generated.ts';
 import { useNavigate } from 'react-router-dom';
+import { validatePasswordComplexity } from '../../lib/password-validation.ts';
 
 type RegisterFormValues = components['schemas']['CustomerRequestDto'] & {
   password: string;
@@ -12,6 +13,7 @@ type RegisterFormValues = components['schemas']['CustomerRequestDto'] & {
 
 export const Register = () => {
   const navigate = useNavigate();
+  const { useNoPerm, invalidateApiCache } = useApi(null);
 
   const form = useForm<RegisterFormValues>({
     mode: 'uncontrolled',
@@ -19,22 +21,25 @@ export const Register = () => {
       name: '',
       email: '',
       userName: '',
-      themeId: null,
       password: '',
       confirmPassword: '',
     } as RegisterFormValues,
     validate: {
-      confirmPassword: (value, values) =>
-        value !== values.password ? 'Passwords do not match' : null,
+      password: (value) => validatePasswordComplexity(value) || null,
+      confirmPassword: (value, values) => {
+        const passwordError = validatePasswordComplexity(value);
+        if (passwordError) return passwordError;
+        return value !== values.password ? 'Passwords do not match' : null;
+      },
     },
   });
 
-  const { mutateAsync: register, isPending: isRegistering } = apiClient.useMutation(
+  const { mutateAsync: register, isPending: isRegistering } = useNoPerm().useMutation(
     'post',
     '/api/Customer',
   );
 
-  const { mutateAsync: login, isPending: isLoggingIn } = apiClient.useMutation(
+  const { mutateAsync: login, isPending: isLoggingIn } = useNoPerm().useMutation(
     'post',
     '/api/Auth/login',
   );
@@ -45,7 +50,6 @@ export const Register = () => {
         name: values.name,
         email: values.email,
         userName: values.userName,
-        themeId: values.themeId,
         password: values.password,
       },
     });
@@ -57,8 +61,8 @@ export const Register = () => {
       },
       params: { query: { useCookies: true, useSessionCookies: true } },
     });
-    triggerPermissionsRefresh();
-    navigate('/', { replace: true });
+    invalidateApiCache();
+    navigate('/home', { replace: true });
     form.reset();
   };
 

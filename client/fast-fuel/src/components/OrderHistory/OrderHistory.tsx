@@ -2,30 +2,27 @@ import { useState } from 'react';
 import { Box, Group, Stack, Text } from '@mantine/core';
 import { IconShoppingBag } from '@tabler/icons-react';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { apiClient } from '../../lib/api-client.ts';
+import { useApi } from '../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
 import { OrderHistoryFilters } from './OrderHistoryFilter.tsx';
 import { OrderHistoryList } from './OrderHistoryList.tsx';
-import { sortOrders, resolveItems } from './helpers.ts';
+import { resolveItems, sortOrders } from './helpers.ts';
 import type { OrderStatus, OrderSummary, SortKey } from './types.ts';
 
 export const OrderHistory = () => {
+  const { useNoPerm } = useApi('OrderHistory');
+
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date-desc');
   const { data: rawOrders = [] } = useSuspenseQuery(
-    apiClient.queryOptions('get', '/api/Order/my' as '/api/Order'),
+    useNoPerm().queryOptions('get', '/api/Order/my'),
   );
 
-  const [{ data: foods = [] }, { data: menus = [] }, { data: restaurants = [] }] =
-    useConditionalSuspenseQueries([
-      apiClient.queryOptions('get', '/api/Food'),
-      apiClient.queryOptions('get', '/api/Menu'),
-      apiClient.queryOptions('get', '/api/Restaurant'),
-    ]);
+  const [{ data: restaurants = [] }] = useConditionalSuspenseQueries([
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
+  ]);
 
-  const foodMap = new Map(foods.map((f) => [f.id, f]));
-  const menuMap = new Map(menus.map((m) => [m.id, m]));
   const restaurantMap = new Map(restaurants.map((r) => [r.id, r]));
 
   const mapped: OrderSummary[] = rawOrders.map((o) => ({
@@ -34,9 +31,11 @@ export const OrderHistory = () => {
     restaurantId: o.restaurantId,
     restaurantName: restaurantMap.get(o.restaurantId)?.name ?? `Restaurant #${o.restaurantId}`,
     status: o.status as OrderStatus,
-    totalPrice: o.price,
+    totalPrice:
+      o.foods.reduce((sum, f) => sum + f.originalFoodPrice * f.quantity, 0) +
+      o.menus.reduce((sum, m) => sum + m.originalMenuPrice * m.quantity, 0),
     placedAt: o.createdAt,
-    items: resolveItems(o.foods ?? [], o.menus ?? [], foodMap, menuMap),
+    items: resolveItems(o.foods ?? [], o.menus ?? []),
   }));
 
   const filtered = mapped
@@ -57,7 +56,7 @@ export const OrderHistory = () => {
             width: 42,
             height: 42,
             borderRadius: 10,
-            background: 'var(--mantine-color-orange-6)',
+            background: '#c92a2a',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -70,7 +69,7 @@ export const OrderHistory = () => {
             fw={800}
             size="xl"
             style={{
-              color: 'var(--mantine-color-orange-5)',
+              color: '#c92a2a',
               textTransform: 'uppercase',
               letterSpacing: 1,
               lineHeight: 1,

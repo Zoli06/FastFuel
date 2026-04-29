@@ -4,21 +4,31 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { OrderDetailModal } from './modals/OrderDetailModal.tsx';
 import { CategoryNav } from './sections/CategoryNav.tsx';
+import { CategoryPills } from './sections/CategoryPills.tsx';
 import { CartPanel } from './sections/CartPanel.tsx';
 import { ItemGrid } from './sections/ItemGrid.tsx';
 import { OrderCatalogHeader } from './sections/OrderCatalogHeader.tsx';
-import { RestaurantPickerModal } from './modals/RestaurantPickerModal.tsx';
+import { RestaurantPickerModal } from '../common/SearchablePickerModals/RestaurantPickerModal.tsx';
 import { CheckoutModal } from './modals/CheckoutModal.tsx';
 import { EditCartEntryModal } from './modals/EditCartEntryModal.tsx';
 import type { CategoryValue } from './constants.ts';
-import { apiClient } from '../../lib/api-client.ts';
+import { useApi } from '../../lib/api.ts';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import type { CartEntry, CartItem, CheckoutStep, SortKey, UnifiedItem } from './types.ts';
-import { myCurrentUserQueryOptions } from '../../lib/api-client.ts';
+import type {
+  CartEntry,
+  CartItem,
+  CheckoutStep,
+  PaymentMethod,
+  SortKey,
+  UnifiedItem,
+} from './types.ts';
 
 export const OrderCreator = () => {
-  const { data: currentUser } = useSuspenseQuery(myCurrentUserQueryOptions());
+  const { useNoPerm, useNecessaryPerm } = useApi('OrderCreator');
+  const noPermApi = useNoPerm();
+
+  const { data: currentUser } = useSuspenseQuery(noPermApi.queryOptions('get', '/api/User/me'));
   const currentUserType = currentUser.userType.toLowerCase();
   const isEmployeeUser = currentUserType === 'employee';
   const isMachineUser = currentUserType === 'machine';
@@ -33,11 +43,11 @@ export const OrderCreator = () => {
     { data: foods = [] },
     { data: restaurants = [] },
   ] = useConditionalSuspenseQueries([
-    isEmployeeUser ? apiClient.queryOptions('get', '/api/Employee/me') : false,
-    isMachineUser ? apiClient.queryOptions('get', '/api/Machine/me') : false,
-    apiClient.queryOptions('get', '/api/Menu'),
-    apiClient.queryOptions('get', '/api/Food'),
-    apiClient.queryOptions('get', '/api/Restaurant'),
+    isEmployeeUser ? noPermApi.queryOptions('get', '/api/Employee/me') : undefined,
+    isMachineUser ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
+    useNecessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
+    useNecessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
+    noPermApi.queryOptions('get', '/api/Restaurant'),
   ]);
 
   const lockedRestaurantId = isEmployeeUser
@@ -57,6 +67,7 @@ export const OrderCreator = () => {
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('idle');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [placedOrderNumber, setPlacedOrderNumber] = useState<number | null>(null);
   const [editingEntry, setEditingEntry] = useState<CartEntry | null>(null);
 
@@ -72,7 +83,40 @@ export const OrderCreator = () => {
     }
   }, [lockedRestaurantId]);
 
-  const { mutateAsync: createOrder, isPending } = apiClient.useMutation('post', '/api/Order');
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+      await document.documentElement.requestFullscreen();
+    } catch (e) {
+      void e;
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key.toLowerCase() !== 'f') return;
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName.toLowerCase();
+      const isTypingTarget =
+        target?.isContentEditable ||
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        tagName === 'select';
+      if (isTypingTarget) return;
+      event.preventDefault();
+      void toggleFullscreen();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const { mutateAsync: createOrder, isPending } = useNecessaryPerm(
+    'Permission:Order:Create',
+  ).useMutation('post', '/api/Order');
 
   const selectedRestaurant = restaurants.find((r) => r.id === restaurantId);
   const filteredRestaurants = restaurants.filter((r) =>
@@ -140,19 +184,20 @@ export const OrderCreator = () => {
 
   const handlePlaceOrder = () => {
     if (!restaurantId) {
-      notifications.show({ title: 'Select a restaurant', message: '', color: 'orange' });
+      notifications.show({ title: 'Select a restaurant', message: '', color: '#252627' });
       return;
     }
     if (cart.length === 0) {
-      notifications.show({ title: 'Your cart is empty', message: '', color: 'orange' });
+      notifications.show({ title: 'Your cart is empty', message: '', color: '#252627' });
       return;
     }
+    setPaymentMethod('card');
     setCheckoutStep('confirm');
   };
 
   const handleConfirmOrder = () => setCheckoutStep('payment');
 
-  const handleFakePayment = async () => {
+  const submitOrder = async () => {
     const created = await createOrder({
       body: {
         restaurantId: restaurantId!,
@@ -177,18 +222,30 @@ export const OrderCreator = () => {
     setCheckoutStep('thankyou');
   };
 
+  const handleCardPayment = async () => {
+    await submitOrder();
+  };
+
+  const handleCashPayment = async () => {
+    await submitOrder();
+  };
+
   return (
     <>
       <Group align="flex-start" gap={0} style={{ minHeight: '100vh' }}>
+        {/* Sidebar — md and above only */}
         <CategoryNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
 
-        {/* Main content */}
+        {/* Main content — takes full width on mobile */}
         <Stack
           gap="md"
           p="md"
-          style={{ flex: 1 }}
+          style={{ flex: 1, minWidth: 0 }}
           pb={cart.length > 0 ? cartPanelHeight + 24 : 'md'}
         >
+          {/* Pills live here — inside the Stack, below md only */}
+          <CategoryPills activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+
           <OrderCatalogHeader
             selectedRestaurant={selectedRestaurant}
             needsRestaurantPicker={needsRestaurantPicker}
@@ -228,7 +285,6 @@ export const OrderCreator = () => {
         onRemoveEntry={removeEntireEntry}
       />
 
-      {/* Item detail modal */}
       {selectedItem && (
         <OrderDetailModal
           item={selectedItem}
@@ -259,18 +315,20 @@ export const OrderCreator = () => {
 
       <CheckoutModal
         checkoutStep={checkoutStep}
+        paymentMethod={paymentMethod}
         selectedRestaurantName={selectedRestaurant?.name}
         cart={cart}
         totalPrice={totalPrice}
         placedOrderNumber={placedOrderNumber}
         isPending={isPending}
+        onPaymentMethodChange={setPaymentMethod}
         onCloseCheckout={() => setCheckoutStep('idle')}
         onConfirmOrder={handleConfirmOrder}
         onBackToConfirm={() => setCheckoutStep('confirm')}
-        onPay={handleFakePayment}
+        onPayCard={handleCardPayment}
+        onPayCash={handleCashPayment}
       />
 
-      {/* Edit entry modal — opened from cart panel */}
       {editingEntry && (
         <EditCartEntryModal
           entry={editingEntry}

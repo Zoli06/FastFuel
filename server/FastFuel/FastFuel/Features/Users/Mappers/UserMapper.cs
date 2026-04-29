@@ -33,7 +33,6 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
             Id = model.Id,
             Name = model.Name,
             UserName = model.UserName,
-            ThemeId = model.ThemeId,
             RoleIds = roleManager.Roles
                 .Where(r => userRoles.Contains(r.Name))
                 .Select(r => r.Id)
@@ -48,8 +47,7 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
         return new User
         {
             Name = dto.Name,
-            UserName = dto.UserName,
-            ThemeId = dto.ThemeId
+            UserName = dto.UserName
         };
     }
 
@@ -57,6 +55,5 @@ public abstract class UserMapper(RoleManager<Role> roleManager, UserManager<User
     {
         model.Name = dto.Name;
         model.UserName = dto.UserName;
-        model.ThemeId = dto.ThemeId;
     }
 }

@@ -5,7 +5,7 @@ using FastFuel.Features.StationCategories.Entities;
 
 namespace FastFuel.Features.StationCategories.Mappers;
 
-public class StationCategoryMapper(ApplicationDbContext dbContext)
+public class StationCategoryMapper(FastFuelDbContext dbContext)
     : IMapper<StationCategory, StationCategoryRequestDto, StationCategoryResponseDto>
 {
     public StationCategoryResponseDto ToDto(StationCategory entity)

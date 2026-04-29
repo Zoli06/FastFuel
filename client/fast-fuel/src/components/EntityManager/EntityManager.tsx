@@ -53,8 +53,12 @@ export const EntityManager = <
   const { opened, mode, data: editedItem, openCreate, openEdit, close } = useEditorState<Values>();
 
   const handleSubmit = async (values: FormValues, submitMode: 'create' | 'edit') => {
-    await onSubmit(values, submitMode);
-    close();
+    try {
+      await onSubmit(values, submitMode);
+      close();
+    } catch {
+      // Keep the editor open when submit fails so users can fix the input.
+    }
   };
 
   const editorValues = editedItem

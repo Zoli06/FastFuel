@@ -8,7 +8,7 @@ namespace FastFuel.Tests;
 public class MenuServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private MenuService _service = null!;
 
     private static readonly Uri DefaultImage =
@@ -172,7 +172,7 @@ public class MenuServiceTests(MariaDbFixture fixture)
         var updated = await _service.GetByIdAsync(created.Id);
 
         Assert.Equal("New Menu", updated!.Name);
-        Assert.Equal((uint)2000, updated.Price);
+        Assert.Equal(2000, updated.Price);
         Assert.Equal("Updated description", updated.Description);
     }
 

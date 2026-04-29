@@ -1,318 +1,368 @@
 using FastFuel.Features.Admins.DTOs;
-using FastFuel.Features.Admins.Entities;
-using FastFuel.Features.Allergies.Entities;
-using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Allergies.DTOs;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Customers.DTOs;
-using FastFuel.Features.Customers.Entities;
 using FastFuel.Features.Employees.DTOs;
-using FastFuel.Features.Employees.Entities;
-using FastFuel.Features.FoodIngredients.Entities;
-using FastFuel.Features.Foods.Entities;
-using FastFuel.Features.Ingredients.Entities;
+using FastFuel.Features.Foods.DTOs;
+using FastFuel.Features.Ingredients.DTOs;
 using FastFuel.Features.Machines.DTOs;
-using FastFuel.Features.Machines.Entities;
-using FastFuel.Features.MenuFoods.Entities;
-using FastFuel.Features.Menus.Entities;
-using FastFuel.Features.OpeningHours.Entities;
-using FastFuel.Features.OrderFoods.Entities;
-using FastFuel.Features.OrderMenus.Entities;
-using FastFuel.Features.Orders.Common;
-using FastFuel.Features.Orders.Entities;
-using FastFuel.Features.Restaurants.Entities;
-using FastFuel.Features.StationCategories.Entities;
-using FastFuel.Features.Stations.Entities;
-using FastFuel.Features.Themes.Entities;
-using FastFuel.Features.Users.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using FastFuel.Features.Menus.DTOs;
+using FastFuel.Features.OrderFoods.DTOs;
+using FastFuel.Features.OrderMenus.DTOs;
+using FastFuel.Features.Orders.DTOs;
+using FastFuel.Features.Orders.Services;
+using FastFuel.Features.Restaurants.DTOs;
+using FastFuel.Features.StationCategories.DTOs;
+using FastFuel.Features.Stations.DTOs;
+using FastFuel.Features.Stations.Services;
+using FastFuel.Features.Users.DTOs;
 
 namespace FastFuel;
 
-// TODO: Rewrite this to use the services instead of directly accessing the DbContext.
 public class DatabaseSeeder(IServiceProvider serviceProvider)
 {
-    private readonly ApplicationDbContext _context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+    private readonly ICrudService<AdminRequestDto, AdminResponseDto> _adminService =
+        serviceProvider.GetRequiredService<ICrudService<AdminRequestDto, AdminResponseDto>>();
+
+    private readonly ICrudService<AllergyRequestDto, AllergyResponseDto> _allergyService =
+        serviceProvider.GetRequiredService<ICrudService<AllergyRequestDto, AllergyResponseDto>>();
 
     private readonly ICrudService<CustomerRequestDto, CustomerResponseDto> _customerService =
         serviceProvider.GetRequiredService<ICrudService<CustomerRequestDto, CustomerResponseDto>>();
 
-    private readonly ICrudService<AdminRequestDto, AdminResponseDto> _adminService =
-        serviceProvider.GetRequiredService<ICrudService<AdminRequestDto, AdminResponseDto>>();
-
     private readonly ICrudService<EmployeeRequestDto, EmployeeResponseDto> _employeeService =
         serviceProvider.GetRequiredService<ICrudService<EmployeeRequestDto, EmployeeResponseDto>>();
+
+    private readonly ICrudService<FoodRequestDto, FoodResponseDto> _foodService =
+        serviceProvider.GetRequiredService<ICrudService<FoodRequestDto, FoodResponseDto>>();
+
+    private readonly ICrudService<IngredientRequestDto, IngredientResponseDto> _ingredientService =
+        serviceProvider.GetRequiredService<ICrudService<IngredientRequestDto, IngredientResponseDto>>();
 
     private readonly ICrudService<MachineRequestDto, MachineResponseDto> _machineService =
         serviceProvider.GetRequiredService<ICrudService<MachineRequestDto, MachineResponseDto>>();
 
-    private readonly UserManager<User> _userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+    private readonly ICrudService<MenuRequestDto, MenuResponseDto> _menuService =
+        serviceProvider.GetRequiredService<ICrudService<MenuRequestDto, MenuResponseDto>>();
+
+    private readonly IOrderService _orderService = serviceProvider.GetRequiredService<IOrderService>();
+
+    private readonly ICrudService<RestaurantRequestDto, RestaurantResponseDto> _restaurantService =
+        serviceProvider.GetRequiredService<ICrudService<RestaurantRequestDto, RestaurantResponseDto>>();
+
+    private readonly ICrudService<StationCategoryRequestDto, StationCategoryResponseDto> _stationCategoryService =
+        serviceProvider.GetRequiredService<ICrudService<StationCategoryRequestDto, StationCategoryResponseDto>>();
+
+    private readonly IStationService _stationService = serviceProvider.GetRequiredService<IStationService>();
+
+    private readonly ICrudService<UserRequestDto, UserResponseDto> _userService =
+        serviceProvider.GetRequiredService<ICrudService<UserRequestDto, UserResponseDto>>();
 
     public async Task SeedTestAsync()
     {
-        // Two types of stations: french fries and burgers
-        var burgerStation = new StationCategory { Name = "Burger Station" };
-        var friesStation = new StationCategory { Name = "Fries Station" };
-        _context.StationCategories.AddRange(burgerStation, friesStation);
-        await _context.SaveChangesAsync();
+        var burgerStation = await _stationCategoryService.CreateAsync(new StationCategoryRequestDto
+        {
+            Name = "Burger Station",
+            IngredientIds = []
+        });
+        var friesStation = await _stationCategoryService.CreateAsync(new StationCategoryRequestDto
+        {
+            Name = "Fries Station",
+            IngredientIds = []
+        });
 
-        // Add some allergies
-        var glutenAllergy = new Allergy { Name = "Gluten" };
-        var dairyAllergy = new Allergy { Name = "Dairy" };
-        var peanutAllergy = new Allergy { Name = "Peanuts" };
-        _context.Allergies.AddRange(glutenAllergy, dairyAllergy, peanutAllergy);
-        await _context.SaveChangesAsync();
+        var glutenAllergy = await _allergyService.CreateAsync(new AllergyRequestDto
+        {
+            Name = "Gluten",
+            IngredientIds = []
+        });
+        var dairyAllergy = await _allergyService.CreateAsync(new AllergyRequestDto
+        {
+            Name = "Dairy",
+            IngredientIds = []
+        });
+        await _allergyService.CreateAsync(new AllergyRequestDto
+        {
+            Name = "Peanuts",
+            IngredientIds = []
+        });
 
-        // Add some ingredients
-        var beefPatty = new Ingredient { Name = "Beef Patty" };
-        var bun = new Ingredient { Name = "Bun", Allergies = [glutenAllergy] };
-        var lettuce = new Ingredient { Name = "Lettuce" };
-        var tomato = new Ingredient { Name = "Tomato" };
-        var cheese = new Ingredient { Name = "Cheese" };
-        var potato = new Ingredient { Name = "Potato" };
-        var salt = new Ingredient { Name = "Salt" };
-        var oil = new Ingredient { Name = "Oil" };
-        _context.Ingredients.AddRange(beefPatty, bun, lettuce, tomato, cheese, potato, salt, oil);
-        await _context.SaveChangesAsync();
+        var beefPatty = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Beef Patty",
+            AllergyIds = [],
+            StationCategoryIds = [burgerStation.Id]
+        });
+        var bun = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Bun",
+            AllergyIds = [glutenAllergy.Id],
+            StationCategoryIds = [burgerStation.Id]
+        });
+        var lettuce = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Lettuce",
+            AllergyIds = [],
+            StationCategoryIds = [burgerStation.Id]
+        });
+        var tomato = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Tomato",
+            AllergyIds = [],
+            StationCategoryIds = [burgerStation.Id]
+        });
+        var cheese = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Cheese",
+            AllergyIds = [dairyAllergy.Id],
+            StationCategoryIds = [burgerStation.Id]
+        });
+        var potato = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Potato",
+            AllergyIds = [],
+            StationCategoryIds = [friesStation.Id]
+        });
+        var salt = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Salt",
+            AllergyIds = [],
+            StationCategoryIds = [friesStation.Id]
+        });
+        var oil = await _ingredientService.CreateAsync(new IngredientRequestDto
+        {
+            Name = "Oil",
+            AllergyIds = [],
+            StationCategoryIds = [friesStation.Id]
+        });
 
-        // Assign ingredients to station categories
-        burgerStation.Ingredients.AddRange([beefPatty, bun, lettuce, tomato, cheese]);
-        friesStation.Ingredients.AddRange([potato, salt, oil]);
-        await _context.SaveChangesAsync();
-
-        // Create some foods
-        var bigBurger = new Food
+        var bigBurger = await _foodService.CreateAsync(new FoodRequestDto
         {
             Name = "Big Burger",
-            Price = 800,
+            Price = 6.89,
             Description = "A big beef burger with lettuce, tomato, and cheese.",
-            FoodIngredients =
+            ImageUrl = new Uri("https://cdn.pixabay.com/photo/2022/08/29/17/44/burger-7419420_1280.jpg"),
+            Ingredients =
             [
-                new FoodIngredient { Ingredient = beefPatty, Quantity = 1 },
-                new FoodIngredient { Ingredient = bun, Quantity = 1 },
-                new FoodIngredient { Ingredient = lettuce, Quantity = 2 },
-                new FoodIngredient { Ingredient = tomato, Quantity = 2 },
-                new FoodIngredient { Ingredient = cheese, Quantity = 1 }
-            ],
-            ImageUrl = new Uri("https://cdn.pixabay.com/photo/2022/08/29/17/44/burger-7419420_1280.jpg")
-        };
-        var cheeseBurger = new Food
+                new FoodIngredientDto { IngredientId = beefPatty.Id, Quantity = 1, Unit = "piece" },
+                new FoodIngredientDto { IngredientId = bun.Id, Quantity = 1, Unit = "piece" },
+                new FoodIngredientDto { IngredientId = lettuce.Id, Quantity = 2, Unit = "leaf" },
+                new FoodIngredientDto { IngredientId = tomato.Id, Quantity = 2, Unit = "slice" },
+                new FoodIngredientDto { IngredientId = cheese.Id, Quantity = 1, Unit = "slice" }
+            ]
+        });
+        var cheeseBurger = await _foodService.CreateAsync(new FoodRequestDto
         {
             Name = "Cheese Burger",
-            Price = 700,
+            Price = 5.95,
             Description = "A beef burger with cheese.",
-            FoodIngredients =
+            ImageUrl = null,
+            Ingredients =
             [
-                new FoodIngredient { Ingredient = beefPatty, Quantity = 1 },
-                new FoodIngredient { Ingredient = bun, Quantity = 1 },
-                new FoodIngredient { Ingredient = cheese, Quantity = 1 }
+                new FoodIngredientDto { IngredientId = beefPatty.Id, Quantity = 1, Unit = "piece" },
+                new FoodIngredientDto { IngredientId = bun.Id, Quantity = 1, Unit = "piece" },
+                new FoodIngredientDto { IngredientId = cheese.Id, Quantity = 1, Unit = "slice" }
             ]
-        };
-        var fries = new Food
+        });
+        var fries = await _foodService.CreateAsync(new FoodRequestDto
         {
             Name = "Fries",
-            Price = 300,
+            Price = 1.29,
             Description = "Crispy golden fries.",
-            FoodIngredients =
+            ImageUrl = new Uri("https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg"),
+            Ingredients =
             [
-                new FoodIngredient { Ingredient = potato, Quantity = 3 },
-                new FoodIngredient { Ingredient = salt, Quantity = 1 },
-                new FoodIngredient { Ingredient = oil, Quantity = 1 }
+                new FoodIngredientDto { IngredientId = potato.Id, Quantity = 3, Unit = "piece" },
+                new FoodIngredientDto { IngredientId = salt.Id, Quantity = 1, Unit = "pinch" },
+                new FoodIngredientDto { IngredientId = oil.Id, Quantity = 1, Unit = "portion" }
             ]
-        };
-        _context.Foods.AddRange(bigBurger, cheeseBurger, fries);
-        await _context.SaveChangesAsync();
+        });
 
-        // Create a menu (use MenuFood join entities)
-        var lunchMenu = new Menu
+        var lunchMenu = await _menuService.CreateAsync(new MenuRequestDto
         {
             Name = "Lunch Menu",
-            Price = 1000,
+            Price = 9.89,
             Description = "A special lunch menu with a Big Burger and Fries.",
-            MenuFoods =
+            ImageUrl = new Uri(
+                "https://i2.pickpik.com/photos/213/12/34/burger-french-fries-potato-chips-tomato-preview.jpg"),
+            Foods =
             [
-                new MenuFood { Food = bigBurger, Quantity = 1 },
-                new MenuFood { Food = fries, Quantity = 1 }
+                new MenuFoodDto { FoodId = bigBurger.Id, Quantity = 1 },
+                new MenuFoodDto { FoodId = fries.Id, Quantity = 1 }
             ]
-        };
-        _context.Menus.Add(lunchMenu);
-        await _context.SaveChangesAsync();
+        });
+        await _menuService.CreateAsync(new MenuRequestDto
+        {
+            Name = "Dinner Menu",
+            Price = 11.95,
+            Description = "A special dinner menu with a Cheese Burger and Fries.",
+            ImageUrl = null,
+            Foods =
+            [
+                new MenuFoodDto { FoodId = cheeseBurger.Id, Quantity = 1 },
+                new MenuFoodDto { FoodId = fries.Id, Quantity = 1 }
+            ]
+        });
 
-        // Add a restaurant
-        var restaurant = new Restaurant
+        var restaurant = await _restaurantService.CreateAsync(new RestaurantRequestDto
         {
             Name = "FastFuel Diner",
             Description = "A fast food restaurant serving burgers and fries.",
             Address = "123 Main St, Anytown, USA",
             Latitude = 40.7128,
             Longitude = -74.0060,
-            Phone = "555-1234"
-        };
-        _context.Restaurants.Add(restaurant);
-        await _context.SaveChangesAsync();
+            Phone = "555-1234",
+            OpeningHours = Enum.GetValues<DayOfWeek>().Select(day => new RestaurantOpeningHourDto
+            {
+                DayOfWeek = day,
+                OpenTime = new TimeOnly(9, 0),
+                CloseTime = new TimeOnly(21, 0)
+            }).ToList()
+        });
 
-        // Add stations to the restaurant
-        var burgerStationInstance = new Station
+        await _restaurantService.CreateAsync(new RestaurantRequestDto
+        {
+            Name = "FastFuel Express",
+            Description = "A fast food restaurant serving burgers and fries.",
+            Address = "456 Elm St, Othertown, USA",
+            Latitude = 34.0522,
+            Longitude = -118.2437,
+            Phone = "555-5678",
+            OpeningHours = Enum.GetValues<DayOfWeek>().Select(day => new RestaurantOpeningHourDto
+            {
+                DayOfWeek = day,
+                OpenTime = new TimeOnly(10, 0),
+                CloseTime = new TimeOnly(22, 0)
+            }).ToList()
+        });
+
+        await _stationService.CreateAsync(new StationRequestDto
         {
             Name = "Burger Station 1",
-            InOperation = true,
-            Restaurant = restaurant,
-            StationCategory = burgerStation
-        };
-        var friesStationInstance = new Station
+            RestaurantId = restaurant.Id,
+            StationCategoryId = burgerStation.Id
+        });
+        await _stationService.CreateAsync(new StationRequestDto
         {
             Name = "Fries Station 1",
-            InOperation = true,
-            Restaurant = restaurant,
-            StationCategory = friesStation
-        };
-        _context.Stations.AddRange(burgerStationInstance, friesStationInstance);
-        await _context.SaveChangesAsync();
-
-        // Add opening hours
-        var openingHours = Enum.GetValues<DayOfWeek>().Select(day => new OpeningHour
-        {
-            DayOfWeek = day, OpenTime = new TimeOnly(9, 0), CloseTime = new TimeOnly(21, 0), Restaurant = restaurant
-        }).ToList();
-        _context.OpeningHours.AddRange(openingHours);
-        await _context.SaveChangesAsync();
-
-        // Register user with a theme
-        var theme = new Theme
-        {
-            Name = "Dark Mode",
-            Background = "#121212",
-            Footer = "#1e1e1e",
-            ButtonPrimary = "#bb86fc",
-            ButtonSecondary = "#03dac6"
-        };
-
-        _context.Themes.Add(theme);
-        await _context.SaveChangesAsync();
+            RestaurantId = restaurant.Id,
+            StationCategoryId = friesStation.Id
+        });
 
         await SeedAdmin();
-        await SeedEmployee(restaurant);
-        await SeedMachine(restaurant);
-        var customer = await SeedCustomer();
+        await SeedEmployee(restaurant.Id);
+        await SeedMachine(restaurant.Id);
+        await SeedShiftManager(restaurant.Id);
+        var customerId = await SeedCustomer();
 
-        // Place an order
-        var order = new Order
+        await _orderService.CreateAsync(new OrderRequestDto
         {
-            Restaurant = restaurant,
-            OrderNumber = 1,
-            Status = OrderStatus.Pending,
-            CreatedAt = DateTime.UtcNow,
-            User = customer
-        };
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync();
-
-        // Add a menu and an extra food item to the order
-        var orderMenuItem = new OrderMenu
-        {
-            Menu = lunchMenu,
-            Order = order,
-            Quantity = 1,
-            SpecialInstructions = "Please make the burger without tomato."
-        };
-
-        var orderFoodItem = new OrderFood
-        {
-            Food = cheeseBurger,
-            Order = order,
-            Quantity = 1,
-            SpecialInstructions = "Extra cheese, please."
-        };
-        _context.OrderMenus.Add(orderMenuItem);
-        _context.OrderFoods.Add(orderFoodItem);
-        await _context.SaveChangesAsync();
+            RestaurantId = restaurant.Id,
+            Menus =
+            [
+                new OrderMenuRequestDto
+                {
+                    MenuId = lunchMenu.Id,
+                    Quantity = 1,
+                    SpecialInstructions = "Please make the burger without tomato."
+                }
+            ],
+            Foods =
+            [
+                new OrderFoodRequestDto
+                {
+                    FoodId = cheeseBurger.Id,
+                    Quantity = 1,
+                    SpecialInstructions = "Extra cheese, please."
+                }
+            ]
+        }, customerId);
     }
 
-    public async Task SeedAsync()
+    public async Task SeedProdAsync()
     {
-        if (await _context.Users.AnyAsync()) return;
+        if ((await _userService.GetAllAsync()).Count != 0) return;
 
         await SeedAdmin();
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local
-    private async Task<Employee> SeedEmployee(Restaurant workplace)
+    private async Task<uint> SeedEmployee(uint workplaceId)
     {
-        var userName = "employee";
-
         var employeeDto = new EmployeeRequestDto
         {
-            UserName = userName,
+            UserName = "employee",
             Email = "employee@example.com",
             Name = "Employee User",
             Password = "Employee123!",
-            ThemeId = null,
             ShiftIds = [],
             StationCategoryIds = [],
-            WorksAtRestaurantId = workplace.Id
+            WorksAtRestaurantId = workplaceId
         };
 
-        await _employeeService.CreateAsync(employeeDto);
-        var employee = await _userManager.FindByNameAsync(userName);
-        return Task.FromResult(employee as Employee).Result!;
+        var employee = await _employeeService.CreateAsync(employeeDto);
+        return employee.Id;
     }
 
-    private async Task<Customer> SeedCustomer()
+    private async Task<uint> SeedCustomer()
     {
-        var userName = "customer";
-
         var customerDto = new CustomerRequestDto
         {
-            UserName = userName,
+            UserName = "customer",
             Email = "customer@example.com",
             Name = "Customer User",
-            Password = "Customer123!",
-            ThemeId = null
+            Password = "Customer123!"
         };
 
-        await _customerService.CreateAsync(customerDto);
-
-        var customer = await _userManager.FindByNameAsync(userName);
-        return Task.FromResult(customer as Customer).Result!;
+        var customer = await _customerService.CreateAsync(customerDto);
+        return customer.Id;
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local
-    private async Task<Admin> SeedAdmin()
+    private async Task<uint> SeedAdmin()
     {
-        var userName = "admin";
-
         var adminRequestDto = new AdminRequestDto
         {
-            UserName = userName,
+            UserName = "admin",
             Email = "admin@example.com",
             Name = "Admin User",
-            Password = "Admin123!",
-            ThemeId = null
+            Password = "Admin123!"
         };
 
-        await _adminService.CreateAsync(adminRequestDto);
-
-        var adminUser = await _userManager.FindByNameAsync(userName);
-        return Task.FromResult(adminUser as Admin).Result!;
+        var admin = await _adminService.CreateAsync(adminRequestDto);
+        return admin.Id;
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local
-    private async Task<Machine> SeedMachine(Restaurant locatedAt)
+    private async Task<uint> SeedMachine(uint restaurantId)
     {
-        var userName = "machine";
-
         var machineRequestDto = new MachineRequestDto
         {
-            UserName = userName,
-            LocatedAtRestaurantId = locatedAt.Id,
+            UserName = "machine",
+            LocatedAtRestaurantId = restaurantId,
             Name = "Machine User",
-            ThemeId = null,
             Password = "Machine123!"
         };
 
-        await _machineService.CreateAsync(machineRequestDto);
+        var machine = await _machineService.CreateAsync(machineRequestDto);
+        return machine.Id;
+    }
 
-        var machineUser = await _userManager.FindByNameAsync(userName);
-        return Task.FromResult(machineUser as Machine).Result!;
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private async Task<uint> SeedShiftManager(uint restaurantId)
+    {
+        var shiftManagerRequestDto = new EmployeeRequestDto
+        {
+            UserName = "shiftmanager",
+            Email = "shiftmanager@example.com",
+            Name = "Shift Manager User",
+            Password = "ShiftManager123!",
+            WorksAtRestaurantId = restaurantId,
+            ShiftIds = [],
+            StationCategoryIds = []
+        };
+
+        var shiftManager = await _employeeService.CreateAsync(shiftManagerRequestDto);
+        return shiftManager.Id;
     }
 }

@@ -1,12 +1,14 @@
-using EntityFramework.Exceptions.Common;
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Customers.DTOs;
 using FastFuel.Features.Customers.Mappers;
 using FastFuel.Features.Customers.Services;
+using FastFuel.Features.Roles.Common;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +18,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 {
     private readonly MariaDbFixture _fixture;
 
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private CustomerService _service = null!;
 
     public CustomerServiceTests(MariaDbFixture fixture)
@@ -41,6 +43,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
         // Ensure database is clean before each test
         await CleanupDatabaseAsync();
+        await EnsureRoleExistsAsync(nameof(DefaultRole.Customer));
     }
 
     public async Task DisposeAsync()
@@ -57,9 +60,23 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
         await _dbContext.SaveChangesAsync();
     }
 
+    private async Task EnsureRoleExistsAsync(string roleName)
+    {
+        if (await _dbContext.Roles.AnyAsync(role => role.Name == roleName))
+            return;
+
+        _dbContext.Roles.Add(new Role
+        {
+            Name = roleName,
+            NormalizedName = roleName.ToUpperInvariant()
+        });
+
+        await _dbContext.SaveChangesAsync();
+    }
+
     private UserManager<User> CreateUserManager()
     {
-        var store = new UserStore<User, Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new UserStore<User, Role, FastFuelDbContext, uint>(_dbContext);
 
         return new UserManager<User>(
             store,
@@ -76,7 +93,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
 
     private RoleManager<Role> CreateRoleManager()
     {
-        var store = new RoleStore<Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new RoleStore<Role, FastFuelDbContext, uint>(_dbContext);
 
         return new RoleManager<Role>(
             store,
@@ -102,8 +119,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
             Name = name,
             Email = email,
             UserName = username,
-            Password = password,
-            ThemeId = null
+            Password = password
         };
     }
 
@@ -126,12 +142,12 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     [Fact]
     public async Task CreateCustomer_ShouldFailWithDuplicateEmail()
     {
-        var request1 = BuildRequest("Customer 1", "dup@test.com", "User1");
-        var request2 = BuildRequest("Customer 2", "dup@test.com", "User2");
+        var request1 = BuildRequest("Customer 1", "first@test.com", "dup-user");
+        var request2 = BuildRequest("Customer 2", "second@test.com", "dup-user");
 
         await _service.CreateAsync(request1);
 
-        await Assert.ThrowsAsync<UniqueConstraintException>(async () => { await _service.CreateAsync(request2); });
+        await Assert.ThrowsAsync<ValidationAppException>(async () => { await _service.CreateAsync(request2); });
     }
 
     [Fact]
@@ -139,6 +155,7 @@ public class CustomerServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture
     {
         // Ensure database is empty before test
         await CleanupDatabaseAsync();
+        await EnsureRoleExistsAsync(nameof(DefaultRole.Customer));
 
         var request = BuildRequest("All Test", "all@test.com", "AllUser");
 

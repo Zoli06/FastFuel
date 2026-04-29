@@ -28,7 +28,7 @@ public class AuthController(
     /// or a problem response when authentication fails.
     /// </returns>
     [HttpPost("login")]
-    public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Login(
+    public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, UnauthorizedHttpResult>> Login(
         LoginRequestDto login,
         bool? useCookies,
         bool? useSessionCookies)
@@ -41,7 +41,7 @@ public class AuthController(
         var result = await signInManager.PasswordSignInAsync(login.UserName, login.Password, isPersistent, true);
 
         if (!result.Succeeded)
-            return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
+            return TypedResults.Unauthorized();
 
         return TypedResults.Empty;
     }

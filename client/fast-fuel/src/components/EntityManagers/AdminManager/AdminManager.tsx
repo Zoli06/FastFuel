@@ -1,16 +1,15 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
-import type { components } from '../../../types/api';
+import type { components } from '../../../types/api-schema.generated.ts';
 
 export const AdminManager = () => {
-  const { recommended } = usePagePermissions('AdminManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('AdminManager');
 
   const [{ data: admins = [], refetch: refetchAdmins }] = useConditionalSuspenseQueries([
-    apiClient.queryOptions('get', '/api/Admin'),
+    useNecessaryPerm('Permission:Admin:Read').queryOptions('get', '/api/Admin'),
   ]);
 
   type Admin = (typeof admins)[number];
@@ -57,30 +56,41 @@ export const AdminManager = () => {
     },
   ];
 
-  const { mutate: createAdmin } = apiClient.useMutation('post', '/api/Admin', {
-    onSuccess: () => refetchAdmins(),
-  });
-  const { mutate: updateAdmin } = apiClient.useMutation('put', '/api/Admin/{id}', {
-    onSuccess: () => refetchAdmins(),
-  });
-  const { mutate: deleteAdmin } = apiClient.useMutation('delete', '/api/Admin/{id}', {
-    onSuccess: () => refetchAdmins(),
-  });
+  const createAdmin = useRecommendedPerm('Permission:Admin:Create')?.useMutation(
+    'post',
+    '/api/Admin',
+    {
+      onSuccess: () => refetchAdmins(),
+    },
+  ).mutateAsync;
+  const updateAdmin = useRecommendedPerm('Permission:Admin:Update')?.useMutation(
+    'put',
+    '/api/Admin/{id}',
+    {
+      onSuccess: () => refetchAdmins(),
+    },
+  ).mutateAsync;
+  const deleteAdmin = useRecommendedPerm('Permission:Admin:Delete')?.useMutation(
+    'delete',
+    '/api/Admin/{id}',
+    {
+      onSuccess: () => refetchAdmins(),
+    },
+  ).mutate;
 
   const toRequestDto = (values: AdminFormValues) =>
     ({
       name: values.name,
       email: values.email,
       userName: values.userName,
-      themeId: null,
       password: values.password ?? null,
     }) as components['schemas']['AdminRequestDto'];
 
-  const handleSubmit = (values: AdminFormValues, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
-      createAdmin({ body: toRequestDto(values) });
-    } else {
-      updateAdmin({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+  const handleSubmit = async (values: AdminFormValues, mode: 'create' | 'edit') => {
+    if (mode === 'create' && createAdmin) {
+      await createAdmin({ body: toRequestDto(values) });
+    } else if (mode === 'edit' && updateAdmin) {
+      await updateAdmin({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 
@@ -92,10 +102,10 @@ export const AdminManager = () => {
       tableColumns={tableColumns as ColumnDefinition<AdminFormValues>[]}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(a) => deleteAdmin({ params: { path: { id: a.id } } })}
-      canCreate={recommended.Admin.Create}
-      canEdit={recommended.Admin.Update}
-      canDelete={recommended.Admin.Delete}
+      onDelete={deleteAdmin ? (a) => deleteAdmin({ params: { path: { id: a.id } } }) : undefined}
+      canCreate={!!createAdmin}
+      canEdit={!!updateAdmin}
+      canDelete={!!deleteAdmin}
     />
   );
 };

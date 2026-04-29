@@ -5,7 +5,7 @@ using FastFuel.Features.Ingredients.Entities;
 
 namespace FastFuel.Features.Ingredients.Mappers;
 
-public class IngredientMapper(ApplicationDbContext dbContext)
+public class IngredientMapper(FastFuelDbContext dbContext)
     : IMapper<Ingredient, IngredientRequestDto, IngredientResponseDto>
 {
     public IngredientResponseDto ToDto(Ingredient entity)
@@ -14,11 +14,9 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         {
             Id = entity.Id,
             Name = entity.Name,
-            ImageUrl = entity.ImageUrl,
             AllergyIds = entity.Allergies.ConvertAll(allergy => allergy.Id),
             StationCategoryIds = entity.StationCategories.ConvertAll(category => category.Id),
-            FoodIds = entity.FoodIngredients.ConvertAll(fi => fi.FoodId),
-            DefaultTimerValueSeconds = (uint)entity.DefaultTimerValue.TotalSeconds
+            FoodIds = entity.FoodIngredients.ConvertAll(fi => fi.FoodId)
         };
     }
 
@@ -27,21 +25,18 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         return new Ingredient
         {
             Name = dto.Name,
-            ImageUrl = dto.ImageUrl,
             Allergies = dbContext.Allergies
                 .Where(a => dto.AllergyIds.Contains(a.Id))
                 .ToList(),
             StationCategories = dbContext.StationCategories
                 .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
-                .ToList(),
-            DefaultTimerValue = TimeSpan.FromSeconds(dto.DefaultTimerValueSeconds)
+                .ToList()
         };
     }
 
     public void UpdateEntity(IngredientRequestDto dto, Ingredient entity)
     {
         entity.Name = dto.Name;
-        entity.ImageUrl = dto.ImageUrl;
 
         entity.Allergies.Clear();
         entity.Allergies.AddRange(dbContext.Allergies
@@ -52,6 +47,5 @@ public class IngredientMapper(ApplicationDbContext dbContext)
         entity.StationCategories.AddRange(dbContext.StationCategories
             .Where(sc => dto.StationCategoryIds.Contains(sc.Id))
             .ToList());
-        entity.DefaultTimerValue = TimeSpan.FromSeconds(dto.DefaultTimerValueSeconds);
     }
 }

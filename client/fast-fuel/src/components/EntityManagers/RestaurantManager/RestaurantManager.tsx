@@ -1,20 +1,11 @@
-import { apiClient } from '../../../lib/api-client.ts';
+import { useApi } from '../../../lib/api.ts';
+import { getDisplayedDescription } from '../../../lib/description.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field, FormValues } from '../../EntityManager/EntityEditor/types.ts';
 import { LocationPicker } from './LocationPicker.tsx';
 import type { UseFormReturnType } from '@mantine/form';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
-import { Button } from '@mantine/core';
-import { Link } from 'react-router-dom';
-
-// TODO: Remove this or at least extract to a helper
-const maxLength = 100;
-const getDisplayedDescription = (description: string | null | undefined) => {
-  if (!description) return 'No description provided';
-  return description.length > maxLength ? `${description.substring(0, maxLength)}...` : description;
-};
+import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 const dayOfWeekOptions = [
   'Monday',
@@ -32,11 +23,11 @@ const defaultOpeningHours = [
 ];
 
 export const RestaurantManager = () => {
-  const { recommended } = usePagePermissions('RestaurantManager');
+  const { useRecommendedPerm, useNoPerm } = useApi('RestaurantManager');
 
-  const { data: restaurants, refetch: refetchRestaurants } = useSuspenseQuery(
-    apiClient.queryOptions('get', '/api/Restaurant'),
-  );
+  const [{ data: restaurants = [], refetch: refetchRestaurants }] = useConditionalSuspenseQueries([
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
+  ]);
 
   type Restaurant = (typeof restaurants)[number];
 
@@ -45,14 +36,6 @@ export const RestaurantManager = () => {
     { header: 'Address', accessor: 'address' },
     { header: 'Description', render: (r) => getDisplayedDescription(r.description) },
     { header: 'Phone', accessor: 'phone' },
-    {
-      header: 'Display Order Statuses',
-      render: (r) => (
-        <Link to={`/restaurants/${r.id}/status-display`}>
-          <Button>Display</Button>
-        </Link>
-      ),
-    },
   ];
 
   const editorFields: Field[] = [
@@ -164,21 +147,33 @@ export const RestaurantManager = () => {
     },
   ];
 
-  const { mutate: createRestaurant } = apiClient.useMutation('post', '/api/Restaurant', {
-    onSuccess: () => refetchRestaurants(),
-  });
-  const { mutate: updateRestaurant } = apiClient.useMutation('put', '/api/Restaurant/{id}', {
-    onSuccess: () => refetchRestaurants(),
-  });
-  const { mutate: deleteRestaurant } = apiClient.useMutation('delete', '/api/Restaurant/{id}', {
-    onSuccess: () => refetchRestaurants(),
-  });
+  const createRestaurant = useRecommendedPerm('Permission:Restaurant:Create')?.useMutation(
+    'post',
+    '/api/Restaurant',
+    {
+      onSuccess: () => refetchRestaurants(),
+    },
+  ).mutateAsync;
+  const updateRestaurant = useRecommendedPerm('Permission:Restaurant:Update')?.useMutation(
+    'put',
+    '/api/Restaurant/{id}',
+    {
+      onSuccess: () => refetchRestaurants(),
+    },
+  ).mutateAsync;
+  const deleteRestaurant = useRecommendedPerm('Permission:Restaurant:Delete')?.useMutation(
+    'delete',
+    '/api/Restaurant/{id}',
+    {
+      onSuccess: () => refetchRestaurants(),
+    },
+  ).mutate;
 
-  const handleSubmit = (values: Restaurant, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
-      createRestaurant({ body: values });
-    } else {
-      updateRestaurant({ params: { path: { id: values.id } }, body: values });
+  const handleSubmit = async (values: Restaurant, mode: 'create' | 'edit') => {
+    if (mode === 'create' && createRestaurant) {
+      await createRestaurant({ body: values });
+    } else if (mode === 'edit' && updateRestaurant) {
+      await updateRestaurant({ params: { path: { id: values.id } }, body: values });
     }
   };
 
@@ -203,10 +198,12 @@ export const RestaurantManager = () => {
         },
       }}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteRestaurant({ params: { path: { id: r.id } } })}
-      canCreate={recommended.Restaurant.Create}
-      canEdit={recommended.Restaurant.Update}
-      canDelete={recommended.Restaurant.Delete}
+      onDelete={
+        deleteRestaurant ? (r) => deleteRestaurant({ params: { path: { id: r.id } } }) : undefined
+      }
+      canCreate={!!createRestaurant}
+      canEdit={!!updateRestaurant}
+      canDelete={!!deleteRestaurant}
     />
   );
 };

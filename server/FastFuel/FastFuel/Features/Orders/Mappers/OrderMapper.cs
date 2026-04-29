@@ -1,12 +1,17 @@
 using FastFuel.Features.Common.Interfaces;
+using FastFuel.Features.OrderFoods.DTOs;
 using FastFuel.Features.OrderFoods.Entities;
+using FastFuel.Features.OrderMenus.DTOs;
 using FastFuel.Features.OrderMenus.Entities;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
 
 namespace FastFuel.Features.Orders.Mappers;
 
-public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
+public class OrderMapper(
+    IMapper<OrderFood, OrderFoodRequestDto, OrderFoodResponseDto> orderFoodMapper,
+    IMapper<OrderMenu, OrderMenuRequestDto, OrderMenuResponseDto> orderMenuMapper)
+    : IMapper<Order, OrderRequestDto, OrderResponseDto>
 {
     public OrderResponseDto ToDto(Order entity)
     {
@@ -19,9 +24,8 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
             Status = entity.Status,
             CreatedAt = entity.CreatedAt,
             CompletedAt = entity.CompletedAt,
-            Price = entity.Price,
-            Menus = entity.Menus.ConvertAll(ToDto),
-            Foods = entity.Foods.ConvertAll(ToDto)
+            Menus = entity.Menus.ConvertAll(orderMenuMapper.ToDto),
+            Foods = entity.Foods.ConvertAll(orderFoodMapper.ToDto)
         };
     }
 
@@ -29,10 +33,9 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
     {
         return new Order
         {
-            Price = 0, // Price will be calculated later in the service layer
             RestaurantId = dto.RestaurantId,
-            Menus = dto.Menus.ConvertAll(ToEntity),
-            Foods = dto.Foods.ConvertAll(ToEntity)
+            Menus = dto.Menus.ConvertAll(orderMenuMapper.ToEntity),
+            Foods = dto.Foods.ConvertAll(orderFoodMapper.ToEntity)
         };
     }
 
@@ -41,49 +44,9 @@ public class OrderMapper : IMapper<Order, OrderRequestDto, OrderResponseDto>
         entity.RestaurantId = dto.RestaurantId;
 
         entity.Menus.Clear();
-        entity.Menus.AddRange(dto.Menus.ConvertAll(ToEntity));
+        entity.Menus.AddRange(dto.Menus.ConvertAll(orderMenuMapper.ToEntity));
 
         entity.Foods.Clear();
-        entity.Foods.AddRange(dto.Foods.ConvertAll(ToEntity));
-    }
-
-    private OrderFoodDto ToDto(OrderFood orderFood)
-    {
-        return new OrderFoodDto
-        {
-            FoodId = orderFood.FoodId,
-            Quantity = orderFood.Quantity,
-            SpecialInstructions = orderFood.SpecialInstructions
-        };
-    }
-
-    private OrderMenuDto ToDto(OrderMenu orderMenu)
-    {
-        return new OrderMenuDto
-        {
-            MenuId = orderMenu.MenuId,
-            Quantity = orderMenu.Quantity,
-            SpecialInstructions = orderMenu.SpecialInstructions
-        };
-    }
-
-    private OrderFood ToEntity(OrderFoodDto dto)
-    {
-        return new OrderFood
-        {
-            FoodId = dto.FoodId,
-            Quantity = dto.Quantity,
-            SpecialInstructions = dto.SpecialInstructions
-        };
-    }
-
-    private OrderMenu ToEntity(OrderMenuDto dto)
-    {
-        return new OrderMenu
-        {
-            MenuId = dto.MenuId,
-            Quantity = dto.Quantity,
-            SpecialInstructions = dto.SpecialInstructions
-        };
+        entity.Foods.AddRange(dto.Foods.ConvertAll(orderFoodMapper.ToEntity));
     }
 }

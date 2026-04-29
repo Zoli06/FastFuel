@@ -25,19 +25,33 @@ import { OrderCreator } from '../components/OrderCreator/OrderCreator.tsx';
 import { OrderHistoryPage } from '../pages/OrderHistoryPage.tsx';
 import { ProfilePage } from '../pages/ProfilePage.tsx';
 import { MyShiftsPage } from '../pages/MyShiftsPage.tsx';
+import { AboutPage } from '../pages/AboutPage.tsx';
+import { WelcomePage } from '../pages/WelcomePage.tsx';
 
 type RouteHandle = {
   header?: {
     title?: string;
     authButton?: HeaderAuthButton;
+    showHomeButton?: boolean;
+    showAuthButton?: boolean;
+  };
+  layout?: {
+    hideChromeInFullscreen?: boolean;
   };
 };
 
-const withHeader = (title: string, authButton?: HeaderAuthButton): RouteHandle => ({
+const withHeader = (
+  title: string,
+  authButton?: HeaderAuthButton,
+  layout?: RouteHandle['layout'],
+  buttonVisibility?: Pick<NonNullable<RouteHandle['header']>, 'showHomeButton' | 'showAuthButton'>,
+): RouteHandle => ({
   header: {
     title,
     authButton,
+    ...buttonVisibility,
   },
+  layout,
 });
 
 export const router = createBrowserRouter([
@@ -48,6 +62,14 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <WelcomePage />,
+        handle: withHeader('Welcome', 'Login', undefined, {
+          showHomeButton: false,
+          showAuthButton: false,
+        }),
+      },
+      {
+        path: 'home',
         element: <HomePage />,
         handle: withHeader('Home'),
       },
@@ -64,10 +86,10 @@ export const router = createBrowserRouter([
       {
         path: 'order',
         element: <OrderCreator />,
-        handle: withHeader('Place Order'),
+        handle: withHeader('Place Order', undefined, { hideChromeInFullscreen: true }),
       },
       {
-        path: 'employee/my-shifts',
+        path: 'my-shifts',
         element: <MyShiftsPage />,
         handle: withHeader('My Shifts'),
       },
@@ -80,6 +102,21 @@ export const router = createBrowserRouter([
         path: 'profile',
         element: <ProfilePage />,
         handle: withHeader('Profile'),
+      },
+      {
+        path: 'about',
+        element: <AboutPage />,
+        handle: withHeader('About'),
+      },
+      {
+        path: 'station-tasks/:id?',
+        element: <StationTasksPage />,
+        handle: withHeader('Station Tasks', undefined, { hideChromeInFullscreen: true }),
+      },
+      {
+        path: 'order-status-display',
+        element: <OrderStatusDisplayPage />,
+        handle: withHeader('Order Status Display', undefined, { hideChromeInFullscreen: true }),
       },
       {
         path: 'manage',
@@ -158,15 +195,5 @@ export const router = createBrowserRouter([
         ],
       },
     ],
-  },
-  {
-    path: '/stations/:id/tasks',
-    element: <StationTasksPage />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: '/restaurants/:id/status-display',
-    element: <OrderStatusDisplayPage />,
-    errorElement: <ErrorPage />,
   },
 ]);

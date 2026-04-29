@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mariadb:11.6
+    container_name: fast-fuel-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: fastfuel
+      MARIADB_USER: fastfuel
+      MARIADB_PASSWORD: fastfuelpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  server:
+    build:
+      context: ./server/FastFuel
+      dockerfile: FastFuel/Dockerfile
+    container_name: fast-fuel-server
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5249
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=fastfuel;User=fastfuel;Password=fastfuelpassword;"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5249:5249"
+
+  client:
+    build:
+      context: ./client/fast-fuel
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:5249
+    container_name: fast-fuel-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "8080:8080"

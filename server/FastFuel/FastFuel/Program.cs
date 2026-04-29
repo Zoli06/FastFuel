@@ -4,6 +4,7 @@ using FastFuel.Features.Common.Exceptions;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Roles.Services;
 using FastFuel.Features.Users.Entities;
+using FastFuel.NSwag.CrudOperationSummary;
 using FastFuel.NSwag.MarkAsRequiredIfNonNullable;
 using FastFuel.NSwag.PermissionSchema;
 using FastFuel.NSwag.SwaggerQueryParam;
@@ -69,7 +70,7 @@ public static class Program
                 options.User.AllowedUserNameCharacters = null!;
             })
             .AddRoles<Role>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<FastFuelDbContext>();
     }
 
     // Configures the application's EF Core DbContext
@@ -79,7 +80,7 @@ public static class Program
                                ?? throw new InvalidOperationException(
                                    "Connection string 'DefaultConnection' not found.");
 
-        builder.Services.AddDbContext<ApplicationDbContext>(dbContextOptions =>
+        builder.Services.AddDbContext<FastFuelDbContext>(dbContextOptions =>
         {
             dbContextOptions
                 .UseLazyLoadingProxies()
@@ -108,6 +109,7 @@ public static class Program
         builder.Services.AddOpenApiDocument((config, serviceProvider) =>
         {
             config.Title = "FastFuel";
+            config.OperationProcessors.Add(new CrudOperationSummaryOperationProcessor());
             config.OperationProcessors.Add(new UnregisteredStatusCodeResultOperationProcessor());
             config.OperationProcessors.Add(new SwaggerQueryParamProcessor());
             config.OperationProcessors.Add(new PermissionSchemaOperationProcessor());
@@ -133,7 +135,6 @@ public static class Program
             .FromAssemblies(typeof(Program).Assembly)
             .AddClasses(filter => filter
                 .InNamespaces("FastFuel.Features")
-                // TODO: switch to an opt-in approach
                 .Where(t => !typeof(IFilterMetadata).IsAssignableFrom(t)
                             && !typeof(IFilterFactory).IsAssignableFrom(t)
                             && !typeof(IExceptionHandler).IsAssignableFrom(t)
@@ -179,11 +180,16 @@ public static class Program
     private static async Task SeedDatabaseAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<FastFuelDbContext>();
 
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureCreatedAsync();
+        }
+        else
+        {
+            // In production, create schema if it does not exist.
             await dbContext.Database.EnsureCreatedAsync();
         }
 
@@ -191,9 +197,9 @@ public static class Program
         await roleInitializer.InitializeAsync();
 
         var databaseSeeder = new DatabaseSeeder(scope.ServiceProvider);
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
             await databaseSeeder.SeedTestAsync();
         else
-            await databaseSeeder.SeedAsync();
+            await databaseSeeder.SeedProdAsync();
     }
 }

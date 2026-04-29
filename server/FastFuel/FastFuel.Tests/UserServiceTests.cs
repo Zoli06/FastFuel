@@ -1,4 +1,5 @@
 using FastFuel.Features.Common.DbContexts;
+using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Roles.Entities;
 using FastFuel.Features.Users.DTOs;
@@ -16,7 +17,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 {
     private readonly MariaDbFixture _fixture;
 
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private RoleManager<Role> _roleManager = null!;
     private TestUserService _service = null!;
     private UserManager<User> _userManager = null!;
@@ -55,7 +56,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
     private UserManager<User> CreateUserManager()
     {
-        var store = new UserStore<User, Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new UserStore<User, Role, FastFuelDbContext, uint>(_dbContext);
 
         return new UserManager<User>(
             store,
@@ -72,7 +73,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
     private RoleManager<Role> CreateRoleManager()
     {
-        var store = new RoleStore<Role, ApplicationDbContext, uint>(_dbContext);
+        var store = new RoleStore<Role, FastFuelDbContext, uint>(_dbContext);
 
         return new RoleManager<Role>(
             store,
@@ -96,8 +97,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = name,
             UserName = username,
-            Password = password,
-            ThemeId = null
+            Password = password
         };
     }
 
@@ -123,8 +123,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
 
         var role = await _roleManager.FindByNameAsync("User");
 
-        Assert.NotNull(role);
-        Assert.True(role.IsDefault);
+        Assert.Null(role);
     }
 
     [Fact]
@@ -135,7 +134,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         var user = await _userManager.FindByNameAsync(result.UserName);
         var roles = await _userManager.GetRolesAsync(user!);
 
-        Assert.Contains("User", roles);
+        Assert.Empty(roles);
     }
 
     [Fact]
@@ -145,11 +144,10 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Test",
             UserName = "test",
-            Password = null,
-            ThemeId = null
+            Password = null
         };
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<MissingRequiredFieldAppException>(() =>
             _service.CreateAsync(request)
         );
     }
@@ -163,8 +161,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             Name = "Updated",
             UserName = "updated",
-            Password = null,
-            ThemeId = null
+            Password = null
         };
 
         await _service.UpdateAsync(created.Id, update);
@@ -224,8 +221,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
             return new User
             {
                 Name = dto.Name,
-                UserName = dto.UserName,
-                ThemeId = dto.ThemeId
+                UserName = dto.UserName
             };
         }
 
@@ -233,7 +229,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
         {
             entity.Name = dto.Name;
             entity.UserName = dto.UserName;
-            entity.ThemeId = dto.ThemeId;
         }
 
         public UserResponseDto ToDto(User entity)
@@ -243,7 +238,6 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
                 Id = entity.Id,
                 Name = entity.Name,
                 UserName = entity.UserName,
-                ThemeId = entity.ThemeId,
                 OrderIds = entity.Orders.ConvertAll(order => order.Id),
 
                 RoleIds = new List<uint>(),
@@ -253,7 +247,7 @@ public class UserServiceTests : IAsyncLifetime, IClassFixture<MariaDbFixture>
     }
 
     private class TestUserService(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         IMapper<User, UserRequestDto, UserResponseDto> mapper,
         UserManager<User> userManager
     ) : UserService(

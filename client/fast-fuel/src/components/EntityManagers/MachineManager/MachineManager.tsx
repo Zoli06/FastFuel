@@ -1,17 +1,16 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MachineManager = () => {
-  const { recommended } = usePagePermissions('MachineManager');
+  const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('MachineManager');
 
   const [{ data: restaurants = [] }, { data: machines = [], refetch: refetchMachines }] =
     useConditionalSuspenseQueries([
-      recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-      apiClient.queryOptions('get', '/api/Machine'),
+      useNoPerm().queryOptions('get', '/api/Restaurant'),
+      useNecessaryPerm('Permission:Machine:Read').queryOptions('get', '/api/Machine'),
     ]);
 
   type Machine = (typeof machines)[number];
@@ -27,15 +26,8 @@ export const MachineManager = () => {
     { header: 'Username', accessor: 'userName' },
     {
       header: 'Located At',
-      render: (m: Machine) => {
-        if (recommended.Restaurant.Read) {
-          return (
-            restaurantOptions.find((o) => o.value === m.locatedAtRestaurantId)?.label ??
-            `#${m.locatedAtRestaurantId}`
-          );
-        }
-        return `#${m.locatedAtRestaurantId}`;
-      },
+      render: (m: Machine) =>
+        restaurantOptions.find((o) => o.value === m.locatedAtRestaurantId)?.label,
     },
   ];
 
@@ -79,32 +71,40 @@ export const MachineManager = () => {
     } satisfies Field,
   ];
 
-  const { mutate: createMachine } = apiClient.useMutation('post', '/api/Machine', {
-    onSuccess: () => refetchMachines(),
-  });
-  const { mutate: updateMachine } = apiClient.useMutation('put', '/api/Machine/{id}', {
-    onSuccess: () => refetchMachines(),
-  });
-  const { mutate: deleteMachine } = apiClient.useMutation('delete', '/api/Machine/{id}', {
-    onSuccess: () => refetchMachines(),
-  });
+  const createMachine = useRecommendedPerm('Permission:Machine:Create')?.useMutation(
+    'post',
+    '/api/Machine',
+    {
+      onSuccess: () => refetchMachines(),
+    },
+  ).mutateAsync;
+  const updateMachine = useRecommendedPerm('Permission:Machine:Update')?.useMutation(
+    'put',
+    '/api/Machine/{id}',
+    {
+      onSuccess: () => refetchMachines(),
+    },
+  ).mutateAsync;
+  const deleteMachine = useRecommendedPerm('Permission:Machine:Delete')?.useMutation(
+    'delete',
+    '/api/Machine/{id}',
+    {
+      onSuccess: () => refetchMachines(),
+    },
+  ).mutate;
 
   const toRequestDto = (values: MachineFormValues) => ({
     name: values.name,
     userName: values.userName,
-    themeId: null,
     password: values.password ?? null,
     locatedAtRestaurantId: values.locatedAtRestaurantId,
   });
 
-  const handleSubmit = (values: MachineFormValues, mode: 'create' | 'edit') => {
-    console.log(values);
-    console.log(toRequestDto(values));
-
-    if (mode === 'create') {
-      createMachine({ body: toRequestDto(values) });
-    } else {
-      updateMachine({ params: { path: { id: values.id } }, body: toRequestDto(values) });
+  const handleSubmit = async (values: MachineFormValues, mode: 'create' | 'edit') => {
+    if (mode === 'create' && createMachine) {
+      await createMachine({ body: toRequestDto(values) });
+    } else if (mode === 'edit' && updateMachine) {
+      await updateMachine({ params: { path: { id: values.id } }, body: toRequestDto(values) });
     }
   };
 
@@ -116,10 +116,12 @@ export const MachineManager = () => {
       tableColumns={tableColumns as ColumnDefinition<MachineFormValues>[]}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(m) => deleteMachine({ params: { path: { id: m.id } } })}
-      canCreate={recommended.Machine.Create}
-      canEdit={recommended.Machine.Update}
-      canDelete={recommended.Machine.Delete}
+      onDelete={
+        deleteMachine ? (m) => deleteMachine({ params: { path: { id: m.id } } }) : undefined
+      }
+      canCreate={!!createMachine}
+      canEdit={!!updateMachine}
+      canDelete={!!deleteMachine}
     />
   );
 };

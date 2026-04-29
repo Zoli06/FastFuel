@@ -1,18 +1,20 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import { Image } from '@mantine/core';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { useApi } from '../../../lib/api.ts';
+import { getDisplayedDescription } from '../../../lib/description.ts';
+import { validateOptionalImageUrl } from '../../../lib/url-validation.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const MenuManager = () => {
-  const { recommended } = usePagePermissions('MenuManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('MenuManager');
+  const foodReadApi = useRecommendedPerm('Permission:Food:Read');
 
   const [{ data: foods = [] }, { data: menus = [], refetch: refetchMenus }] =
     useConditionalSuspenseQueries([
-      recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-      apiClient.queryOptions('get', '/api/Menu'),
+      foodReadApi?.queryOptions('get', '/api/Food'),
+      useNecessaryPerm('Permission:Menu:Read').queryOptions('get', '/api/Menu'),
     ]);
 
   type Menu = (typeof menus)[number];
@@ -26,7 +28,7 @@ export const MenuManager = () => {
   const tableColumns: ColumnDefinition<Menu>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Price', accessor: 'price' },
-    { header: 'Description', accessor: 'description' },
+    { header: 'Description', render: (menu) => getDisplayedDescription(menu.description) },
     {
       header: 'Image',
       render: (menu) =>
@@ -36,7 +38,7 @@ export const MenuManager = () => {
           'No image'
         ),
     },
-    ...(recommended.Food.Read
+    ...(foodReadApi
       ? [
           {
             header: 'Foods',
@@ -70,6 +72,10 @@ export const MenuManager = () => {
       initialValue: 0,
       nullable: 'never',
       required: 'always',
+      fieldProps: {
+        min: 0,
+        step: 0.01,
+      },
     },
     {
       type: 'text',
@@ -87,7 +93,7 @@ export const MenuManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(recommended.Food.Read
+    ...(foodReadApi
       ? [
           {
             type: 'fieldset',
@@ -126,6 +132,10 @@ export const MenuManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                 ],
               },
@@ -135,21 +145,33 @@ export const MenuManager = () => {
       : []),
   ];
 
-  const { mutate: createMenu } = apiClient.useMutation('post', '/api/Menu', {
-    onSuccess: () => refetchMenus(),
-  });
-  const { mutate: updateMenu } = apiClient.useMutation('put', '/api/Menu/{id}', {
-    onSuccess: () => refetchMenus(),
-  });
-  const { mutate: deleteMenu } = apiClient.useMutation('delete', '/api/Menu/{id}', {
-    onSuccess: () => refetchMenus(),
-  });
+  const createMenu = useRecommendedPerm('Permission:Menu:Create')?.useMutation(
+    'post',
+    '/api/Menu',
+    {
+      onSuccess: () => refetchMenus(),
+    },
+  ).mutateAsync;
+  const updateMenu = useRecommendedPerm('Permission:Menu:Update')?.useMutation(
+    'put',
+    '/api/Menu/{id}',
+    {
+      onSuccess: () => refetchMenus(),
+    },
+  ).mutateAsync;
+  const deleteMenu = useRecommendedPerm('Permission:Menu:Delete')?.useMutation(
+    'delete',
+    '/api/Menu/{id}',
+    {
+      onSuccess: () => refetchMenus(),
+    },
+  ).mutate;
 
-  const handleSubmit = (values: Menu, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
-      createMenu({ body: values });
-    } else {
-      updateMenu({ params: { path: { id: values.id } }, body: values });
+  const handleSubmit = async (values: Menu, mode: 'create' | 'edit') => {
+    if (mode === 'create' && createMenu) {
+      await createMenu({ body: values });
+    } else if (mode === 'edit' && updateMenu) {
+      await updateMenu({ params: { path: { id: values.id } }, body: values });
     }
   };
 
@@ -160,11 +182,14 @@ export const MenuManager = () => {
       data={menus}
       tableColumns={tableColumns}
       editorFields={editorFields}
+      validate={{
+        imageUrl: validateOptionalImageUrl,
+      }}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteMenu({ params: { path: { id: r.id } } })}
-      canCreate={recommended.Menu.Create}
-      canEdit={recommended.Menu.Update}
-      canDelete={recommended.Menu.Delete}
+      onDelete={deleteMenu ? (r) => deleteMenu({ params: { path: { id: r.id } } }) : undefined}
+      canCreate={!!createMenu}
+      canEdit={!!updateMenu}
+      canDelete={!!deleteMenu}
     />
   );
 };

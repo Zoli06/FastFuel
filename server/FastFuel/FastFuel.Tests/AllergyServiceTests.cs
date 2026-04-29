@@ -8,7 +8,7 @@ namespace FastFuel.Tests;
 
 public class AllergyServiceTests(MariaDbFixture fixture) : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private AllergyService _service = null!;
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────
@@ -42,13 +42,11 @@ public class AllergyServiceTests(MariaDbFixture fixture) : IClassFixture<MariaDb
 
     private static AllergyRequestDto BuildRequest(
         string name,
-        string? message = "Contains gluten",
         List<uint>? ingredientIds = null)
     {
         return new AllergyRequestDto
         {
             Name = name,
-            Message = message,
             IngredientIds = ingredientIds ?? []
         };
     }
@@ -66,13 +64,12 @@ public class AllergyServiceTests(MariaDbFixture fixture) : IClassFixture<MariaDb
     [Fact]
     public async Task GetAllAsync_WhenAllergyExists_ReturnsThatAllergy()
     {
-        await _service.CreateAsync(BuildRequest("Peanut", "Nut allergy"));
+        await _service.CreateAsync(BuildRequest("Peanut"));
 
         var result = await _service.GetAllAsync();
 
         Assert.Single(result);
         Assert.Equal("Peanut", result[0].Name);
-        Assert.Equal("Nut allergy", result[0].Message);
     }
 
     [Fact]
@@ -95,14 +92,13 @@ public class AllergyServiceTests(MariaDbFixture fixture) : IClassFixture<MariaDb
     [Fact]
     public async Task GetByIdAsync_WithValidId_ReturnsCorrectAllergy()
     {
-        var created = await _service.CreateAsync(BuildRequest("Egg", "Egg allergy"));
+        var created = await _service.CreateAsync(BuildRequest("Egg"));
 
         var result = await _service.GetByIdAsync(created.Id);
 
         Assert.NotNull(result);
         Assert.Equal(created.Id, result.Id);
         Assert.Equal("Egg", result.Name);
-        Assert.Equal("Egg allergy", result.Message);
     }
 
     [Fact]
@@ -118,25 +114,13 @@ public class AllergyServiceTests(MariaDbFixture fixture) : IClassFixture<MariaDb
     [Fact]
     public async Task CreateAsync_WithoutIngredients_PersistsAllergy()
     {
-        var request = BuildRequest("Shellfish", "Seafood allergy");
+        var request = BuildRequest("Shellfish");
 
         var result = await _service.CreateAsync(request);
 
         Assert.NotEqual(0u, result.Id);
         Assert.Equal("Shellfish", result.Name);
-        Assert.Equal("Seafood allergy", result.Message);
         Assert.Empty(result.IngredientIds);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithNullMessage_PersistsNullMessage()
-    {
-        var request = BuildRequest("Wheat", null);
-
-        var result = await _service.CreateAsync(request);
-
-        Assert.NotNull(result);
-        Assert.Null(result.Message);
     }
 
     [Fact]
@@ -167,15 +151,14 @@ public class AllergyServiceTests(MariaDbFixture fixture) : IClassFixture<MariaDb
     [Fact]
     public async Task UpdateAsync_WithValidId_UpdatesAndReturnsTrue()
     {
-        var created = await _service.CreateAsync(BuildRequest("OldName", "Old message"));
-        var updateRequest = BuildRequest("NewName", "New message");
+        var created = await _service.CreateAsync(BuildRequest("OldName"));
+        var updateRequest = BuildRequest("NewName");
 
         var success = await _service.UpdateAsync(created.Id, updateRequest);
 
         Assert.True(success);
         var updated = await _service.GetByIdAsync(created.Id);
         Assert.Equal("NewName", updated!.Name);
-        Assert.Equal("New message", updated.Message);
     }
 
     [Fact]

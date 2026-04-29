@@ -1,33 +1,35 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Stack } from '@mantine/core';
-import { apiClient, myCurrentUserQueryOptions } from '../../lib/api-client.ts';
+import { useApi } from '../../lib/api.ts';
 import { useConditionalSuspenseQueries } from '../../hooks/useConditionalSuspenseQueries.ts';
-import { usePagePermissions } from '../../hooks/usePagePermissions.ts';
 import { ProfileHeader } from './ProfileHeader.tsx';
 import { ProfileEditForm } from './ProfileEditForm.tsx';
 import { ProfileEmployeeCard } from './ProfileEmployeeCard.tsx';
 import { ProfileMachineCard } from './ProfileMachineCard.tsx';
 
 export const Profile = () => {
+  const { useNoPerm, useRecommendedPerm } = useApi('Profile');
+  const noPermApi = useNoPerm();
+  const customerUpdateSelfApi = useRecommendedPerm('Permission:Customer:UpdateSelf');
+
   const { data: currentUser, refetch: refetchCurrentUser } = useSuspenseQuery(
-    myCurrentUserQueryOptions(),
+    noPermApi.queryOptions('get', '/api/User/me'),
   );
-  const { recommended } = usePagePermissions('Profile');
 
   const isCustomer = currentUser.userType === 'Customer';
   const isEmployee = currentUser.userType === 'Employee';
   const isMachine = currentUser.userType === 'Machine';
 
-  const canEdit = isCustomer && recommended.Customer.UpdateSelf;
+  const canEdit = isCustomer && !!customerUpdateSelfApi;
 
   const [
     { data: customerData, refetch: refetchCustomer },
     { data: employeeData },
     { data: machineData },
   ] = useConditionalSuspenseQueries([
-    isCustomer && apiClient.queryOptions('get', '/api/Customer/me'),
-    isEmployee && apiClient.queryOptions('get', '/api/Employee/me'),
-    isMachine && apiClient.queryOptions('get', '/api/Machine/me'),
+    isCustomer ? noPermApi.queryOptions('get', '/api/Customer/me') : undefined,
+    isEmployee ? noPermApi.queryOptions('get', '/api/Employee/me') : undefined,
+    isMachine ? noPermApi.queryOptions('get', '/api/Machine/me') : undefined,
   ]);
 
   const email = customerData?.email ?? '';

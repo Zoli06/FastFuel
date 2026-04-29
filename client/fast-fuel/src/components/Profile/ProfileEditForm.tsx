@@ -9,10 +9,10 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { useForm } from '@mantine/form';
+import { Form, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { apiClient } from '../../lib/api-client.ts';
-import type { components } from '../../types/api.ts';
+import { useApi } from '../../lib/api.ts';
+import { validatePasswordComplexityIfProvided } from '../../lib/password-validation.ts';
 
 interface ProfileEditFormProps {
   name: string;
@@ -24,66 +24,73 @@ interface ProfileEditFormProps {
 export const ProfileEditForm = ({ name, userName, email, onSaved }: ProfileEditFormProps) => {
   const form = useForm({
     initialValues: { name, userName, email, password: '' },
-  });
-
-  const { setFieldValue } = form;
-
-  useEffect(() => {
-    setFieldValue('name', name);
-    setFieldValue('userName', userName);
-  }, [name, userName, setFieldValue]);
-
-  useEffect(() => {
-    if (email) setFieldValue('email', email);
-  }, [email, setFieldValue]);
-
-  const { mutate: updateCustomer } = apiClient.useMutation('put', '/api/Customer/me', {
-    onSuccess: () => {
-      onSaved();
-      notifications.show({
-        title: 'Profile updated',
-        message: 'Your changes have been saved.',
-        color: 'green',
-      });
+    validate: {
+      password: (value) => validatePasswordComplexityIfProvided(value) || null,
     },
   });
 
-  const handleSubmit = form.onSubmit((values) => {
-    updateCustomer({
-      body: {
-        name: values.name,
-        userName: values.userName,
-        email: values.email,
-        themeId: null,
-        password: values.password || null,
-      } as components['schemas']['CustomerRequestDto'],
-    });
-  });
+  useEffect(() => {
+    const currentValues = form.getValues();
+    if (
+      currentValues.name !== name ||
+      currentValues.userName !== userName ||
+      currentValues.email !== email
+    ) {
+      form.setValues((prev) => ({ ...prev, name, userName, email }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, userName, email]);
+
+  const updateCustomer = useApi('Profile')
+    .useRecommendedPerm('Permission:Customer:UpdateSelf')
+    ?.useMutation('put', '/api/Customer/me', {
+      onSuccess: () => {
+        onSaved();
+        notifications.show({
+          title: 'Profile updated',
+          message: 'Your changes have been saved.',
+          color: 'green',
+        });
+      },
+    }).mutate;
+
+  const handleSubmit = (values: typeof form.values) => {
+    if (updateCustomer) {
+      updateCustomer({
+        body: {
+          name: values.name,
+          userName: values.userName,
+          email: values.email,
+          password: values.password || null,
+        },
+      });
+    }
+  };
 
   return (
     <Card withBorder radius="md" p="lg">
       <Text fw={500} mb="md">
         Edit profile
       </Text>
-      <form onSubmit={handleSubmit}>
+      <Form form={form} onSubmit={handleSubmit}>
         <Stack>
           <SimpleGrid cols={2}>
-            <TextInput label="Name" {...form.getInputProps('name')} />
-            <TextInput label="Username" {...form.getInputProps('userName')} />
+            <TextInput label="Name" required {...form.getInputProps('name')} />
+            <TextInput label="Username" required {...form.getInputProps('userName')} />
           </SimpleGrid>
-          <TextInput label="Email" type="email" {...form.getInputProps('email')} />
+          <TextInput label="Email" type="email" required {...form.getInputProps('email')} />
           <PasswordInput
             label="New password"
             placeholder="Leave blank to keep current"
             {...form.getInputProps('password')}
           />
           <Group justify="flex-end">
-            <Button type="submit" color="orange">
+            <Button type="submit" color="#c92a2a">
               Save changes
             </Button>
           </Group>
         </Stack>
-      </form>
+      </Form>
     </Card>
   );
 };

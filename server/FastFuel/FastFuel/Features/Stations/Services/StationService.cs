@@ -15,12 +15,24 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Stations.Services;
 
 public class StationService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Station, StationRequestDto, StationResponseDto> mapper,
     IStationTasksMapper tasksMapper)
     : CrudService<Station, StationRequestDto, StationResponseDto>(dbContext, mapper), IStationService
 {
     protected override DbSet<Station> DbSet { get; } = dbContext.Stations;
+
+    public async Task<List<StationResponseDto>> GetAllStationsWithFiltersAsync(uint? restaurantId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = DbSet.AsQueryable();
+
+        if (restaurantId.HasValue)
+            query = query.Where(station => station.RestaurantId == restaurantId.Value);
+
+        var stations = await query.ToListAsync(cancellationToken);
+        return stations.ConvertAll(Mapper.ToDto);
+    }
 
     public async Task<StationTasksResponseDto?> GetTasksForStationAsync(uint stationId,
         CancellationToken cancellationToken = default)
@@ -71,7 +83,8 @@ public class StationService(
                 f.Order.RestaurantId == restaurantId &&
                 (f.Order.Status == OrderStatus.Pending || f.Order.Status == OrderStatus.InProgress ||
                  f.Order.Status == OrderStatus.Ready) &&
-                relevantFoodIds.Contains(f.FoodId))
+                f.FoodId.HasValue &&
+                relevantFoodIds.Contains(f.FoodId.Value))
             .ToListAsync(cancellationToken);
     }
 
@@ -83,7 +96,8 @@ public class StationService(
                 m.Order.RestaurantId == restaurantId &&
                 (m.Order.Status == OrderStatus.Pending || m.Order.Status == OrderStatus.InProgress ||
                  m.Order.Status == OrderStatus.Ready) &&
-                relevantMenuIds.Contains(m.MenuId))
+                m.MenuId.HasValue &&
+                relevantMenuIds.Contains(m.MenuId.Value))
             .ToListAsync(cancellationToken);
     }
 

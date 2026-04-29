@@ -1,17 +1,20 @@
-﻿import { apiClient } from '../../../lib/api-client.ts';
+import { Image } from '@mantine/core';
+import { useApi } from '../../../lib/api.ts';
+import { getDisplayedDescription } from '../../../lib/description.ts';
+import { validateOptionalImageUrl } from '../../../lib/url-validation.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
 
 export const FoodManager = () => {
-  const { recommended } = usePagePermissions('FoodManager');
+  const { useNecessaryPerm, useRecommendedPerm } = useApi('FoodManager');
+  const ingredientReadApi = useRecommendedPerm('Permission:Ingredient:Read');
 
   const [{ data: ingredients = [] }, { data: foods = [], refetch: refetchFoods }] =
     useConditionalSuspenseQueries([
-      recommended.Ingredient.Read && apiClient.queryOptions('get', '/api/Ingredient'),
-      apiClient.queryOptions('get', '/api/Food'),
+      ingredientReadApi?.queryOptions('get', '/api/Ingredient'),
+      useNecessaryPerm('Permission:Food:Read').queryOptions('get', '/api/Food'),
     ]);
 
   type Food = (typeof foods)[number];
@@ -28,8 +31,17 @@ export const FoodManager = () => {
   const tableColumns: ColumnDefinition<Food>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Price', accessor: 'price' },
-    { header: 'Description', accessor: 'description' },
-    ...(recommended.Ingredient.Read
+    { header: 'Description', render: (food) => getDisplayedDescription(food.description) },
+    {
+      header: 'Image',
+      render: (food) =>
+        food.imageUrl ? (
+          <Image src={food.imageUrl} alt={food.name} width={50} height={50} />
+        ) : (
+          'No image'
+        ),
+    },
+    ...(ingredientReadApi
       ? [
           {
             header: 'Ingredients',
@@ -63,6 +75,10 @@ export const FoodManager = () => {
       initialValue: 0,
       nullable: 'never',
       required: 'always',
+      fieldProps: {
+        min: 0,
+        step: 0.01,
+      },
     },
     {
       type: 'text',
@@ -80,7 +96,7 @@ export const FoodManager = () => {
       required: 'never',
       initialValue: '',
     },
-    ...(recommended.Ingredient.Read
+    ...(ingredientReadApi
       ? [
           {
             type: 'fieldset',
@@ -119,6 +135,10 @@ export const FoodManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                   {
                     type: 'text',
@@ -136,21 +156,33 @@ export const FoodManager = () => {
       : []),
   ];
 
-  const { mutate: createFood } = apiClient.useMutation('post', '/api/Food', {
-    onSuccess: () => refetchFoods(),
-  });
-  const { mutate: updateFood } = apiClient.useMutation('put', '/api/Food/{id}', {
-    onSuccess: () => refetchFoods(),
-  });
-  const { mutate: deleteFood } = apiClient.useMutation('delete', '/api/Food/{id}', {
-    onSuccess: () => refetchFoods(),
-  });
+  const createFood = useRecommendedPerm('Permission:Food:Create')?.useMutation(
+    'post',
+    '/api/Food',
+    {
+      onSuccess: () => refetchFoods(),
+    },
+  ).mutateAsync;
+  const updateFood = useRecommendedPerm('Permission:Food:Update')?.useMutation(
+    'put',
+    '/api/Food/{id}',
+    {
+      onSuccess: () => refetchFoods(),
+    },
+  ).mutateAsync;
+  const deleteFood = useRecommendedPerm('Permission:Food:Delete')?.useMutation(
+    'delete',
+    '/api/Food/{id}',
+    {
+      onSuccess: () => refetchFoods(),
+    },
+  ).mutate;
 
-  const handleSubmit = (values: Food, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
-      createFood({ body: values });
-    } else {
-      updateFood({ params: { path: { id: values.id } }, body: values });
+  const handleSubmit = async (values: Food, mode: 'create' | 'edit') => {
+    if (mode === 'create' && createFood) {
+      await createFood({ body: values });
+    } else if (mode === 'edit' && updateFood) {
+      await updateFood({ params: { path: { id: values.id } }, body: values });
     }
   };
 
@@ -161,11 +193,14 @@ export const FoodManager = () => {
       data={foods}
       tableColumns={tableColumns}
       editorFields={editorFields}
+      validate={{
+        imageUrl: validateOptionalImageUrl,
+      }}
       onSubmit={handleSubmit}
-      onDelete={(r) => deleteFood({ params: { path: { id: r.id } } })}
-      canCreate={recommended.Food.Create}
-      canEdit={recommended.Food.Update}
-      canDelete={recommended.Food.Delete}
+      onDelete={deleteFood ? (r) => deleteFood({ params: { path: { id: r.id } } }) : undefined}
+      canCreate={!!createFood}
+      canEdit={!!updateFood}
+      canDelete={!!deleteFood}
     />
   );
 };

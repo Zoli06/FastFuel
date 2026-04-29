@@ -11,7 +11,6 @@ namespace FastFuel.Features.Admins.Mappers;
 public class AdminMapper(RoleManager<Role> roleManager, UserManager<User> userManager)
     : UserMapper(roleManager, userManager), IMapper<Admin, AdminRequestDto, AdminResponseDto>
 {
-
     public AdminResponseDto ToDto(Admin entity)
     {
         var userDto = base.ToDto(entity);
@@ -21,7 +20,6 @@ public class AdminMapper(RoleManager<Role> roleManager, UserManager<User> userMa
             Name = userDto.Name,
             Email = entity.Email,
             UserName = userDto.UserName,
-            ThemeId = userDto.ThemeId,
             RoleIds = userDto.RoleIds,
             UserType = userDto.UserType,
             OrderIds = userDto.OrderIds
@@ -36,8 +34,7 @@ public class AdminMapper(RoleManager<Role> roleManager, UserManager<User> userMa
             Id = userEntity.Id,
             Name = userEntity.Name,
             Email = dto.Email,
-            UserName = userEntity.UserName,
-            ThemeId = userEntity.ThemeId
+            UserName = userEntity.UserName
         };
     }
 

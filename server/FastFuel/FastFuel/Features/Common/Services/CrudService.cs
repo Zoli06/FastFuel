@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Common.Services;
 
 public abstract class CrudService<TEntity, TRequest, TResponse>(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<TEntity, TRequest, TResponse> mapper)
     : ICrudService<TRequest, TResponse>
     where TEntity : class, IIdentifiable
     where TRequest : class
     where TResponse : class, IIdentifiable
 {
-    protected readonly ApplicationDbContext DbContext = dbContext;
+    protected readonly FastFuelDbContext DbContext = dbContext;
     protected readonly IMapper<TEntity, TRequest, TResponse> Mapper = mapper;
     protected abstract DbSet<TEntity> DbSet { get; }
 

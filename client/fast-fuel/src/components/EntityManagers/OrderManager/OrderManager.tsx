@@ -1,12 +1,16 @@
 import type { ColumnDefinition } from '../../EntityManager/EntityTable/EntityTable.tsx';
 import type { Field } from '../../EntityManager/EntityEditor/types.ts';
-import { apiClient } from '../../../lib/api-client.ts';
+import { useApi } from '../../../lib/api.ts';
 import { EntityManager } from '../../EntityManager/EntityManager.tsx';
-import { usePagePermissions } from '../../../hooks/usePagePermissions.ts';
 import { useConditionalSuspenseQueries } from '../../../hooks/useConditionalSuspenseQueries.ts';
+import type { components } from '../../../types/api-schema.generated.ts';
 
 export const OrderManager = () => {
-  const { recommended } = usePagePermissions('OrderManager');
+  const { useNecessaryPerm, useRecommendedPerm, useNoPerm } = useApi('OrderManager');
+
+  const menuReadApi = useRecommendedPerm('Permission:Menu:Read');
+  const foodReadApi = useRecommendedPerm('Permission:Food:Read');
+  const userReadApi = useRecommendedPerm('Permission:User:Read');
 
   const [
     { data: menus = [] },
@@ -15,17 +19,15 @@ export const OrderManager = () => {
     { data: restaurants = [] },
     { data: orders = [], refetch: refetchOrders },
   ] = useConditionalSuspenseQueries([
-    recommended.Menu.Read && apiClient.queryOptions('get', '/api/Menu'),
-    recommended.Food.Read && apiClient.queryOptions('get', '/api/Food'),
-    recommended.User.Read && apiClient.queryOptions('get', '/api/User'),
-    recommended.Restaurant.Read && apiClient.queryOptions('get', '/api/Restaurant'),
-    apiClient.queryOptions('get', '/api/Order'),
+    menuReadApi?.queryOptions('get', '/api/Menu'),
+    foodReadApi?.queryOptions('get', '/api/Food'),
+    userReadApi?.queryOptions('get', '/api/User'),
+    useNoPerm().queryOptions('get', '/api/Restaurant'),
+    useNecessaryPerm('Permission:Order:Read').queryOptions('get', '/api/Order'),
   ]);
 
   type Order = (typeof orders)[number];
 
-  const menuNameById = new Map(menus.map((m) => [m.id, m.name]));
-  const foodNameById = new Map(foods.map((f) => [f.id, f.name]));
   const userNameById = new Map(users.map((u) => [u.id, u.name]));
   const restaurantNameById = new Map(restaurants.map((r) => [r.id, r.name]));
 
@@ -35,7 +37,11 @@ export const OrderManager = () => {
 
   const tableColumns: ColumnDefinition<Order>[] = [
     { header: 'Order #', accessor: 'orderNumber' },
-    ...(recommended.User.Read
+    {
+      header: 'Restaurant',
+      render: (order: Order) => restaurantNameById.get(order.restaurantId),
+    },
+    ...(userReadApi
       ? [
           {
             header: 'Ordered By',
@@ -43,49 +49,35 @@ export const OrderManager = () => {
           },
         ]
       : []),
-    ...(recommended.Restaurant.Read
-      ? [
-          {
-            header: 'Restaurant',
-            render: (order: Order) =>
-              restaurantNameById.get(order.restaurantId) ?? `#${order.restaurantId}`,
-          },
-        ]
-      : []),
     { header: 'Status', accessor: 'status' },
-    { header: 'Price', render: (order) => `${order.price.toFixed(2)}` },
-    ...(recommended.Menu.Read
-      ? [
-          {
-            header: 'Menus',
-            render: (order: Order) => {
-              if (!order.menus?.length) return 'None';
-              return order.menus
-                .map((om) => {
-                  const name = menuNameById.get(om.menuId) ?? `#${om.menuId}`;
-                  return `${name} ×${om.quantity}`;
-                })
-                .join(', ');
-            },
-          },
-        ]
-      : []),
-    ...(recommended.Food.Read
-      ? [
-          {
-            header: 'Foods',
-            render: (order: Order) => {
-              if (!order.foods?.length) return 'None';
-              return order.foods
-                .map((of) => {
-                  const name = foodNameById.get(of.foodId) ?? `#${of.foodId}`;
-                  return `${name} ×${of.quantity}`;
-                })
-                .join(', ');
-            },
-          },
-        ]
-      : []),
+    {
+      header: 'Price (USD)',
+      render: (order) =>
+        order.foods.reduce((sum, of) => sum + of.originalFoodPrice * of.quantity, 0) +
+        order.menus.reduce((sum, om) => sum + om.originalMenuPrice * om.quantity, 0),
+    },
+    {
+      header: 'Menus',
+      render: (order: Order) => {
+        if (!order.menus?.length) return 'None';
+        return order.menus
+          .map((om) => {
+            return `${om.originalMenuName} ×${om.quantity}`;
+          })
+          .join(', ');
+      },
+    },
+    {
+      header: 'Foods',
+      render: (order: Order) => {
+        if (!order.foods?.length) return 'None';
+        return order.foods
+          .map((of) => {
+            return `${of.originalFoodName} ×${of.quantity}`;
+          })
+          .join(', ');
+      },
+    },
     {
       header: 'Created At',
       render: (order) => new Date(order.createdAt).toLocaleString(),
@@ -93,24 +85,20 @@ export const OrderManager = () => {
   ];
 
   const editorFields: Field[] = [
-    ...(recommended.Restaurant.Read
-      ? [
-          {
-            type: 'numericSelect',
-            key: 'restaurantId',
-            label: 'Restaurant',
-            initialValue: 0,
-            nullable: 'never',
-            required: 'always',
-            fieldProps: {
-              data: restaurantOptions,
-              placeholder: 'Select restaurant',
-              searchable: true,
-            },
-          } satisfies Field,
-        ]
-      : []),
-    ...(recommended.Menu.Read
+    {
+      type: 'numericSelect',
+      key: 'restaurantId',
+      label: 'Restaurant',
+      initialValue: 0,
+      nullable: 'never',
+      required: 'always',
+      fieldProps: {
+        data: restaurantOptions,
+        placeholder: 'Select restaurant',
+        searchable: true,
+      },
+    },
+    ...(menuReadApi
       ? [
           {
             type: 'fieldset',
@@ -149,6 +137,10 @@ export const OrderManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                   {
                     type: 'text',
@@ -164,7 +156,7 @@ export const OrderManager = () => {
           } satisfies Field,
         ]
       : []),
-    ...(recommended.Food.Read
+    ...(foodReadApi
       ? [
           {
             type: 'fieldset',
@@ -203,6 +195,10 @@ export const OrderManager = () => {
                     initialValue: 1,
                     nullable: 'never',
                     required: 'always',
+                    fieldProps: {
+                      min: 1,
+                      step: 1,
+                    },
                   },
                   {
                     type: 'text',
@@ -220,21 +216,24 @@ export const OrderManager = () => {
       : []),
   ];
 
-  const { mutate: createOrder } = apiClient.useMutation('post', '/api/Order', {
-    onSuccess: () => refetchOrders(),
-  });
-  const { mutate: updateOrder } = apiClient.useMutation('put', '/api/Order/{id}', {
-    onSuccess: () => refetchOrders(),
-  });
-  const { mutate: deleteOrder } = apiClient.useMutation('delete', '/api/Order/{id}', {
-    onSuccess: () => refetchOrders(),
-  });
+  const createOrder = useRecommendedPerm('Permission:Order:Create')?.useMutation(
+    'post',
+    '/api/Order',
+    {
+      onSuccess: () => refetchOrders(),
+    },
+  ).mutateAsync;
+  const deleteOrder = useRecommendedPerm('Permission:Order:Delete')?.useMutation(
+    'delete',
+    '/api/Order/{id}',
+    {
+      onSuccess: () => refetchOrders(),
+    },
+  ).mutate;
 
-  const handleSubmit = (values: Order, mode: 'create' | 'edit') => {
-    if (mode === 'create') {
-      createOrder({ body: values });
-    } else {
-      updateOrder({ params: { path: { id: values.id } }, body: values });
+  const handleSubmit = async (values: Order, mode: 'create' | 'edit') => {
+    if (mode === 'create' && createOrder) {
+      await createOrder({ body: values as components['schemas']['OrderRequestDto'] });
     }
   };
 
@@ -246,10 +245,10 @@ export const OrderManager = () => {
       tableColumns={tableColumns}
       editorFields={editorFields}
       onSubmit={handleSubmit}
-      onDelete={(o) => deleteOrder({ params: { path: { id: o.id } } })}
-      canCreate={recommended.Order.Create}
-      canEdit={recommended.Order.Update}
-      canDelete={recommended.Order.Delete}
+      onDelete={deleteOrder ? (o) => deleteOrder({ params: { path: { id: o.id } } }) : undefined}
+      canCreate={!!createOrder}
+      canEdit={false}
+      canDelete={!!deleteOrder}
     />
   );
 };

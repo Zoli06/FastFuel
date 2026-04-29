@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FastFuel.Features.Ingredients.Services;
 
 public class IngredientService(
-    ApplicationDbContext dbContext,
+    FastFuelDbContext dbContext,
     IMapper<Ingredient, IngredientRequestDto, IngredientResponseDto> mapper)
     : CrudService<Ingredient, IngredientRequestDto, IngredientResponseDto>(dbContext, mapper)
 {

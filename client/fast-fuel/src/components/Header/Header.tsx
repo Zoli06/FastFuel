@@ -1,19 +1,15 @@
 import { Button, Center, Flex, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
-import {
-  apiClient,
-  clearAuthData,
-  fetchClient,
-  myCurrentUserQueryOptions,
-} from '../../lib/api-client.ts';
+import { Link, useNavigate } from 'react-router-dom';
+import { useApi } from '../../lib/api.ts';
 
 export type HeaderAuthButton = 'Login' | 'Logout' | 'Register';
 
 interface HeaderProps {
   title: string;
   authButton?: HeaderAuthButton;
+  showHomeButton?: boolean;
+  showAuthButton?: boolean;
 }
 
 const authButtonConfig = {
@@ -22,62 +18,68 @@ const authButtonConfig = {
   Register: { text: 'Register', color: 'blue', path: '/register' },
 };
 
-export const Header = ({ title, authButton = 'Logout' }: HeaderProps) => {
+export const Header = ({
+  title,
+  authButton = 'Logout',
+  showHomeButton = true,
+  showAuthButton = true,
+}: HeaderProps) => {
   const navigate = useNavigate();
   const shouldLoadCurrentUser = authButton === 'Logout';
+  const { useNoPerm, invalidateApiCache } = useApi(null);
 
   const { data: currentUser } = useQuery({
-    ...myCurrentUserQueryOptions(),
+    ...useNoPerm().queryOptions('get', '/api/User/me'),
     enabled: shouldLoadCurrentUser,
   });
 
-  const { mutate: logout } = apiClient.useMutation('post', '/api/Auth/logout', {
+  const { mutate: logout } = useNoPerm().useMutation('post', '/api/Auth/logout', {
     onSuccess: () => {
-      clearAuthData();
+      invalidateApiCache();
       navigate('/login');
     },
   });
-
-  const handleHomeClick = async () => {
-    const { data: user } = await fetchClient.GET('/api/User/me').catch(() => ({ data: null }));
-    if (!user) {
-      notifications.show({
-        title: 'Not logged in',
-        message: 'Please login to access the home page',
-        color: 'red',
-      });
-      return;
-    }
-    navigate('/');
-  };
 
   const config = authButtonConfig[authButton];
 
   return (
     <Flex className="header-flex" align="center" justify="space-between" px="md" py="xs">
       <Flex flex={1} justify="flex-start">
-        <Button variant="filled" onClick={handleHomeClick} color="gray">
-          Home
-        </Button>
+        {showHomeButton && (
+          <Link to={currentUser ? '/home' : '/'}>
+            <Button variant="filled" color="gray">
+              {currentUser ? 'Home' : 'Welcome'}
+            </Button>
+          </Link>
+        )}
       </Flex>
-      <Center>
+      <Center flex={1}>
         <Stack align="center" gap={0}>
-          <Text fz="2rem">{title}</Text>
+          {title && (
+            <Text
+              fz={!currentUser ? { base: '3rem' } : { base: '1em', xs: '1.2rem', sm: '1.5em' }}
+              ta={'center'}
+            >
+              {title}
+            </Text>
+          )}
           {currentUser && (
-            <Text size="sm" c="dimmed">
+            <Text size="sm" c="dimmed" ta={'center'}>
               {currentUser.name} ({currentUser.userType.toLowerCase()})
             </Text>
           )}
         </Stack>
       </Center>
       <Flex flex={1} justify="flex-end">
-        <Button
-          variant="filled"
-          color={config.color}
-          onClick={() => (config.path ? navigate(config.path) : logout({}))}
-        >
-          {config.text}
-        </Button>
+        {showAuthButton && (
+          <Button
+            variant="filled"
+            color={config.color}
+            onClick={() => (config.path ? navigate(config.path) : logout({}))}
+          >
+            {config.text}
+          </Button>
+        )}
       </Flex>
     </Flex>
   );

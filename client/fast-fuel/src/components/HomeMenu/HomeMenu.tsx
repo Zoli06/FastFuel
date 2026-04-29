@@ -11,17 +11,31 @@ import { Paper } from '../common/Paper/Paper.tsx';
 import { Link } from 'react-router-dom';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { IconChevronRight, IconShield } from '@tabler/icons-react';
+import { useApi } from '../../lib/api.ts';
 import {
   type Group as PageGroup,
   type PageDefinition,
   getPageDefinitions,
 } from '../../lib/page-definitions.ts';
-import { myRolesQueryOptions } from '../../lib/api-client.ts';
+
+const groupOrder: PageGroup[] = [
+  'User Management',
+  'Me',
+  'Orders',
+  'Display',
+  'Restaurant',
+  'Edibles',
+];
 
 export const HomeMenu = () => {
-  const { data: roles } = useSuspenseQuery(myRolesQueryOptions());
-  const accessiblePages = Array.from(new Set(roles.flatMap((role) => role.pages)));
+  const { useNoPerm } = useApi(null);
+  const { data: roles } = useSuspenseQuery(useNoPerm().queryOptions('get', '/api/Role/my'));
+  // random bug fix, works ig
+  const accessiblePages = Array.from(new Set((roles ?? []).flatMap((role) => role.pages)));
   const pageDefinitions = getPageDefinitions(accessiblePages);
+  const orderedPageDefinitions = groupOrder
+    .map((group) => [group, pageDefinitions[group]] as const)
+    .filter((entry): entry is [PageGroup, PageDefinition[]] => Boolean(entry[1]?.length));
 
   const MenuCard = ({
     text,
@@ -71,26 +85,24 @@ export const HomeMenu = () => {
   return (
     <Paper>
       <Stack gap="md">
-        {(Object.entries(pageDefinitions) as [PageGroup, PageDefinition[]][]).map(
-          ([group, defs]) => (
-            <Stack key={group} gap="xs">
-              <Text size="xs" fw={600} c="dimmed" tt="uppercase">
-                {group}
-              </Text>
-              <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
-                {defs.map((def) => (
-                  <MenuCard
-                    key={def.routePath}
-                    text={def.displayName}
-                    to={def.routePath}
-                    icon={def.icon}
-                    color={def.color}
-                  />
-                ))}
-              </SimpleGrid>
-            </Stack>
-          ),
-        )}
+        {orderedPageDefinitions.map(([group, defs]) => (
+          <Stack key={group} gap="xs">
+            <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+              {group}
+            </Text>
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+              {defs.map((def) => (
+                <MenuCard
+                  key={def.routePath}
+                  text={def.displayName}
+                  to={def.routePath}
+                  icon={def.icon}
+                  color={def.color}
+                />
+              ))}
+            </SimpleGrid>
+          </Stack>
+        ))}
       </Stack>
     </Paper>
   );

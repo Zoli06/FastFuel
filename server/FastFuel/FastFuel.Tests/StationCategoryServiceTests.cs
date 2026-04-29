@@ -11,7 +11,7 @@ namespace FastFuel.Tests;
 public class StationCategoryServiceTests(MariaDbFixture fixture)
     : IClassFixture<MariaDbFixture>, IAsyncLifetime
 {
-    private ApplicationDbContext _dbContext = null!;
+    private FastFuelDbContext _dbContext = null!;
     private Restaurant _defaultRestaurant = null!;
     private StationCategoryService _service = null!;
 

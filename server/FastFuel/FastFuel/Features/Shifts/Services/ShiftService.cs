@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Shifts.Services;
 
-public class ShiftService(ApplicationDbContext dbContext, IMapper<Shift, ShiftRequestDto, ShiftResponseDto> mapper)
+public class ShiftService(FastFuelDbContext dbContext, IMapper<Shift, ShiftRequestDto, ShiftResponseDto> mapper)
     : CrudService<Shift, ShiftRequestDto, ShiftResponseDto>(dbContext, mapper), IShiftService
 {
     protected override DbSet<Shift> DbSet { get; } = dbContext.Shifts;

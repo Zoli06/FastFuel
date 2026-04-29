@@ -1,32 +1,38 @@
-import { Button, Divider, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
+import { Button, Divider, Group, Modal, Radio, Stack, Text, TextInput } from '@mantine/core';
 import { Form, useForm } from '@mantine/form';
-import type { CartEntry, CheckoutStep } from '../types.ts';
+import type { CartEntry, CheckoutStep, PaymentMethod } from '../types.ts';
 import { useEffect } from 'react';
 
 type CheckoutModalProps = {
   checkoutStep: CheckoutStep;
+  paymentMethod: PaymentMethod;
   selectedRestaurantName: string | undefined;
   cart: CartEntry[];
   totalPrice: number;
   placedOrderNumber: number | null;
   isPending: boolean;
+  onPaymentMethodChange: (value: PaymentMethod) => void;
   onCloseCheckout: () => void;
   onConfirmOrder: () => void;
   onBackToConfirm: () => void;
-  onPay: () => void;
+  onPayCard: () => void;
+  onPayCash: () => void;
 };
 
 export const CheckoutModal = ({
   checkoutStep,
+  paymentMethod,
   selectedRestaurantName,
   cart,
   totalPrice,
   placedOrderNumber,
   isPending,
+  onPaymentMethodChange,
   onCloseCheckout,
   onConfirmOrder,
   onBackToConfirm,
-  onPay,
+  onPayCard,
+  onPayCash,
 }: CheckoutModalProps) => {
   // Card form state and validation
   const cardForm = useForm({
@@ -37,11 +43,13 @@ export const CheckoutModal = ({
     },
     validate: {
       cardNumber: (value) => {
+        if (paymentMethod !== 'card') return null;
         const digits = value.replace(/\D/g, '');
         if (digits.length !== 16) return 'Card number must be 16 digits';
         return null;
       },
       expiry: (value) => {
+        if (paymentMethod !== 'card') return null;
         if (!/^\d{2}\/\d{2}$/.test(value)) return 'Expiry must be MM/YY';
         const [mm, yy] = value.split('/').map(Number);
         if (mm < 1 || mm > 12) return 'Invalid month';
@@ -53,6 +61,7 @@ export const CheckoutModal = ({
         return null;
       },
       cvv: (value) => {
+        if (paymentMethod !== 'card') return null;
         if (!/^\d{3,4}$/.test(value)) return 'CVV must be 3 or 4 digits';
         return null;
       },
@@ -69,12 +78,12 @@ export const CheckoutModal = ({
 
   // Reset form on modal close or thank you
   useEffect(() => {
-    if (checkoutStep !== 'payment') {
+    if (checkoutStep !== 'payment' || paymentMethod !== 'card') {
       cardForm.reset();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkoutStep]);
+  }, [checkoutStep, paymentMethod]);
 
   return (
     <>
@@ -88,7 +97,7 @@ export const CheckoutModal = ({
         <Stack gap="sm">
           <Text size="sm" c="dimmed">
             Ordering from:{' '}
-            <Text span fw={700} c="orange">
+            <Text span fw={700} c="darkred">
               {selectedRestaurantName}
             </Text>
           </Text>
@@ -145,7 +154,17 @@ export const CheckoutModal = ({
         closeOnEscape={false}
         withCloseButton={false}
       >
-        <Form form={cardForm} onSubmit={onPay}>
+        <Form
+          form={cardForm}
+          onSubmit={() => {
+            if (paymentMethod === 'card') {
+              onPayCard();
+              return;
+            }
+
+            onPayCash();
+          }}
+        >
           <Stack gap="md">
             <Text size="sm" c="dimmed">
               Total to pay:
@@ -153,52 +172,70 @@ export const CheckoutModal = ({
             <Text fw={800} size="xl" c="darkred" ta="center">
               ${totalPrice.toFixed(2)}
             </Text>
-            <Divider label="Card details" labelPosition="center" />
-            <TextInput
-              label="Card number"
-              maxLength={19}
-              placeholder="1234 5678 9012 3456"
-              {...cardForm.getInputProps('cardNumber')}
-              value={cardForm.values.cardNumber}
-              onChange={(e) => {
-                cardForm.setFieldValue('cardNumber', formatCardNumber(e.currentTarget.value));
-              }}
-              error={cardForm.errors.cardNumber}
-              inputMode="numeric"
-              autoComplete="cc-number"
-            />
-            <Group grow align="flex-start">
-              <TextInput
-                label="Expiry date"
-                maxLength={5}
-                placeholder="MM/YY"
-                {...cardForm.getInputProps('expiry')}
-                value={cardForm.values.expiry}
-                onChange={(e) => {
-                  // Auto-insert slash
-                  let v = e.currentTarget.value.replace(/\D/g, '');
-                  if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2, 4);
-                  cardForm.setFieldValue('expiry', v.slice(0, 5));
-                }}
-                error={cardForm.errors.expiry}
-                inputMode="numeric"
-                autoComplete="cc-exp"
-              />
-              <TextInput
-                label="CVV"
-                maxLength={4}
-                placeholder="123"
-                {...cardForm.getInputProps('cvv')}
-                onChange={(e) => {
-                  cardForm
-                    .getInputProps('cvv')
-                    .onChange(e.currentTarget.value.replace(/\D/g, '').slice(0, 4));
-                }}
-                error={cardForm.errors.cvv}
-                inputMode="numeric"
-                autoComplete="cc-csc"
-              />
-            </Group>
+            <Divider label="Payment method" labelPosition="center" />
+            <Radio.Group
+              value={paymentMethod}
+              onChange={(value) => onPaymentMethodChange(value as PaymentMethod)}
+            >
+              <Group>
+                <Radio value="card" label="Card" />
+                <Radio value="cash" label="Cash" />
+              </Group>
+            </Radio.Group>
+            {paymentMethod === 'card' ? (
+              <>
+                <Divider label="Card details" labelPosition="center" />
+                <TextInput
+                  label="Card number"
+                  maxLength={19}
+                  placeholder="1234 5678 9012 3456"
+                  {...cardForm.getInputProps('cardNumber')}
+                  value={cardForm.values.cardNumber}
+                  onChange={(e) => {
+                    cardForm.setFieldValue('cardNumber', formatCardNumber(e.currentTarget.value));
+                  }}
+                  error={cardForm.errors.cardNumber}
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                />
+                <Group grow align="flex-start">
+                  <TextInput
+                    label="Expiry date"
+                    maxLength={5}
+                    placeholder="MM/YY"
+                    {...cardForm.getInputProps('expiry')}
+                    value={cardForm.values.expiry}
+                    onChange={(e) => {
+                      // Auto-insert slash
+                      let v = e.currentTarget.value.replace(/\D/g, '');
+                      if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2, 4);
+                      cardForm.setFieldValue('expiry', v.slice(0, 5));
+                    }}
+                    error={cardForm.errors.expiry}
+                    inputMode="numeric"
+                    autoComplete="cc-exp"
+                  />
+                  <TextInput
+                    label="CVV"
+                    maxLength={4}
+                    placeholder="123"
+                    {...cardForm.getInputProps('cvv')}
+                    onChange={(e) => {
+                      cardForm
+                        .getInputProps('cvv')
+                        .onChange(e.currentTarget.value.replace(/\D/g, '').slice(0, 4));
+                    }}
+                    error={cardForm.errors.cvv}
+                    inputMode="numeric"
+                    autoComplete="cc-csc"
+                  />
+                </Group>
+              </>
+            ) : (
+              <Text size="sm" c="dimmed" ta="center">
+                You will pay with cash when your order arrives.
+              </Text>
+            )}
             <Button
               fullWidth
               color="darkred"
@@ -206,7 +243,9 @@ export const CheckoutModal = ({
               type="submit"
               disabled={isPending}
             >
-              Pay ${totalPrice.toFixed(2)}
+              {paymentMethod === 'card'
+                ? `Pay $${totalPrice.toFixed(2)}`
+                : `Place cash order ($${totalPrice.toFixed(2)})`}
             </Button>
             <Button variant="subtle" color="gray" onClick={onBackToConfirm}>
               Back
@@ -226,7 +265,7 @@ export const CheckoutModal = ({
         closeOnEscape={false}
       >
         <Stack gap="sm" align="center">
-          <Text fw={700} size="xl" c="orange">
+          <Text fw={700} size="xl" c="#252627">
             Order #{placedOrderNumber}
           </Text>
           <Text size="xs" c="dimmed" ta="center">

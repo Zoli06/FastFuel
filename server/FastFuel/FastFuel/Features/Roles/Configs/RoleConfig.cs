@@ -11,6 +11,6 @@ public class RoleConfig : IEntityTypeConfiguration<Role>
         builder.HasIndex(r => r.Name).IsUnique();
         builder.Property(r => r.Name).IsRequired().HasMaxLength(500);
         builder.Property(r => r.IsDefault).IsRequired().HasDefaultValue(false);
-        builder.Property(r => r.IsImmutable).IsRequired().HasDefaultValue(false);
+        builder.Property(r => r.ArePermissionsImmutable).IsRequired().HasDefaultValue(false);
     }
 }

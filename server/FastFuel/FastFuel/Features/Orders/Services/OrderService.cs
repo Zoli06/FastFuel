@@ -4,30 +4,58 @@ using FastFuel.Features.Common.Exceptions.AppExceptions;
 using FastFuel.Features.Common.Interfaces;
 using FastFuel.Features.Common.Services;
 using FastFuel.Features.Common.Services.CrudOperations;
+using FastFuel.Features.Foods.DTOs;
 using FastFuel.Features.Foods.Entities;
+using FastFuel.Features.Menus.DTOs;
 using FastFuel.Features.Menus.Entities;
 using FastFuel.Features.Orders.Common;
 using FastFuel.Features.Orders.DTOs;
 using FastFuel.Features.Orders.Entities;
-using FastFuel.Features.Orders.Services.OrderFilter;
 using Microsoft.EntityFrameworkCore;
 
 namespace FastFuel.Features.Orders.Services;
 
 public class OrderService(
-    ApplicationDbContext dbContext,
-    IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
-    : CrudService<Order, OrderRequestDto, OrderResponseDto>(dbContext, mapper), IOrderService
+    FastFuelDbContext dbContext,
+    IMapper<Order, OrderRequestDto, OrderResponseDto> mapper,
+    ICrudService<FoodRequestDto, FoodResponseDto> foodService,
+    ICrudService<MenuRequestDto, MenuResponseDto> menuService)
+    : IOrderService
 {
     private const int MinOrderNumberBeforeReset = 99;
     private const int MinHoursBeforeReset = 3;
-    protected override DbSet<Order> DbSet => DbContext.Orders;
+    protected DbSet<Order> DbSet => dbContext.Orders;
 
-    protected override Create<Order, OrderRequestDto, OrderResponseDto> CreateOperation =>
-        new Create(DbContext, DbSet, Mapper);
 
-    protected override Update<Order, OrderRequestDto, OrderResponseDto> UpdateOperation =>
-        new Update(DbContext, DbSet, Mapper);
+    protected virtual GetAll<Order, OrderRequestDto, OrderResponseDto> GetAllOperation => new(DbSet, mapper);
+    protected virtual GetById<Order, OrderRequestDto, OrderResponseDto> GetByIdOperation => new(DbSet, mapper);
+
+    protected Create<Order, OrderRequestDto, OrderResponseDto> CreateOperation =>
+        new Create(dbContext, DbSet, mapper, foodService, menuService);
+
+    protected virtual Delete<Order> DeleteOperation => new(dbContext, DbSet);
+
+    public Task<List<OrderResponseDto>> GetAllAsync(uint? userId = null, CancellationToken cancellationToken = default)
+    {
+        return GetAllOperation.ExecuteAsync(userId, cancellationToken);
+    }
+
+    public Task<OrderResponseDto?> GetByIdAsync(uint id, uint? userId = null,
+        CancellationToken cancellationToken = default)
+    {
+        return GetByIdOperation.ExecuteAsync(id, userId, cancellationToken);
+    }
+
+    public Task<OrderResponseDto> CreateAsync(OrderRequestDto requestDto, uint? userId = null,
+        CancellationToken cancellationToken = default)
+    {
+        return CreateOperation.ExecuteAsync(requestDto, userId, cancellationToken);
+    }
+
+    public Task<bool> DeleteAsync(uint id, uint? userId = null, CancellationToken cancellationToken = default)
+    {
+        return DeleteOperation.ExecuteAsync(id, userId, cancellationToken);
+    }
 
     public async Task<List<OrderResponseDto>> GetOrdersForCurrentUserAsync(ClaimsPrincipal user,
         CancellationToken cancellationToken = default)
@@ -45,10 +73,10 @@ public class OrderService(
             .Where(o => o.UserId == userId)
             .ToListAsync(cancellationToken);
 
-        return orders.ConvertAll(Mapper.ToDto);
+        return orders.ConvertAll(mapper.ToDto);
     }
 
-    public async Task<List<OrderResponseDto>> GetAllOrdersWithFiltersAsync(IOrderFilterParams filterParams,
+    public async Task<List<OrderResponseDto>> GetAllOrdersWithFiltersAsync(OrderFilterParams filterParams,
         CancellationToken cancellationToken = default)
     {
         var query = DbSet
@@ -63,7 +91,7 @@ public class OrderService(
             query = query.Where(o => o.RestaurantId == filterParams.RestaurantId.Value);
 
         var orders = await query.ToListAsync(cancellationToken);
-        return orders.ConvertAll(Mapper.ToDto);
+        return orders.ConvertAll(mapper.ToDto);
     }
 
     public async Task<bool> UpdateOrderStatusAsync(uint orderId, OrderStatus newStatus,
@@ -77,7 +105,7 @@ public class OrderService(
         if (newStatus == OrderStatus.Completed)
             order.CompletedAt = DateTime.UtcNow;
 
-        await DbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return true;
     }
@@ -90,29 +118,12 @@ public class OrderService(
         return (lastOrder?.OrderNumber ?? 0) + 1;
     }
 
-    private static async Task<uint> CalculatePriceAsync(Order entity, ApplicationDbContext dbContext,
-        CancellationToken cancellationToken = default)
-    {
-        var menuIds = entity.Menus.Select(m => m.MenuId).ToList();
-        var foodIds = entity.Foods.Select(f => f.FoodId).ToList();
-
-        var menuPrices = await dbContext.Menus
-            .Where(m => menuIds.Contains(m.Id))
-            .ToDictionaryAsync(m => m.Id, m => m.Price, cancellationToken);
-
-        var foodPrices = await dbContext.Foods
-            .Where(f => foodIds.Contains(f.Id))
-            .ToDictionaryAsync(f => f.Id, f => f.Price, cancellationToken);
-
-        var menuPrice = (uint)entity.Menus.Sum(m => m.Quantity * (menuPrices.TryGetValue(m.MenuId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Menu), m.MenuId)));
-        var foodPrice = (uint)entity.Foods.Sum(f => f.Quantity * (foodPrices.TryGetValue(f.FoodId, out var price) ? price : throw new ResourceNotFoundAppException(nameof(Food), f.FoodId)));
-        return menuPrice + foodPrice;
-    }
-
     private class Create(
-        ApplicationDbContext dbContext,
+        FastFuelDbContext dbContext,
         DbSet<Order> dbSet,
-        IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
+        IMapper<Order, OrderRequestDto, OrderResponseDto> mapper,
+        ICrudService<FoodRequestDto, FoodResponseDto> foodService,
+        ICrudService<MenuRequestDto, MenuResponseDto> menuService)
         : Create<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
     {
         private static readonly SemaphoreSlim OrderCreationLock = new(1, 1);
@@ -149,27 +160,29 @@ public class OrderService(
 
             if (userId == null)
                 throw new AppException("User ID is required to create an order.");
-
             entity.UserId = userId.Value;
 
-            entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
+            foreach (var food in entity.Foods)
+            {
+                if (!food.FoodId.HasValue)
+                    continue;
+                var originalFood = foodService.GetByIdAsync(food.FoodId.Value, null, cancellationToken).Result
+                                   ?? throw new ResourceNotFoundAppException(nameof(Food), food.FoodId);
+                food.OriginalFoodName = originalFood.Name;
+                food.OriginalFoodPrice = originalFood.Price;
+            }
+
+            foreach (var menu in entity.Menus)
+            {
+                if (!menu.MenuId.HasValue)
+                    continue;
+                var originalMenu = menuService.GetByIdAsync(menu.MenuId.Value, null, cancellationToken).Result
+                                   ?? throw new ResourceNotFoundAppException(nameof(Menu), menu.MenuId);
+                menu.OriginalMenuName = originalMenu.Name;
+                menu.OriginalMenuPrice = originalMenu.Price;
+            }
 
             return entity;
-        }
-    }
-
-    private class Update(
-        ApplicationDbContext dbContext,
-        DbSet<Order> dbSet,
-        IMapper<Order, OrderRequestDto, OrderResponseDto> mapper)
-        : Update<Order, OrderRequestDto, OrderResponseDto>(dbContext, dbSet, mapper)
-    {
-        protected override async Task UpdateEntityAsync(uint id, OrderRequestDto requestDto, Order entity,
-            uint? userId = null,
-            CancellationToken cancellationToken = default)
-        {
-            await base.UpdateEntityAsync(id, requestDto, entity, userId, cancellationToken);
-            entity.Price = await CalculatePriceAsync(entity, DbContext, cancellationToken);
         }
     }
 }
