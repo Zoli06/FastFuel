@@ -121,11 +121,19 @@ export const IngredientManager = () => {
     },
   ).mutate;
 
+  const normalizePayload = (values: Ingredient) => ({
+    ...values,
+    allergyIds: allergyReadApi ? (values.allergyIds ?? []) : [],
+    stationCategoryIds: stationCategoryReadApi ? (values.stationCategoryIds ?? []) : [],
+  });
+
   const handleSubmit = async (values: Ingredient, mode: 'create' | 'edit') => {
+    const payload = normalizePayload(values);
+
     if (mode === 'create' && createIngredient) {
-      await createIngredient({ body: values });
+      await createIngredient({ body: payload });
     } else if (mode === 'edit' && updateIngredient) {
-      await updateIngredient({ params: { path: { id: values.id } }, body: values });
+      await updateIngredient({ params: { path: { id: values.id } }, body: payload });
     }
   };
 

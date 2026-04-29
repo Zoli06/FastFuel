@@ -179,10 +179,14 @@ export const FoodManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Food, mode: 'create' | 'edit') => {
+    const payload = ingredientReadApi
+      ? { ...values, ingredients: values.ingredients ?? [] }
+      : { ...values, ingredients: [] };
+
     if (mode === 'create' && createFood) {
-      await createFood({ body: values });
+      await createFood({ body: payload });
     } else if (mode === 'edit' && updateFood) {
-      await updateFood({ params: { path: { id: values.id } }, body: values });
+      await updateFood({ params: { path: { id: values.id } }, body: payload });
     }
   };
 

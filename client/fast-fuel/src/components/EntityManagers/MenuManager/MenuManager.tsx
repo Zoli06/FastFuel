@@ -168,10 +168,14 @@ export const MenuManager = () => {
   ).mutate;
 
   const handleSubmit = async (values: Menu, mode: 'create' | 'edit') => {
+    const payload = foodReadApi
+      ? { ...values, foods: values.foods ?? [] }
+      : { ...values, foods: [] };
+
     if (mode === 'create' && createMenu) {
-      await createMenu({ body: values });
+      await createMenu({ body: payload });
     } else if (mode === 'edit' && updateMenu) {
-      await updateMenu({ params: { path: { id: values.id } }, body: values });
+      await updateMenu({ params: { path: { id: values.id } }, body: payload });
     }
   };
 

@@ -149,7 +149,7 @@ export const EmployeeManager = () => {
     userName: values.userName,
     password: values.password ?? null,
     shiftIds: values.shiftIds ?? [],
-    stationCategoryIds: values.stationCategoryIds,
+    stationCategoryIds: stationCategoryReadApi ? (values.stationCategoryIds ?? []) : [],
     worksAtRestaurantId: values.worksAtRestaurantId,
   });
 

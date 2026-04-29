@@ -86,10 +86,14 @@ export const StationCategoryManager = () => {
   }).mutate;
 
   const handleSubmit = async (values: StationCategory, mode: 'create' | 'edit') => {
+    const payload = ingredientReadApi
+      ? { ...values, ingredientIds: values.ingredientIds ?? [] }
+      : { ...values, ingredientIds: [] };
+
     if (mode === 'create' && createStationCategory) {
-      await createStationCategory({ body: values });
+      await createStationCategory({ body: payload });
     } else if (mode === 'edit' && updateStationCategory) {
-      await updateStationCategory({ params: { path: { id: values.id } }, body: values });
+      await updateStationCategory({ params: { path: { id: values.id } }, body: payload });
     }
   };
 
