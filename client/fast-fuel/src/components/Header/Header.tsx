@@ -10,7 +10,6 @@ interface HeaderProps {
   authButton?: HeaderAuthButton;
   showHomeButton?: boolean;
   showAuthButton?: boolean;
-  titleSize?: string;
 }
 
 const authButtonConfig = {
