@@ -89,7 +89,7 @@ export const Welcome = () => {
     : null;
 
   return (
-    <Container size="lg" py={80}>
+    <Container size="lg" py={40}>
       <Paper
         pos="relative"
         radius="xl"

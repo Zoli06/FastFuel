@@ -53,11 +53,18 @@ export const Header = ({
           </Link>
         )}
       </Flex>
-      <Center>
+      <Center flex={1}>
         <Stack align="center" gap={0}>
-          <Text fz={{ base: '1.2rem', xs: '2rem' }}>{title}</Text>
+          {title && (
+            <Text
+              fz={!currentUser ? { base: '3rem' } : { base: '1em', xs: '1.2rem', sm: '1.5em' }}
+              ta={'center'}
+            >
+              {title}
+            </Text>
+          )}
           {currentUser && (
-            <Text size="sm" c="dimmed">
+            <Text size="sm" c="dimmed" ta={'center'}>
               {currentUser.name} ({currentUser.userType.toLowerCase()})
             </Text>
           )}
